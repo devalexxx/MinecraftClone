@@ -1,0 +1,102 @@
+BasedOnStyle: LLVM
+
+#AccessModifierOffset: 0
+IndentAccessModifiers: true
+EmptyLineBeforeAccessModifier: LogicalBlock
+
+AlignAfterOpenBracket: BlockIndent
+AlignEscapedNewlines: Right
+AlignConsecutiveAssignments:
+  Enabled: true
+AlignConsecutiveDeclarations:
+  Enabled: true
+AlignOperands: Align
+
+AllowAllArgumentsOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Always
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: All
+AllowShortIfStatementsOnASingleLine: Always
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: true
+
+AlwaysBreakAfterReturnType: None
+AlwaysBreakTemplateDeclarations: Yes
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: false
+  AfterClass: true
+  AfterStruct: true
+  AfterControlStatement: true
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: true
+  AfterUnion: true
+
+  BeforeCatch: true
+  BeforeElse: true
+
+  IndentBraces: false
+
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+
+BreakBeforeBinaryOperators: None
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializers: AfterColon
+BreakInheritanceList: BeforeColon
+
+ColumnLimit: 0
+
+ContinuationIndentWidth: 4
+IndentWidth: 4
+IndentCaseLabels: true
+IndentPPDirectives: AfterHash
+TabWidth: 4
+NamespaceIndentation: All
+
+CompactNamespaces: false
+
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 2
+ObjCSpaceAfterProperty: false
+ObjCSpaceBeforeProtocolList: true
+PointerAlignment: Left
+ReflowComments: false
+
+Cpp11BracedListStyle: false
+SpaceBeforeCpp11BracedList: true
+
+SpaceAfterCStyleCast: true
+SpaceAfterLogicalNot: false
+SpaceAfterTemplateKeyword: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements
+SpaceBeforeRangeBasedForLoopColon: false
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 0
+SpacesInAngles: false
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+
+UseTab: ForContinuationAndIndentation
+
+ReferenceAlignment: Left
+QualifierAlignment: Custom
+QualifierOrder: [ 'inline', 'static', 'const', 'type' ]
+
+FixNamespaceComments: false
+IncludeBlocks: Regroup
+RemoveParentheses: ReturnStatement
+RemoveSemicolon: true
+
+RequiresClausePosition: WithPreceding
+IndentRequiresClause: false
