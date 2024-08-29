@@ -19,7 +19,7 @@ namespace Mcc
 	struct EntityTransformUpdateEvent
 	{};
 
-	class Entity: public EventManager<EntityEventTag>
+	class Entity : public EventManager<EntityEventTag>
 	{
 		public:
 			Entity();

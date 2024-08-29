@@ -10,7 +10,7 @@ namespace Mcc
 	template<typename Tag>
 	struct BaseEvent
 	{
-			using  TypeId = unsigned short;
+			using TypeId = unsigned short;
 			static TypeId sTypeCount;
 			static TypeId GetNextType();
 	};

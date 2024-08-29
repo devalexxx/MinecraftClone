@@ -18,9 +18,9 @@ namespace Mcc
 	{
 		public:
 			template<typename T>
-			using EventHandler 		  = std::function<void(const T&)>;
+			using EventHandler        = std::function<void(const T&)>;
 			using GenericEventHandler = std::function<void(const BaseEvent<Tag>&)>;
-			using HandlerId 			  = unsigned int;
+			using HandlerId           = unsigned int;
 
 			template<typename T>
 			void Dispatch(T event);
@@ -38,6 +38,7 @@ namespace Mcc
 			struct HandlerFunctor
 			{
 					EventHandler<T> handler;
+
 					void operator()(const BaseEvent<Tag>& event);
 			};
 	};

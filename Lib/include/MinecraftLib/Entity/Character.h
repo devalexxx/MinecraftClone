@@ -5,7 +5,7 @@
 #ifndef MINECRAFT_CHARACTER_H
 #define MINECRAFT_CHARACTER_H
 
-#include "Entity.h"
+#include <MinecraftLib/Entity/Entity.h>
 
 namespace Mcc
 {
@@ -24,7 +24,7 @@ namespace Mcc
 
 		private:
 			glm::vec3 mHeadPositionOffset;
-			float	  mHeadPitch;
+			float     mHeadPitch;
 	};
 
 }

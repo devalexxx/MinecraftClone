@@ -49,11 +49,13 @@ namespace Mcc
 	glm::quat Entity::GetRotation() const
 	{
 		auto scale = GetScale();
+
 		const glm::mat3 rotationMatrix(
 			glm::vec3(mTransform[0]) / scale[0],
 			glm::vec3(mTransform[1]) / scale[1],
 			glm::vec3(mTransform[2]) / scale[2]
 		);
+
 		return glm::quat_cast(rotationMatrix);
 	}
 
