@@ -94,9 +94,10 @@ QualifierAlignment: Custom
 QualifierOrder: [ 'inline', 'static', 'const', 'type' ]
 
 FixNamespaceComments: false
-IncludeBlocks: Regroup
 RemoveParentheses: ReturnStatement
 RemoveSemicolon: true
+
+IncludeBlocks: Preserve
 
 RequiresClausePosition: WithPreceding
 IndentRequiresClause: false
