@@ -28,7 +28,7 @@ namespace Mcc
 			template<typename T>
 			HandlerId Subscribe(EventHandler<T> handler);
 
-			void UnSubscribe(HandlerId id);
+			void Withdraw(EventManager::HandlerId id);
 
 		protected:
 			std::vector<std::vector<GenericEventHandler>> mEventHandlers;
