@@ -1,0 +1,148 @@
+//
+// Created by Alex on 28/08/2024.
+//
+
+#include <Client/Graphics/Window/Window.h>
+#include <fmt/base.h>
+#include <glad/glad.h>
+
+namespace Mcc
+{
+
+	void Window::PollEvents()
+	{
+		glfwPollEvents();
+	}
+
+	Window::Window(const char* title) :
+		Window(title, 1024, 720)
+	{}
+
+	Window::Window(const char* title, int width, int height)
+	{
+		if (!sIsGlfwInitialize)
+		{
+			InitializeGlfw();
+		}
+
+#ifdef MACOSX
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
+
+		if ((mWindow = glfwCreateWindow(width, height, title, nullptr, nullptr)))
+		{
+			sWindowCount += 1;
+			glfwSetWindowUserPointer(mWindow, this);
+
+			if (!sIsExtensionLoaded)
+			{
+				MakeContextCurrent();
+				LoadExtension();
+			}
+
+			WindowEventManager::BoundEvent(*this);
+		}
+		else
+		{
+			fmt::print("Failed to create window and context\n");
+		}
+	}
+
+	Window::~Window()
+	{
+		glfwDestroyWindow(mWindow);
+		sWindowCount--;
+		if (sWindowCount == 0 && sIsGlfwInitialize)
+		{
+			glfwTerminate();
+		}
+	}
+
+	std::pair<int, int> Window::GetWindowSize() const
+	{
+		std::pair<int, int> p;
+		glfwGetWindowSize(mWindow, &p.first, &p.second);
+		return p;
+	}
+
+	float Window::GetAspectRatio() const
+	{
+		auto [w, h] = GetWindowSize();
+		return (float) w / (float) h;
+	}
+
+	void Window::SetShouldClose() const
+	{
+		glfwSetWindowShouldClose(mWindow, true);
+	}
+
+	bool Window::ShouldClose() const
+	{
+		return glfwWindowShouldClose(mWindow);
+	}
+
+	void Window::MakeContextCurrent() const
+	{
+		glfwMakeContextCurrent(mWindow);
+	}
+
+	void Window::SwapBuffer() const
+	{
+		glfwSwapBuffers(mWindow);
+	}
+
+	void Window::SetInputMode(int mode, int value) const
+	{
+		glfwSetInputMode(mWindow, mode, value);
+	}
+
+	GLFWwindow* Window::Get() const
+	{
+		return mWindow;
+	}
+
+	char Window::sWindowCount      = 0;
+	bool Window::sIsGlfwInitialize = false;
+
+	void Window::InitializeGlfw()
+	{
+		if (glfwInit())
+		{
+			sIsGlfwInitialize = true;
+			glfwSetErrorCallback(GlfwErrorHandler);
+		}
+		else
+		{
+			fmt::print("Failed to initialize GLFW\n");
+		}
+	}
+
+	bool Window::sIsExtensionLoaded = false;
+
+	void Window::LoadExtension()
+	{
+		if (sIsGlfwInitialize)
+		{
+			if (gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
+			{
+				sIsExtensionLoaded = true;
+			}
+			else
+			{
+				fmt::print("Fail to load OpenGL extensions\n");
+			}
+		}
+		else
+		{
+			fmt::print("You must initialize GLFW to load OpenGL extension (create a window)\n");
+		}
+	}
+
+	void Window::GlfwErrorHandler(int error_code, const char* description)
+	{
+		fmt::print("GLFW Error:\n\tcode: {}\n\tdesc:{}\n", error_code, description);
+	}
+
+}
