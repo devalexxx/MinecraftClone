@@ -5,7 +5,7 @@ set_languages("c++23")
 
 add_rules("mode.debug", "mode.release")
 
-add_requires("glfw", "fmt", "glad", "glm")
+add_requires("glfw", "fmt", "glad", "glm", "enet")
 
 
 if is_mode("debug") then 
@@ -42,7 +42,7 @@ target("MinecraftClient")
     end
 
     add_deps("MinecraftLib")
-    add_packages("glfw", "fmt", "glad", "glm")
+    add_packages("glfw", "fmt", "glad", "glm", "enet")
 
 target("MinecraftServer")
     set_kind("binary")
@@ -52,3 +52,4 @@ target("MinecraftServer")
     add_files("Server/**/*.cpp")
 
     add_deps("MinecraftLib")
+    add_packages("fmt", "enet")
