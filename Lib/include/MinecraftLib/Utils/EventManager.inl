@@ -15,11 +15,18 @@ namespace Mcc
 	void EventManager<Tag>::Dispatch(T event)
 	{
 		Event<Tag, T> wrapper { {}, std::move(event) };
-		for (auto& handler: mEventHandlers[decltype(wrapper)::GetType()])
+
+		auto type = decltype(wrapper)::GetType();
+		assert(type <= mEventHandlers.size());
+
+		if (mEventHandlers.size() > type)
 		{
-			if (handler)
+			for (auto& handler: mEventHandlers[type])
 			{
-				handler(wrapper);
+				if (handler)
+				{
+					handler(wrapper);
+				}
 			}
 		}
 	}
