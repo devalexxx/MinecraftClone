@@ -29,6 +29,10 @@ namespace Mcc
 				}
 			}
 		}
+		else
+		{
+			mEventHandlers.push_back({});
+		}
 	}
 
 	template<typename Tag>
