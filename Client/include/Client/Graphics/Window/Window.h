@@ -33,6 +33,8 @@ namespace Mcc
 			void SwapBuffer() const;
 			void SetInputMode(int mode, int value) const;
 
+			void SetCursorPosition(int x, int y);
+
 			[[nodiscard]] GLFWwindow* Get() const;
 
 		private:

@@ -98,6 +98,11 @@ namespace Mcc
 		glfwSetInputMode(mWindow, mode, value);
 	}
 
+	void Window::SetCursorPosition(int x, int y)
+	{
+			glfwSetCursorPos(mWindow, x, y);
+	}
+
 	GLFWwindow* Window::Get() const
 	{
 		return mWindow;
