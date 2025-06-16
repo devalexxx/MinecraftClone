@@ -5,7 +5,9 @@ set_languages("c++23")
 
 add_rules("mode.debug", "mode.release")
 
-add_requires("glfw", "fmt", "glad", "glm", "enet")
+add_requires("glfw", "fmt >= 11", "glad", "glm", "enet", "flecs", "cereal")
+
+add_requires("flecs", { debug = is_mode("debug") })
 
 
 if is_mode("debug") then 
@@ -25,7 +27,7 @@ target("MinecraftLib")
 
     add_files("Lib/**/*.cpp")
 
-    add_packages("glm", "fmt")
+    add_packages("glm", "fmt", "flecs", "enet", "cereal")
 
 target("MinecraftClient")
     set_kind("binary")
@@ -42,7 +44,7 @@ target("MinecraftClient")
     end
 
     add_deps("MinecraftLib")
-    add_packages("glfw", "fmt", "glad", "glm", "enet")
+    add_packages("glfw", "fmt", "glad", "glm", "enet", "flecs", "cereal")
 
 target("MinecraftServer")
     set_kind("binary")
@@ -52,4 +54,4 @@ target("MinecraftServer")
     add_files("Server/**/*.cpp")
 
     add_deps("MinecraftLib")
-    add_packages("fmt", "enet")
+    add_packages("fmt", "enet", "flecs", "cereal", "glm")
