@@ -60,11 +60,21 @@ namespace Mcc
 		return location;
 	}
 
-	void Program::SetVertexAttribPointer(GLuint location, GLint size, GLenum type) const
+	void Program::SetVertexAttribPointer(GLuint location, GLint size, GLenum type, GLsizei stride, GLsizei offset) const
 	{
 		Use();
 		glCheck(glEnableVertexAttribArray(location));
-		glCheck(glVertexAttribPointer(location, size, type, GL_FALSE, 0, nullptr));
+		glCheck(glVertexAttribPointer(location, size, type, GL_FALSE, stride, (void*)((intptr_t)offset)));
+	}
+
+	void Program::SetVertexAttribPointer(const char* name, GLint size, GLenum type, GLsizei stride, GLsizei offset) const
+	{
+		SetVertexAttribPointer(GetAttributeLocation(name), size, type, stride, offset);
+	}
+
+	void Program::SetVertexAttribPointer(GLuint location, GLint size, GLenum type) const
+	{
+		SetVertexAttribPointer(location, size, type, 0, 0);
 	}
 
 	void Program::SetVertexAttribPointer(const char* name, GLint size, GLenum type) const
