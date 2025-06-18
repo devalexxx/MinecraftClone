@@ -60,13 +60,18 @@ namespace Mcc
 		});
 
 		mWindow.Subscribe<CursorPosEvent>([this](const CursorPosEvent e) {
-			float sensitivity = 0.005f;
+			auto sensitivity = 0.001f;
 			auto [w, h] = e.window.GetWindowSize();
 
-			mPlayerInput.axis.x = sensitivity * ((static_cast<float>(w) / 2.f) - static_cast<float>(e.x));
-			mPlayerInput.axis.y = sensitivity * ((static_cast<float>(h) / 2.f) - static_cast<float>(e.y));
+			if (e.x >= 0 && e.x <= w && e.y >= 0 && e.y <= h && e.window.IsFocused())
+			{
+				mWindow.SetInputMode(GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
-			e.window.SetCursorPosition(w / 2, h / 2);
+				mInput.axis.x += sensitivity * ((static_cast<float>(w) / 2.f) - static_cast<float>(e.x));
+				mInput.axis.y += sensitivity * ((static_cast<float>(h) / 2.f) - static_cast<float>(e.y));
+
+				e.window.SetCursorPosition(w / 2, h / 2);
+			}
 		});
 
 		mNetworkManager.Subscribe<MalformedPacketEvent>([](const auto&) {

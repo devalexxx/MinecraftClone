@@ -31,6 +31,12 @@ namespace Mcc
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
+#ifdef MC_DEBUG
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#else
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_FALSE);
+#endif
+
 		if ((mWindow = glfwCreateWindow(width, height, title, nullptr, nullptr)))
 		{
 			sWindowCount += 1;
@@ -39,6 +45,7 @@ namespace Mcc
 			if (!sIsExtensionLoaded)
 			{
 				MakeContextCurrent();
+				glfwSwapInterval(0);
 				LoadExtension();
 			}
 
@@ -67,6 +74,13 @@ namespace Mcc
 		return p;
 	}
 
+	std::pair<int, int> Window::GetWindowPosition() const
+	{
+		std::pair<int, int> p;
+		glfwGetWindowPos(mWindow, &p.first, &p.second);
+		return p;
+	}
+
 	float Window::GetAspectRatio() const
 	{
 		auto [w, h] = GetWindowSize();
@@ -81,6 +95,11 @@ namespace Mcc
 	bool Window::ShouldClose() const
 	{
 		return glfwWindowShouldClose(mWindow);
+	}
+
+	bool Window::IsFocused() const
+	{
+		return glfwGetWindowAttrib(mWindow, GLFW_FOCUSED);
 	}
 
 	void Window::MakeContextCurrent() const
@@ -100,7 +119,7 @@ namespace Mcc
 
 	void Window::SetCursorPosition(int x, int y)
 	{
-			glfwSetCursorPos(mWindow, x, y);
+		glfwSetCursorPos(mWindow, x, y);
 	}
 
 	GLFWwindow* Window::Get() const
