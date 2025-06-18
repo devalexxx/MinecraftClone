@@ -39,10 +39,12 @@ namespace Mcc
 
 	struct EntityState
 	{
-			flecs::entity_t entity   {};
+			flecs::entity_t entity {};
 
 			Position position {};
 			Rotation rotation {};
+
+			std::optional<unsigned short> lastInputApplied;
 	};
 
 	struct PlayerInfo

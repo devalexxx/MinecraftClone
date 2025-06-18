@@ -25,6 +25,9 @@ namespace glm
 		ar(vec.x, vec.y);
 	}
 
+	glm::vec3 forward(const glm::vec2& rotation);
+	glm::vec3 right  (const glm::vec2& rotation);
+
 }
 
 namespace Mcc
@@ -43,11 +46,15 @@ namespace Mcc
 	struct Forward
 	{
 			glm::vec3 vec;
+
+			static Forward FromRotation(const Rotation& rotation);
 	};
 
 	struct Right
 	{
 			glm::vec3 vec;
+
+			static Right FromRotation(const Rotation& rotation);
 	};
 
 	struct Head

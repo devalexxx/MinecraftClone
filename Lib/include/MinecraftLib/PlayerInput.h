@@ -5,10 +5,13 @@
 #ifndef MINECRAFT_PLAYERINPUT_H
 #define MINECRAFT_PLAYERINPUT_H
 
-#include <queue>
-
 namespace Mcc
 {
+	struct Position;
+	struct Rotation;
+	struct Forward;
+	struct Right;
+
 	struct Movement
 	{
 			bool forward;
@@ -23,16 +26,32 @@ namespace Mcc
 			float y;
 	};
 
+	struct PlayerInputMeta
+	{
+			unsigned short id;
+			float 		   dt;
+
+			static unsigned short GetNextID();
+	};
+
 	struct PlayerInput
 	{
-		Movement movement;
-		Axis	 axis;
+			PlayerInputMeta meta;
+			Movement 		movement;
+			Axis	 		axis;
+
+			[[nodiscard]] bool NotNull() const;
+
+			void Apply(float dt, float speed, Position& position, const Forward& forward, const Right& right) const;
+			void Apply(Rotation& rotation, Forward& forward, Right& right) const;
 	};
 
 	template<typename Archive>
 	inline void serialize(Archive& ar, Movement& movement);
 	template<typename Archive>
 	inline void serialize(Archive& ar, Axis& axis);
+	template<typename Archive>
+	inline void serialize(Archive& ar, PlayerInputMeta& meta);
 	template<typename Archive>
 	inline void serialize(Archive& ar, PlayerInput& input);
 

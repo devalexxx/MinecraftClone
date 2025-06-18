@@ -8,6 +8,7 @@
 #include <MinecraftLib/Network/Event.h>
 #include <MinecraftLib/Component/Tags.h>
 #include <MinecraftLib/Component/Prefab.h>
+#include <MinecraftLib/Component/Input.h>
 #include <MinecraftLib/Utils/LambdaAsFuncPtr.h>
 
 #include <fmt/format.h>
@@ -60,7 +61,15 @@ namespace Mcc
 			flecs::entity_t id = *(flecs::entity_t*)event.peer->data;
 			if (mWorld.exists(id))
 			{
-				mWorld.entity(id).set<PlayerInput>(event.packet.input);
+				auto entity = mWorld.entity(id);
+				if (entity.has<PlayerInputQueue>())
+				{
+					entity.get_ref<PlayerInputQueue>()->push_back(event.packet.input);
+				}
+				else
+				{
+					entity.set(PlayerInputQueue {{event.packet.input}});
+				}
 			}
 		});
 
@@ -99,42 +108,36 @@ namespace Mcc
 				}
 			});
 
-		mWorld.system<const PlayerInput, Rotation, Forward, Right>()
-		    .each([](flecs::entity entity, const PlayerInput& input, Rotation& rot, Forward& forward, Right& right) {
-				rot.vec.x += input.axis.x;
-				rot.vec.y += input.axis.y;
-
-				forward.vec = glm::vec3(
-					cos(rot.vec.y) * sin(rot.vec.x),
-					sin(rot.vec.y),
-					cos(rot.vec.y) * cos(rot.vec.x)
-				);
-
-				right.vec = glm::vec3(
-					sin(rot.vec.x - 3.14f / 2.0f),
-					0,
-					cos(rot.vec.x - 3.14f / 2.0f)
-				);
-			});
-
-		mWorld.system<const PlayerInput, Position, const Forward, const Right>()
-			.each([this](flecs::entity entity, const PlayerInput& input, Position& position, const Forward& dir, const Right& right) {
+		mWorld.system<PlayerInputQueue, Position, Rotation, Forward, Right>()
+		    .each([](flecs::entity entity, PlayerInputQueue& inputs, Position& pos, Rotation& rot, Forward& forward, Right& right) {
 				const float speed = 5.f;
-				const float delta = 1.f / static_cast<float>(mInfo.tickRate);
 
-				if (input.movement.forward && !input.movement.backward)
-					position.vec += dir.vec * speed * delta;
+				if (inputs.empty())
+				{
+					entity.remove<LastInputTracker>();
+					return;
+				}
 
-				if (input.movement.backward && !input.movement.forward)
-					position.vec -= dir.vec * speed * delta;
+				for (; !inputs.empty(); inputs.pop_front())
+				{
+					auto& input = inputs.front();
+					input.Apply(rot, forward, right);
+					input.Apply(input.meta.dt, speed, pos, forward, right);
 
-				if (input.movement.right && !input.movement.left)
-					position.vec += right.vec * speed * delta;
+					if (inputs.size() == 1)
+					{
+						auto rLit = entity.get_ref<LastInputTracker>();
+						if (rLit.has())
+						{
+							rLit->id = input.meta.id;
+						}
+						else
+						{
+							entity.set<LastInputTracker>({ input.meta.id });
+						}
+					}
+				}
 
-				if (input.movement.left && !input.movement.right)
-					position.vec -= right.vec * speed * delta;
-
-				entity.remove<PlayerInput>();
 				entity.add<WorldEntityUpdated>();
 			});
 
@@ -150,7 +153,14 @@ namespace Mcc
 					for (auto i: it)
 					{
 						flecs::entity entity = it.entity(i);
-						packet.states.push_back({ entity.id(), p[i], r[i] });
+
+						EntityState state;
+						state.entity   = entity.id();
+						state.position = p[i];
+						state.rotation = r[i];
+						state.lastInputApplied = entity.has<LastInputTracker>() ? std::optional(entity.get_ref<LastInputTracker>()->id) : std::nullopt;
+
+						packet.states.push_back(state);
 						entity.remove<WorldEntityUpdated>();
 					}
 					mNetworkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);

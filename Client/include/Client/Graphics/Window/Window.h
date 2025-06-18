@@ -23,11 +23,14 @@ namespace Mcc
 
 			~Window();
 
-			[[nodiscard]] std::pair<int, int> GetWindowSize() const;
-			[[nodiscard]] float               GetAspectRatio() const;
+			[[nodiscard]] std::pair<int, int> GetWindowSize    () const;
+			[[nodiscard]] std::pair<int, int> GetWindowPosition() const;
+			[[nodiscard]] float               GetAspectRatio   () const;
 
 			void               SetShouldClose() const;
 			[[nodiscard]] bool ShouldClose() const;
+
+			bool IsFocused() const;
 
 			void MakeContextCurrent() const;
 			void SwapBuffer() const;

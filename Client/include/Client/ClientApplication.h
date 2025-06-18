@@ -15,6 +15,7 @@
 #include <enet/enet.h>
 
 
+#include "MinecraftLib/Component/Input.h"
 #include <istream>
 #include <streambuf>
 
@@ -40,7 +41,9 @@ namespace Mcc
 			ServerInfo mServerInfo;
 
 			Window mWindow;
-			PlayerInput mPlayerInput;
+
+			PlayerInput 	 mInput;
+			PlayerInputQueue mInputQueue;
 
 			RenderSystem mRenderSystem;
 	};

@@ -7,9 +7,7 @@
 
 #include <MinecraftLib/Network/Event.h>
 #include <MinecraftLib/Utils/LambdaAsFuncPtr.h>
-#include <MinecraftLib/PlayerInput.h>
 
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 #include <csignal>
@@ -29,27 +27,27 @@ namespace Mcc
 		mHasServerInfo(false),
 		mServerInfo({}),
 		mWindow("Minecraft"),
-		mPlayerInput({}),
+		mInput({}),
 		mRenderSystem(mWorld, mPlayerInfo, mWindow)
 	{
 
-		mWindow.SetInputMode(GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+//		mWindow.SetInputMode(GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		mWindow.Subscribe<KeyEvent>([this](const KeyEvent& e) {
 			if (e.action == GLFW_PRESS || e.action == GLFW_RELEASE)
 			{
 				switch (e.key)
 				{
 					case GLFW_KEY_W:
-						mPlayerInput.movement.forward = e.action == GLFW_PRESS;
+						mInput.movement.forward = e.action == GLFW_PRESS;
 						break;
 					case GLFW_KEY_S:
-						mPlayerInput.movement.backward = e.action == GLFW_PRESS;
+						mInput.movement.backward = e.action == GLFW_PRESS;
 						break;
 					case GLFW_KEY_A:
-						mPlayerInput.movement.left = e.action == GLFW_PRESS;
+						mInput.movement.left = e.action == GLFW_PRESS;
 						break;
 					case GLFW_KEY_D:
-						mPlayerInput.movement.right = e.action == GLFW_PRESS;
+						mInput.movement.right = e.action == GLFW_PRESS;
 						break;
 					case GLFW_KEY_ESCAPE:
 						e.window.SetShouldClose();
@@ -98,19 +96,9 @@ namespace Mcc
 				assert(!mWorld.is_alive(state.entity));
 				auto entity = mWorld.make_alive(state.entity)
 					.set(state.position)
-					.set(state.rotation);
-
-				entity.set(Forward {glm::vec3(
-					cos(state.rotation.vec.y) * sin(state.rotation.vec.x),
-					sin(state.rotation.vec.y),
-					cos(state.rotation.vec.y) * cos(state.rotation.vec.x)
-				)});
-
-				entity.set(Right { glm::vec3(
-					sin(state.rotation.vec.x - 3.14f / 2.0f),
-					0,
-					cos(state.rotation.vec.x - 3.14f / 2.0f)
-				)});
+					.set(state.rotation)
+					.set(Forward::FromRotation(state.rotation))
+					.set(Right  ::FromRotation(state.rotation));
 
 				if (entity.id() == mPlayerInfo.entity)
 				{
@@ -135,20 +123,40 @@ namespace Mcc
 				if (mWorld.exists(state.entity))
 				{
 					flecs::entity entity = mWorld.entity(state.entity);
+
 					entity.set(state.position);
 					entity.set(state.rotation);
+					entity.set(Forward::FromRotation(state.rotation));
+					entity.set(Right  ::FromRotation(state.rotation));
 
-					entity.set(Forward {glm::vec3(
-						cos(state.rotation.vec.y) * sin(state.rotation.vec.x),
-						sin(state.rotation.vec.y),
-						cos(state.rotation.vec.y) * cos(state.rotation.vec.x)
-					)});
+					if (entity.has<Controlled>() && state.lastInputApplied.has_value())
+					{
+						// Drop inputs already processed by the server
+						auto id = *state.lastInputApplied;
+						for (; !mInputQueue.empty(); mInputQueue.pop_front())
+						{
+							auto& input = mInputQueue.front();
+							if (input.meta.id == id)
+							{
+								mInputQueue.pop_front();
+								break;
+							}
+						}
 
-					entity.set(Right { glm::vec3(
-						sin(state.rotation.vec.x - 3.14f / 2.0f),
-						0,
-						cos(state.rotation.vec.x - 3.14f / 2.0f)
-					)});
+						if (!mInputQueue.empty())
+							assert(mInputQueue.front().meta.id - id == 1);
+
+						// Reapply all input unprocessed by the server
+						for (auto& input: mInputQueue)
+						{
+							const float speed = 5.f;
+							entity.get([&input, speed](Position& position, Rotation& rotation, Forward& forward, Right& right) {
+								input.Apply(rotation, forward, right);
+								input.Apply(input.meta.dt, speed, position, forward, right);
+							});
+						}
+
+					}
 				}
 			}
 		});
@@ -156,13 +164,40 @@ namespace Mcc
 
 	void ClientApplication::SetupWorld()
 	{
-		flecs::entity networkTick = mWorld.timer().interval(1.f / static_cast<float>(mServerInfo.tickRate));
-		mWorld.system()
-			.tick_source(networkTick)
-			.run([this](flecs::iter&) {
-				mNetworkManager.Send<OnPlayerInput>({ mPlayerInput }, ENET_PACKET_FLAG_RELIABLE, 0);
-				mPlayerInput.axis.x = 0;
-				mPlayerInput.axis.y = 0;
+//		mWorld.system()
+//			.run([](flecs::iter& it) {
+//				static float elapsed = 0;
+//				static float frames  = 0;
+//
+//				elapsed += it.delta_time();
+//				frames	+= 1;
+//
+//				if (elapsed >= 1)
+//				{
+//					fmt::print("fps: {}\n", frames);
+//					frames  = 0;
+//					elapsed = 0;
+//				}
+//			});
+
+		mWorld.system<Position, Rotation, Forward, Right>()
+			.with<Controlled>()
+			.each([this](flecs::iter& it, size_t, Position& position, Rotation& rotation, Forward& forward, Right& right) {
+				if (mInput.NotNull())
+				{
+					const float speed = 5.f;
+					const float delta = it.delta_time();
+
+					mInput.meta.id = PlayerInputMeta::GetNextID();
+					mInput.meta.dt = delta;
+					mNetworkManager.Send<OnPlayerInput>({ mInput }, ENET_PACKET_FLAG_RELIABLE, 0);
+
+					mInput.Apply(rotation, forward, right);
+					mInput.Apply(delta, speed, position, forward, right);
+
+					mInputQueue.push_back(mInput);
+					mInput.axis = {};
+				}
 			});
 	}
 

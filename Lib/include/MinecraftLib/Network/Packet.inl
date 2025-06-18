@@ -1,5 +1,6 @@
 
 #include <cereal/archives/binary.hpp>
+#include <cereal/types/optional.hpp>
 
 #include <fmt/base.h>
 
@@ -9,7 +10,7 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, EntityState& packet)
 	{
-		ar(packet.entity, packet.position, packet.rotation);
+		ar(packet.entity, packet.position, packet.rotation, packet.lastInputApplied);
 	}
 
 	template<typename Archive>
