@@ -31,13 +31,13 @@ namespace Mcc
 
 	PacketOutputStream::OwnedStreamBuf::OwnedStreamBuf()
 	{
-		setp(mByteArray.begin().base(), mByteArray.end().base());
+		setp(&*mByteArray.begin(), &*mByteArray.end());
 	}
 
 	std::streamsize PacketOutputStream::OwnedStreamBuf::xsputn(const char* s, std::streamsize n)
 	{
 		mByteArray.insert(mByteArray.end(), s, s + n);
-		setp(mByteArray.begin().base(), mByteArray.end().base());
+		setp(&*mByteArray.begin(), &*mByteArray.end());
 		return n;
 	}
 
