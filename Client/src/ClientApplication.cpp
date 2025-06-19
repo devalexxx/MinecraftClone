@@ -227,7 +227,6 @@ namespace Mcc
 	int ClientApplication::Run()
 	{
 		auto quit = LambdaAsFuncPtr<void(*)(int)>([&](int) -> void { mWorld.quit(); });
-		signal(SIGTSTP, quit);
 		signal(SIGINT , quit);
 		signal(SIGABRT, quit);
 

@@ -202,8 +202,7 @@ namespace Mcc
 	int ServerApplication::Run()
 	{
 		auto quit = LambdaAsFuncPtr<void(*)(int)>([&](int) -> void { mWorld.quit(); });
-		signal(SIGTSTP, quit);
-		signal(SIGINT , quit);
+		signal(SIGINT, quit);
 
 		int state;
 		if ((state = mNetworkManager.Setup()))
