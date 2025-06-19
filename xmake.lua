@@ -36,6 +36,7 @@ target("MinecraftClient")
     add_defines("GLFW_INCLUDE_NONE")
 
     add_includedirs("Client/include/",  { public = true })
+    add_headerfiles("Client/include/(**/*.h)", "Client/include/(**/*.inl)")
 
     add_files("Client/**/*.cpp")
 
@@ -50,6 +51,7 @@ target("MinecraftServer")
     set_kind("binary")
 
     add_includedirs("Server/include/",  { public = true })
+    add_headerfiles("Server/include/(**/*.h)", "Server/include/(**/*.inl)")
 
     add_files("Server/**/*.cpp")
 

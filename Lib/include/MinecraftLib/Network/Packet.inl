@@ -10,13 +10,13 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, EntityState& packet)
 	{
-		ar(packet.entity, packet.position, packet.rotation, packet.lastInputApplied);
+		ar(packet.id, packet.position, packet.rotation, packet.lastInputApplied);
 	}
 
 	template<typename Archive>
 	void serialize(Archive& ar, PlayerInfo& packet)
 	{
-		ar(packet.entity);
+		ar(packet.id);
 	}
 
 	template<typename Archive>
@@ -26,15 +26,9 @@ namespace Mcc
 	}
 
 	template<typename Archive>
-	void serialize(Archive& ar, OnPlayerInfo& packet)
+	void serialize(Archive& ar, OnConnection& packet)
 	{
-		ar(packet.info);
-	}
-
-	template<typename Archive>
-	void serialize(Archive& ar, OnServerInfo& packet)
-	{
-		ar(packet.info);
+		ar(packet.playerInfo, packet.serverInfo, packet.initialStates);
 	}
 
 	template<typename Archive>
@@ -52,7 +46,7 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, OnEntitiesDestroyed& packet)
 	{
-		ar(packet.entities);
+		ar(packet.ids);
 	}
 
 	template<typename Archive>

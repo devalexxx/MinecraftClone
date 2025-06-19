@@ -6,9 +6,12 @@
 #define MINECRAFT_APPLICATION_H
 
 #include <MinecraftLib/CommandLineStore.h>
+#include <MinecraftLib/Network/NetworkID.h>
 
 #include <flecs.h>
 #include <enet/enet.h>
+
+#include <unordered_map>
 
 namespace Mcc
 {
@@ -24,6 +27,9 @@ namespace Mcc
 			flecs::world     mWorld;
 			bool             mIsRunning;
 			CommandLineStore mCmdLineStore;
+
+			std::unordered_map<NetworkID, flecs::entity_t> mNetworkToLocal;
+			std::unordered_map<flecs::entity_t, NetworkID> mLocalToNetwork;
 	};
 
 }

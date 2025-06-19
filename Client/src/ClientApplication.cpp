@@ -10,6 +10,7 @@
 
 #include <glm/gtc/quaternion.hpp>
 
+#include "Client/World/Context.h"
 #include <csignal>
 
 namespace Mcc
@@ -22,13 +23,11 @@ namespace Mcc
 	ClientApplication::ClientApplication(int argc, char** argv) :
 		Application(argc, argv),
 		mNetworkManager(mCmdLineStore),
-		mHasPlayerInfo(false),
+		mConnected(false),
 		mPlayerInfo({}),
-		mHasServerInfo(false),
 		mServerInfo({}),
 		mWindow("Minecraft"),
-		mInput({}),
-		mRenderSystem(mWorld, mPlayerInfo, mWindow)
+		mInput({})
 	{
 
 //		mWindow.SetInputMode(GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -80,27 +79,40 @@ namespace Mcc
 			mWorld.quit();
 		});
 
-		mNetworkManager.Subscribe<OnPlayerInfo>([this](const auto& packet) {
-			mHasPlayerInfo = true;
-			mPlayerInfo    = packet.info;
-		});
+		mNetworkManager.Subscribe<OnConnection>([this](const OnConnection& packet) {
+			mPlayerInfo = packet.playerInfo;
+			mServerInfo = packet.serverInfo;
 
-		mNetworkManager.Subscribe<OnServerInfo>([this](const auto& packet) {
-			mHasServerInfo = true;
-			mServerInfo    = packet.info;
-	   });
+			for (auto& state: packet.initialStates)
+			{
+				auto entity = mWorld.entity()
+				  .set(state.position)
+				  .set(state.rotation)
+				  .set(Forward::FromRotation(state.rotation))
+				  .set(Right  ::FromRotation(state.rotation));
+
+				mLocalToNetwork.emplace(entity.id(), state.id);
+				mNetworkToLocal.emplace(state.id, entity.id());
+			}
+
+			mWorld.set_ctx(new ClientWorldContext { { mServerInfo, mNetworkToLocal, mLocalToNetwork }, mPlayerInfo, mWindow }, [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); });
+
+			mConnected = true;
+	    });
 
 		mNetworkManager.Subscribe<OnWorldEntitiesCreated>([this](const OnWorldEntitiesCreated& e) {
 			for (auto& state: e.states)
 			{
-				assert(!mWorld.is_alive(state.entity));
-				auto entity = mWorld.make_alive(state.entity)
+				auto entity = mWorld.entity()
 					.set(state.position)
 					.set(state.rotation)
 					.set(Forward::FromRotation(state.rotation))
 					.set(Right  ::FromRotation(state.rotation));
 
-				if (entity.id() == mPlayerInfo.entity)
+				mLocalToNetwork.emplace(entity.id(), state.id);
+				mNetworkToLocal.emplace(state.id, entity.id());
+
+				if (state.id == mPlayerInfo.id)
 				{
 					entity.add<Controlled>();
 				}
@@ -108,21 +120,22 @@ namespace Mcc
 		});
 
 		mNetworkManager.Subscribe<OnEntitiesDestroyed>([this](const OnEntitiesDestroyed& e) {
-			for (auto& entity: e.entities)
+			for (auto& id: e.ids)
 			{
-				if (mWorld.is_alive(entity))
-				{
-					mWorld.entity(entity).destruct();
-				}
+				mWorld.entity(mNetworkToLocal[id]).destruct();
+
+				mLocalToNetwork.erase(mNetworkToLocal[id]);
+				mNetworkToLocal.erase(id);
 			}
 		});
 
 		mNetworkManager.Subscribe<OnEntitiesUpdated>([this](const OnEntitiesUpdated& event) {
 			for (auto& state: event.states)
 			{
-				if (mWorld.exists(state.entity))
+				auto id = mNetworkToLocal[state.id];
+				if (mWorld.exists(id))
 				{
-					flecs::entity entity = mWorld.entity(state.entity);
+					flecs::entity entity = mWorld.entity(id);
 
 					entity.set(state.position);
 					entity.set(state.rotation);
@@ -132,11 +145,11 @@ namespace Mcc
 					if (entity.has<Controlled>() && state.lastInputApplied.has_value())
 					{
 						// Drop inputs already processed by the server
-						auto id = *state.lastInputApplied;
+						auto iid = *state.lastInputApplied;
 						for (; !mInputQueue.empty(); mInputQueue.pop_front())
 						{
 							auto& input = mInputQueue.front();
-							if (input.meta.id == id)
+							if (input.meta.id == iid)
 							{
 								mInputQueue.pop_front();
 								break;
@@ -144,7 +157,7 @@ namespace Mcc
 						}
 
 						if (!mInputQueue.empty())
-							assert(mInputQueue.front().meta.id - id == 1);
+							assert(mInputQueue.front().meta.id - iid == 1);
 
 						// Reapply all input unprocessed by the server
 						for (auto& input: mInputQueue)
@@ -180,6 +193,15 @@ namespace Mcc
 //				}
 //			});
 
+		mWorld.import<Renderer>();
+//		mWorld.import<flecs::stats>();
+//
+//		CommandLineStore::OptParameter param;;
+//		if ((param = mCmdLineStore.GetParameter("fport").or_else([&]{ return mCmdLineStore.GetParameter("fp"); })).has_value())
+//			mWorld.set<flecs::Rest>({.port=static_cast<uint16_t>(std::stoi(param->get()))});
+//		else
+//			mWorld.set<flecs::Rest>({});
+
 		mWorld.system<Position, Rotation, Forward, Right>()
 			.with<Controlled>()
 			.each([this](flecs::iter& it, size_t, Position& position, Rotation& rotation, Forward& forward, Right& right) {
@@ -199,6 +221,7 @@ namespace Mcc
 					mInput.axis = {};
 				}
 			});
+
 	}
 
 	int ClientApplication::Run()
@@ -213,15 +236,16 @@ namespace Mcc
 		if (int error = mNetworkManager.Connect())
 			return error;
 
-		while (!mHasPlayerInfo && !mHasServerInfo)
+		while (!mConnected)
 		{
 			mNetworkManager.Poll();
 		}
 
 		SetupWorld();
 
-		while (mWorld.progress() && !mWindow.ShouldClose())
+		while (!mWorld.should_quit() && !mWindow.ShouldClose())
 		{
+			mWorld.progress();
 			mNetworkManager.Poll();
 		}
 

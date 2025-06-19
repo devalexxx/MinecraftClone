@@ -8,7 +8,7 @@
 namespace Mcc
 {
 
-	struct WorldEntity {};
+	struct WorldEntityPrefab {};
 
 }
 

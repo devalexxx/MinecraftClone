@@ -37,31 +37,58 @@ namespace Mcc
 				mInfo.tickRate = tickRate;
 		}
 
-		mWorld.prefab<WorldEntity>()
+		mWorld.prefab<WorldEntityPrefab>()
+		    .add<WorldEntity>()
 			.set_auto_override(Position {{ 0.f, 2.f, -4.f }})
 			.set_auto_override(Rotation {{ 0.f, 0.f }})
 			.set_auto_override(Forward  {{ 0.f, 0.f, 0.f }})
 			.set_auto_override(Right 	{{ 0.f, 0.f, 0.f }});
 
-		mNetworkManager.Subscribe<ConnectEvent>([this](const auto& event) {
-			auto entity = mWorld.entity().is_a<WorldEntity>();
-			event.peer->data = new PlayerInfo { entity.id() };
-			mNetworkManager.Send<OnServerInfo>(event.peer, { mInfo }, ENET_PACKET_FLAG_RELIABLE, 0);
-			mNetworkManager.Send<OnPlayerInfo>(event.peer, { *static_cast<PlayerInfo*>(event.peer->data) }, ENET_PACKET_FLAG_RELIABLE, 0);
+		auto lookupQuery = mWorld.query_builder<const Position, const Rotation>().with<WorldEntity>().build();
+		mNetworkManager.Subscribe<ConnectEvent>([this, lookupQuery](const auto& event) {
+			OnConnection packet;
+			packet.initialStates = {};
+
+			lookupQuery
+				.run([&](flecs::iter& it) {
+					while (it.next())
+					{
+						auto p = it.field<const Position>(0);
+						auto r = it.field<const Rotation>(1);
+
+						for (auto i: it)
+						{
+							auto entity = it.entity(i);
+							packet.initialStates.push_back({ mLocalToNetwork[entity.id()], p[i], r[i], std::nullopt });
+						}
+					}
+				});
+
+			auto id		= GenerateNetworkID();
+			auto entity = mWorld.entity().is_a<WorldEntityPrefab>();
+			event.peer->data = new PlayerInfo { id };
+
+			mLocalToNetwork.emplace(entity.id(), id);
+			mNetworkToLocal.emplace(id, entity.id());
+
+			packet.playerInfo = *static_cast<PlayerInfo*>(event.peer->data);
+			packet.serverInfo = mInfo;
+
+			mNetworkManager.Send(event.peer, std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
 			entity.add<NewWorldEntity>();
 		});
 
 		mNetworkManager.Subscribe<DisconnectEvent>([this](const auto& event) {
 			auto* playerInfo = (PlayerInfo*)event.peer->data;
-			mWorld.entity(playerInfo->entity).add<ToDelete>();
+			mWorld.entity(mNetworkToLocal[playerInfo->id]).add<ToDelete>();
 			delete playerInfo;
 		});
 
 		mNetworkManager.Subscribe<From<OnPlayerInput>>([this](const From<OnPlayerInput>& event) {
-			flecs::entity_t id = *(flecs::entity_t*)event.peer->data;
-			if (mWorld.exists(id))
+			auto playerInfo = static_cast<PlayerInfo*>(event.peer->data);
+			if (mWorld.exists(mNetworkToLocal[playerInfo->id]))
 			{
-				auto entity = mWorld.entity(id);
+				auto entity = mWorld.entity(mNetworkToLocal[playerInfo->id]);
 				if (entity.has<PlayerInputQueue>())
 				{
 					entity.get_ref<PlayerInputQueue>()->push_back(event.packet.input);
@@ -81,9 +108,13 @@ namespace Mcc
 					OnEntitiesDestroyed packet;
 					for (auto i: it)
 					{
-						flecs::entity e = it.entity(i);
-						packet.entities.push_back(e);
-						e.destruct();
+						flecs::entity entity = it.entity(i);
+						packet.ids.push_back(mLocalToNetwork[entity.id()]);
+
+						mNetworkToLocal.erase(mLocalToNetwork[entity.id()]);
+						mLocalToNetwork.erase(entity.id());
+
+						entity.destruct();
 					}
 					mNetworkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
 				}
@@ -100,9 +131,9 @@ namespace Mcc
 					OnWorldEntitiesCreated packet;
 					for (auto i: it)
 					{
-						flecs::entity e = it.entity(i);
-						packet.states.push_back({e.id(), p[i], r[i]});
-						e.remove<NewWorldEntity>();
+						flecs::entity entity = it.entity(i);
+						packet.states.push_back({mLocalToNetwork[entity.id()], p[i], r[i], std::nullopt});
+						entity.remove<NewWorldEntity>();
 					}
 					mNetworkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
 				}
@@ -155,7 +186,7 @@ namespace Mcc
 						flecs::entity entity = it.entity(i);
 
 						EntityState state;
-						state.entity   = entity.id();
+						state.id	   = mLocalToNetwork[entity.id()];
 						state.position = p[i];
 						state.rotation = r[i];
 						state.lastInputApplied = entity.has<LastInputTracker>() ? std::optional(entity.get_ref<LastInputTracker>()->id) : std::nullopt;

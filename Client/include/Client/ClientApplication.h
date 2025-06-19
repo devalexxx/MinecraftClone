@@ -7,7 +7,7 @@
 
 #include <Client/ClientNetworkManager.h>
 #include <Client/Graphics/Window/Window.h>
-#include <Client/System/RenderSystem.h>
+#include <Client/System/Renderer.h>
 
 #include <MinecraftLib/Application.h>
 #include <MinecraftLib/Network/Packet.h>
@@ -35,17 +35,14 @@ namespace Mcc
 		private:
 			ClientNetworkManager mNetworkManager;
 
-			bool 	   mHasPlayerInfo;
+			bool mConnected;
 			PlayerInfo mPlayerInfo;
-			bool 	   mHasServerInfo;
 			ServerInfo mServerInfo;
 
 			Window mWindow;
 
 			PlayerInput 	 mInput;
 			PlayerInputQueue mInputQueue;
-
-			RenderSystem mRenderSystem;
 	};
 
 }

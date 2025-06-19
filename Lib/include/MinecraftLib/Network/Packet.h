@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "MinecraftLib/World/Time.h"
+#include "NetworkID.h"
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/queue.hpp>
 #include <cereal/types/vector.hpp>
@@ -29,8 +30,7 @@ namespace Mcc
 	};
 
 	using PacketList = TypeList<
-	    struct OnPlayerInfo,
-		struct OnServerInfo,
+		struct OnConnection,
 		struct OnPlayerInput,
 		struct OnWorldEntitiesCreated,
 		struct OnEntitiesDestroyed,
@@ -39,17 +39,17 @@ namespace Mcc
 
 	struct EntityState
 	{
-			flecs::entity_t entity {};
+			NetworkID id;
 
-			Position position {};
-			Rotation rotation {};
+			Position position;
+			Rotation rotation;
 
 			std::optional<unsigned short> lastInputApplied;
 	};
 
 	struct PlayerInfo
 	{
-			flecs::entity_t entity;
+			NetworkID id;
 	};
 
 	struct ServerInfo
@@ -64,14 +64,12 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, ServerInfo& packet);
 
-	struct OnPlayerInfo
+	struct OnConnection
 	{
-			PlayerInfo info;
-	};
+			PlayerInfo playerInfo;
+			ServerInfo serverInfo;
 
-	struct OnServerInfo
-	{
-			ServerInfo info;
+			std::vector<EntityState> initialStates;
 	};
 
 	struct OnPlayerInput
@@ -86,7 +84,7 @@ namespace Mcc
 
 	struct OnEntitiesDestroyed
 	{
-			std::vector<flecs::entity_t> entities;
+			std::vector<NetworkID> ids;
 	};
 
 	struct OnEntitiesUpdated
@@ -95,9 +93,7 @@ namespace Mcc
 	};
 
 	template<typename Archive>
-	void serialize(Archive& ar, OnPlayerInfo& packet);
-	template<typename Archive>
-	void serialize(Archive& ar, OnServerInfo& packet);
+	void serialize(Archive& ar, OnConnection& packet);
 	template<typename Archive>
 	void serialize(Archive& ar, OnPlayerInput& packet);
 	template<typename Archive>

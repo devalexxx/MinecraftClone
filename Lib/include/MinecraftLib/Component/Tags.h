@@ -8,6 +8,7 @@
 namespace Mcc
 {
 
+	struct WorldEntity {};
 	struct NewWorldEntity {};
 	struct WorldEntityUpdated {};
 	struct ToDelete	{};

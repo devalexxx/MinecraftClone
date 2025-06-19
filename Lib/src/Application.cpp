@@ -8,7 +8,10 @@ namespace Mcc
 {
 
 	Application::Application(int argc, char** argv) :
-		mIsRunning(false), mCmdLineStore(argc, argv)
+		mIsRunning(false),
+		mCmdLineStore(argc, argv),
+		mNetworkToLocal({}),
+		mLocalToNetwork({})
 	{}
 
 }
