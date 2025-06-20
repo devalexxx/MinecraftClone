@@ -16,4 +16,5 @@ build/
 # Project utils
 scripts/
 
-
+# VS
+vsxmake2022/

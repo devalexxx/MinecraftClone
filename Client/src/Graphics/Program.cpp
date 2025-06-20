@@ -5,6 +5,7 @@
 #include <Client/Graphics/Program.h>
 #include <Client/Graphics/Shader.h>
 #include <vector>
+#include <string_view>
 
 namespace Mcc
 {

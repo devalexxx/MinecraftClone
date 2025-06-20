@@ -5,6 +5,8 @@
 #ifndef MINECRAFT_UTILS_H
 #define MINECRAFT_UTILS_H
 
+#include <array>
+
 namespace Mcc
 {
 

@@ -5,6 +5,9 @@
 #include <Client/Graphics/Mesh.h>
 #include <Client/Graphics/Program.h>
 
+#include <algorithm>
+#include <iterator>
+
 namespace Mcc
 {
 	Mesh::Mesh() :

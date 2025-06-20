@@ -10,26 +10,16 @@
 namespace Mcc
 {
 
-	template <typename F, int I, typename L, typename R, typename ...A>
+	template<typename F, int I, typename L, typename R, typename... A>
 	inline F LambdaAsFuncPtr(L&& l, R (*)(A...) noexcept(noexcept(std::declval<F>()(std::declval<A>()...))))
 	{
-		static thread_local L l_(::std::forward<L>(l));
-		static thread_local bool full;
+		// Fonction statique à usage local pour contenir l'objet lambda
+		static thread_local typename std::decay<L>::type l_(std::forward<L>(l));
 
-		if (full)
-		{
-			l_.~L();
-
-			new (static_cast<void*>(&l_)) L(std::forward<L>(l));
-		}
-		else
-		{
-			full = true;
-		}
-
+		// Structure contenant la fonction statique
 		struct S
 		{
-				static R f(A... args) noexcept(noexcept(std::declval<F>()(std::forward<A>(args)...)))
+				static R f(A... args) noexcept(noexcept(std::declval<F>()(std::declval<A>()...)))
 				{
 					return l_(std::forward<A>(args)...);
 				}
@@ -38,7 +28,7 @@ namespace Mcc
 		return &S::f;
 	}
 
-	template <typename F, int I = 0, typename L>
+	template<typename F, int I = 0, typename L>
 	inline F LambdaAsFuncPtr(L&& l)
 	{
 		return LambdaAsFuncPtr<F, I>(std::forward<L>(l), F());
