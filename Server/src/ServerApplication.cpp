@@ -12,11 +12,9 @@
 #include <MinecraftLib/Network/Event.h>
 #include <MinecraftLib/Module/PlayerEntity/Component.h>
 #include <MinecraftLib/Module/WorldEntity/Module.h>
-#include <MinecraftLib/Utils/LambdaAsFuncPtr.h>
 
 #include <fmt/format.h>
 
-#include <csignal>
 
 namespace Mcc
 {
@@ -42,9 +40,6 @@ namespace Mcc
 
 	int ServerApplication::Run()
 	{
-		auto quit = LambdaAsFuncPtr<void(*)(int)>([&](int) -> void { mWorld.quit(); });
-		signal(SIGINT, quit);
-
 		int state;
 		if ((state = mNetworkManager.Setup()))
 			return state;
