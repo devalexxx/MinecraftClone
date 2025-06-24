@@ -10,7 +10,7 @@ namespace Mcc
 	void GlCheckError(const char* file, unsigned int line, const char* expression);
 }
 
-#ifdef MC_DEBUG
+#ifdef MCC_DEBUG
 #	define glCheck(expr)                                 \
 		do                                                \
 		{                                                 \

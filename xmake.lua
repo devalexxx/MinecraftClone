@@ -11,7 +11,7 @@ add_requires("flecs", { debug = is_mode("debug") })
 
 
 if is_mode("debug") then 
-    add_defines("MC_DEBUG")
+    add_defines("MCC_DEBUG")
     --set_warnings("allextra", "error")
     set_warnings("allextra")
 end
@@ -19,8 +19,7 @@ end
 target("MinecraftLib")
     set_kind("static")
 
-    add_defines("MC_LIB_BUILD")
-    --add_defines("GLM_ENABLE_EXPERIMENTAL")
+    add_defines("MCC_LIB_BUILD")
 
     add_includedirs("Lib/include/",  { public = true })
     add_headerfiles("Lib/include/(**/*.h)", "Lib/include/(**/*.inl)")

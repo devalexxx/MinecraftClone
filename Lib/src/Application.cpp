@@ -10,7 +10,7 @@ namespace Mcc
 	Application::Application(int argc, char** argv) :
 		mCmdLineStore(argc, argv)
 	{
-#if MC_DEBUG
+#if MCC_DEBUG
 		mWorld.import<flecs::stats>();
 		CommandLineStore::OptParameter param;;
 		if ((param = mCmdLineStore.GetParameter("fport").or_else([&]{ return mCmdLineStore.GetParameter("fp"); })).has_value())
