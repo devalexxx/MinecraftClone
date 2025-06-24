@@ -3,13 +3,13 @@ namespace Mcc
 {
 
 	template<typename T>
-	int ServerNetworkManager::Send(ENetPeer* peer, T data, enet_uint32 flag, enet_uint8 channel)
+	int ServerNetworkManager::Send(ENetPeer* peer, T data, enet_uint32 flag, enet_uint8 channel) const
 	{
 		return NetworkManager::Send(peer, std::move(data), flag, channel);
 	}
 
 	template<typename T>
-	void ServerNetworkManager::Broadcast(T data, enet_uint32 flag, enet_uint8 channel)
+	void ServerNetworkManager::Broadcast(T data, enet_uint32 flag, enet_uint8 channel) const
 	{
 		PacketOutputStream stream;
 		cereal::BinaryOutputArchive archive(stream);

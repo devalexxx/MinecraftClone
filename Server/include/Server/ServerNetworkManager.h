@@ -20,9 +20,9 @@ namespace Mcc
 			int Setup() override;
 
 			template<typename T>
-			int Send(ENetPeer* peer, T data, enet_uint32 flag, enet_uint8 channel);
+			int Send(ENetPeer* peer, T data, enet_uint32 flag, enet_uint8 channel) const;
 			template<typename T>
-			void Broadcast(T data, enet_uint32 flag, enet_uint8 channel);
+			void Broadcast(T data, enet_uint32 flag, enet_uint8 channel) const;
 
 		private:
 			size_t mMaxPeer;

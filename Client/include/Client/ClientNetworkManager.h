@@ -24,7 +24,7 @@ namespace Mcc
 			int Disconnect();
 
 			template<typename T>
-			int Send(T data, enet_uint32 flag, enet_uint8 channel);
+			int Send(T data, enet_uint32 flag, enet_uint8 channel) const;
 
 		private:
 			ENetPeer* mPeer;
