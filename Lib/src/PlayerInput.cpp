@@ -3,7 +3,7 @@
 //
 
 #include "MinecraftLib/PlayerInput.h"
-#include "MinecraftLib/Component/Transform.h"
+#include "MinecraftLib/Module/WorldEntity/Component.h"
 
 namespace Mcc
 {

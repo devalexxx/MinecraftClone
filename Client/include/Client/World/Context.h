@@ -11,7 +11,7 @@
 
 namespace Mcc
 {
-	struct ClientWorldContext : WorldContext
+	struct ClientWorldContext : public WorldContext
 	{
 			PlayerInfo playerInfo;
 			Window&    window;

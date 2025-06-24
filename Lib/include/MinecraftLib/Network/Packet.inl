@@ -1,6 +1,7 @@
 
 #include <cereal/archives/binary.hpp>
-#include <cereal/types/optional.hpp>
+#include <cereal/types/unordered_map.hpp>
+#include <cereal/types/string.hpp>
 
 #include <fmt/base.h>
 
@@ -10,7 +11,7 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, EntityState& packet)
 	{
-		ar(packet.id, packet.position, packet.rotation, packet.lastInputApplied);
+		ar(packet.id, packet.position, packet.rotation, packet.extra);
 	}
 
 	template<typename Archive>
@@ -38,7 +39,7 @@ namespace Mcc
 	}
 
 	template<typename Archive>
-	void serialize(Archive& ar, OnWorldEntitiesCreated& packet)
+	void serialize(Archive& ar, OnEntitiesCreated& packet)
 	{
 		ar(packet.states);
 	}

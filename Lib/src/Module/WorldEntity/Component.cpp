@@ -1,8 +1,10 @@
 //
-// Created by Alex on 03/09/2024.
+// Created by Alex on 23/06/2025.
 //
 
-#include <MinecraftLib/Component/Transform.h>
+#include <MinecraftLib/Module/WorldEntity/Component.h>
+
+#include <glm/glm.hpp>
 
 namespace glm
 {

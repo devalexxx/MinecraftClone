@@ -7,6 +7,7 @@
 
 #include "MinecraftLib/Network/Packet.h"
 #include "MinecraftLib/Network/NetworkID.h"
+#include "MinecraftLib/Network/NetworkManager.h"
 
 #include <unordered_map>
 
@@ -17,8 +18,9 @@ namespace Mcc
 	{
 			ServerInfo serverInfo;
 
-			const std::unordered_map<NetworkID, flecs::entity_t>& networkToLocal;
-			const std::unordered_map<flecs::entity_t, NetworkID>& localToNetwork;
+			NetworkManager& 							   networkManager;
+			std::unordered_map<NetworkID, flecs::entity_t> networkToLocal;
+			std::unordered_map<flecs::entity_t, NetworkID> localToNetwork;
 	};
 
 }

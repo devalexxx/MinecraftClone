@@ -11,11 +11,11 @@
 
 #include <MinecraftLib/Application.h>
 #include <MinecraftLib/Network/Packet.h>
+#include <MinecraftLib/Module/PlayerEntity/Component.h>
 
 #include <enet/enet.h>
 
 
-#include "MinecraftLib/Component/Input.h"
 #include <istream>
 #include <streambuf>
 
@@ -28,21 +28,11 @@ namespace Mcc
 			ClientApplication();
 			ClientApplication(int argc, char** argv);
 
-			void SetupWorld();
-
 			int Run() override;
 
 		private:
 			ClientNetworkManager mNetworkManager;
-
-			bool mConnected;
-			PlayerInfo mPlayerInfo;
-			ServerInfo mServerInfo;
-
 			Window mWindow;
-
-			PlayerInput 	 mInput;
-			PlayerInputQueue mInputQueue;
 	};
 
 }

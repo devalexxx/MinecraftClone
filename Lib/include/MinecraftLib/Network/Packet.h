@@ -5,19 +5,22 @@
 #ifndef MINECRAFT_PACKET_H
 #define MINECRAFT_PACKET_H
 
-#include <MinecraftLib/Component/Transform.h>
 #include <MinecraftLib/Network/PacketStream.h>
+#include <MinecraftLib/Network/NetworkID.h>
 #include <MinecraftLib/Utils/TypeList.h>
 #include <MinecraftLib/PlayerInput.h>
+#include <MinecraftLib/World/Time.h>
+#include <MinecraftLib/Module/WorldEntity/Component.h>
 
-#include <vector>
-
-#include "MinecraftLib/World/Time.h"
-#include "NetworkID.h"
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/queue.hpp>
 #include <cereal/types/vector.hpp>
+
 #include <flecs.h>
+
+#include <vector>
+#include <unordered_map>
+#include <string>
 
 namespace Mcc
 {
@@ -32,7 +35,7 @@ namespace Mcc
 	using PacketList = TypeList<
 		struct OnConnection,
 		struct OnPlayerInput,
-		struct OnWorldEntitiesCreated,
+		struct OnEntitiesCreated,
 		struct OnEntitiesDestroyed,
 		struct OnEntitiesUpdated
 	>;
@@ -44,7 +47,7 @@ namespace Mcc
 			Position position;
 			Rotation rotation;
 
-			std::optional<unsigned short> lastInputApplied;
+			std::unordered_map<std::string, std::string> extra;
 	};
 
 	struct PlayerInfo
@@ -77,7 +80,7 @@ namespace Mcc
 			PlayerInput input;
 	};
 
-	struct OnWorldEntitiesCreated
+	struct OnEntitiesCreated
 	{
 			std::vector<EntityState> states;
 	};
@@ -97,7 +100,7 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, OnPlayerInput& packet);
 	template<typename Archive>
-	void serialize(Archive& ar, OnWorldEntitiesCreated& packet);
+	void serialize(Archive& ar, OnEntitiesCreated& packet);
 	template<typename Archive>
 	void serialize(Archive& ar, OnEntitiesDestroyed& packet);
 	template<typename Archive>

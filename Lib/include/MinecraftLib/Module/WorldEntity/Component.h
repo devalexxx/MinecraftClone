@@ -1,14 +1,14 @@
 //
-// Created by Alex on 03/09/2024.
+// Created by Alex on 22/06/2025.
 //
 
-#ifndef MINECRAFT_TRANSFORM_H
-#define MINECRAFT_TRANSFORM_H
+#ifndef MCC_MODULE_WORLD_ENTITY_COMPONENT_H
+#define MCC_MODULE_WORLD_ENTITY_COMPONENT_H
+
+#include <string>
+#include <unordered_map>
 
 #include <glm/glm.hpp>
-#include <glm/detail/type_quat.hpp>
-
-#include <cereal/cereal.hpp>
 
 namespace glm
 {
@@ -32,6 +32,11 @@ namespace glm
 
 namespace Mcc
 {
+
+	struct WorldEntityExtra
+	{
+			std::unordered_map<std::string, std::string> data;
+	};
 
 	struct Position
 	{
@@ -59,7 +64,7 @@ namespace Mcc
 
 	struct Head
 	{
-		float pitch;
+			float pitch;
 	};
 
 	template<class Archive>

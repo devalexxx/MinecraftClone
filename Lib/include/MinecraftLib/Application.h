@@ -25,11 +25,7 @@ namespace Mcc
 
 		protected:
 			flecs::world     mWorld;
-			bool             mIsRunning;
 			CommandLineStore mCmdLineStore;
-
-			std::unordered_map<NetworkID, flecs::entity_t> mNetworkToLocal;
-			std::unordered_map<flecs::entity_t, NetworkID> mLocalToNetwork;
 	};
 
 }
