@@ -8,18 +8,21 @@
 #include "Client/Module/PlayerInput/Prefab.h"
 #include "Client/Module/PlayerInput/Tag.h"
 #include "Client/World/Context.h"
+#include "Client/Module/EntityPrediction/Tag.h"
+#include "Client/Module/EntityPrediction/Module.h"
 
-#include "Common/Utils/Assert.h"
-#include "Common/Utils/Logging.h"
 #include "Common/Module/PlayerEntity/Component.h"
 #include "Common/Module/PlayerEntity/Prefab.h"
+#include "Common/Utils/Assert.h"
+#include "Common/Utils/Logging.h"
 
 namespace Mcc
 {
 
 	PlayerInputModule::PlayerInputModule(flecs::world& world)
 	{
-		MCC_ASSERT	 (world.has<PlayerEntityModule>(), "PlayerInputModule require PlayerEntityModule, you must import it before.");
+		MCC_ASSERT	 (world.has<EntityPredictionModule>(), "PlayerInputModule require EntityPredictionModule, you must import it before.");
+		MCC_ASSERT	 (world.has<PlayerEntityModule>()    , "PlayerInputModule require PlayerEntityModule, you must import it before.");
 		MCC_LOG_DEBUG("Import PlayerInputModule...");
 		world.module<PlayerInputModule>();
 
@@ -29,6 +32,7 @@ namespace Mcc
 		world.prefab<SelfPlayerEntityPrefab>()
 		    .is_a<PlayerEntityPrefab>()
 			.add<SelfPlayerEntityTag>()
+			.add<ExcludePredictionTag>()
 			.set_auto_override<CurrentPlayerInput>({});
 
 		world.system<CurrentPlayerInput, PlayerInputQueue>().with<SelfPlayerEntityTag>().each(ApplyAndSendPlayerInput);
@@ -92,7 +96,12 @@ namespace Mcc
 
 				MCC_ASSERT(queue->data.empty() || (!queue->data.empty() && queue->data.front().meta.id - id == 1), "The difference between front PlayerInput in queue and last PlayerInput processes by server should be equal to 1");
 
-				// Reapply all input unprocessed by the server
+				// Empty snapshot queue
+				auto* q = entity.get_mut<SnapshotQueue>();
+				while (!q->data.empty()) { q->data.pop_back(); }
+
+				// Set last received transform & reapply all input unprocessed by the server
+				entity.set(state->transform);
 				for (auto& input: queue->data)
 				{
 					const float speed = 5.f;

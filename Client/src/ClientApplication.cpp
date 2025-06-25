@@ -8,11 +8,12 @@
 #include "Client/Module/PlayerSession/Component.h"
 #include "Client/Module/EntityReplication/Module.h"
 #include "Client/Module/PlayerInput/Module.h"
+#include "Client/Module/EntityPrediction/Module.h"
 
-#include "Common/Utils/Logging.h"
 #include "Common/Module/PlayerEntity/Module.h"
 #include "Common/Module/WorldEntity/Module.h"
 #include "Common/Network/Event.h"
+#include "Common/Utils/Logging.h"
 
 namespace Mcc
 {
@@ -78,6 +79,7 @@ namespace Mcc
 
 		MCC_LOG_DEBUG("Setup world...");
 		mWorld.import<EntityReplicationModule>();
+		mWorld.import<EntityPredictionModule>();
 		mWorld.import<PlayerEntityModule>();
 		mWorld.import<PlayerInputModule>();
 		mWorld.import<Renderer>();

@@ -24,6 +24,7 @@ namespace Mcc
 		world.prefab<WorldEntityPrefab>()
 			.add<WorldEntityTag>()
 			.set_auto_override<WorldEntityExtra>({})
+			.set_auto_override<SnapshotQueue>({})
 			.set_auto_override<Transform>({
 				{ 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f }, { 1.f, 1.f, 1.f }
 			});

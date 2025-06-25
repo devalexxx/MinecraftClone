@@ -94,8 +94,9 @@ namespace Mcc
 				continue;
 			}
 
-			world.entity(it->second)
-				.set(state.transform);
+			world.entity(it->second).get([&state](SnapshotQueue& queue) {
+				queue.data.push_front({ state.transform, TimeClock::now() });
+			});
 		}
 	}
 

@@ -9,6 +9,8 @@
 
 #include <unordered_map>
 #include <string>
+#include <deque>
+#include <chrono>
 
 namespace glm
 {
@@ -27,6 +29,9 @@ namespace glm
 namespace Mcc
 {
 
+	using TimeClock = std::chrono::steady_clock;
+	using TimePoint = std::chrono::time_point<TimeClock>;
+
 	struct WorldEntityExtra
 	{
 			std::unordered_map<std::string, std::string> data;
@@ -42,6 +47,17 @@ namespace Mcc
 	struct Head
 	{
 			float pitch;
+	};
+
+	struct Snapshot
+	{
+			Transform transform;
+			TimePoint time;
+	};
+
+	struct SnapshotQueue
+	{
+			std::deque<Snapshot> data;
 	};
 
 	template<class Archive>
