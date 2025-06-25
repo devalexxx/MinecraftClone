@@ -2,10 +2,11 @@
 // Created by Alex on 26/08/2024.
 //
 
+#include "MinecraftLib/Utils/Logging.h"
 #include <Client/Graphics/Program.h>
 #include <Client/Graphics/Shader.h>
-#include <vector>
 #include <string_view>
+#include <vector>
 
 namespace Mcc
 {
@@ -93,7 +94,7 @@ namespace Mcc
 			glCheck(glGetProgramiv(mId, GL_INFO_LOG_LENGTH, &length));
 			std::vector<char> message(length);
 			glCheck(glGetProgramInfoLog(mId, length, &length, message.data()));
-			fmt::print(stderr, "Failed to link program {}:\n\t{}", mId, std::string_view(message.begin(), message.end()));
+			MCC_LOG_ERROR("Failed to link program {}:\n\t{}", mId, std::string_view(message.begin(), message.end()));
 		}
 	}
 

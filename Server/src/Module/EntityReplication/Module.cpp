@@ -6,13 +6,17 @@
 #include <Server/Module/EntityReplication/System.h>
 
 #include <MinecraftLib/Module/WorldEntity/Module.h>
+#include <MinecraftLib/Utils/Logging.h>
+#include <MinecraftLib/Utils/Assert.h>
 
 namespace Mcc
 {
 
 	EntityReplicationModule::EntityReplicationModule(flecs::world& world)
 	{
-		assert(world.has<WorldEntityModule>());
+		MCC_ASSERT	 (world.has<WorldEntityModule>(), "EntityReplicationModule require WorldEntityModule, you must import it before.");
+		MCC_LOG_DEBUG("Import EntityReplicationModule...");
+		world.module<EntityReplicationModule>();
 
 		world.system<const Position, const Rotation, const WorldEntityExtra>()
 			.with<WorldEntityCreatedTag>()

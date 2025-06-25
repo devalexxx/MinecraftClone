@@ -9,6 +9,8 @@
 #include <Client/Module/PlayerInput/Tag.h>
 #include <Client/World/Context.h>
 
+#include "MinecraftLib/Utils/Assert.h"
+#include "MinecraftLib/Utils/Logging.h"
 #include <MinecraftLib/Module/PlayerEntity/Component.h>
 #include <MinecraftLib/Module/PlayerEntity/Prefab.h>
 
@@ -18,8 +20,8 @@ namespace Mcc
 
 	PlayerInputModule::PlayerInputModule(flecs::world& world)
 	{
-		assert(world.has<PlayerEntityModule>());
-
+		MCC_ASSERT	 (world.has<PlayerEntityModule>(), "PlayerInputModule require PlayerEntityModule, you must import it before.");
+		MCC_LOG_DEBUG("Import PlayerInputModule...");
 		world.module<PlayerInputModule>();
 
 		world.component<CurrentPlayerInput>();
@@ -48,7 +50,13 @@ namespace Mcc
 		const auto state = std::find_if(event.states.begin(), event.states.end(), [&](const EntityState& s) { return s.id == ctx->playerInfo.id; });
 		if (state != event.states.cend())
 		{
-			world.entity(ctx->networkToLocal.find(ctx->playerInfo.id)->second).is_a<SelfPlayerEntityPrefab>();
+			auto it = ctx->networkToLocal.find(ctx->playerInfo.id);
+			if (it == ctx->networkToLocal.cend())
+			{
+				MCC_LOG_WARN("No local entity associated to the player network id, make sure to import EntityReplicationModule before PlayerInputModule");
+				return;
+			}
+			world.entity(it->second).is_a<SelfPlayerEntityPrefab>();
 		}
 	}
 
@@ -59,12 +67,18 @@ namespace Mcc
 		const auto state = std::find_if(event.states.begin(), event.states.end(), [&](const EntityState& s) { return s.id == ctx->playerInfo.id; });
 		if (state != event.states.cend())
 		{
-			const auto it = state->extra.find("last-input-processed");
-			if (it != state->extra.cend())
+			const auto lipIt = state->extra.find("last-input-processed");
+			if (lipIt != state->extra.cend())
 			{
-				const auto id = std::stoul(it->second);
-				auto entity   = world.entity(ctx->networkToLocal.find(state->id)->second);
-				auto queue 	  = entity.get_mut<PlayerInputQueue>();
+				const auto id = std::stoul(lipIt->second);
+				auto idIt 	  = ctx->networkToLocal.find(state->id);
+				if (idIt == ctx->networkToLocal.cend())
+				{
+					MCC_LOG_WARN("The player network id {} isn't associated to a local entity", state->id);
+					return;
+				}
+				auto entity = world.entity(idIt->second);
+				auto queue 	= entity.get_mut<PlayerInputQueue>();
 
 				// Drop inputs already processed by the server
 				for (; !queue->empty(); queue->pop_front())
@@ -77,8 +91,7 @@ namespace Mcc
 					}
 				}
 
-				if (!queue->empty())
-					assert(queue->front().meta.id - id == 1);
+				MCC_ASSERT(queue->empty() || (!queue->empty() && queue->front().meta.id - id == 1), "The difference between front PlayerInput in queue and last PlayerInput processes by server should be equal to 1");
 
 				// Reapply all input unprocessed by the server
 				for (auto& input: *queue)
@@ -96,8 +109,14 @@ namespace Mcc
 	void PlayerInputModule::OnKeyEventHandler(flecs::world& world, const KeyEvent& event)
 	{
 		const auto* ctx = static_cast<ClientWorldContext*>(world.get_ctx());
-		auto entity 	= world.entity(ctx->networkToLocal.find(ctx->playerInfo.id)->second);
-		auto& input     = entity.get_ref<CurrentPlayerInput>()->input;
+		const auto  it  = ctx->networkToLocal.find(ctx->playerInfo.id);
+		if (it == ctx->networkToLocal.cend())
+		{
+			MCC_LOG_WARN("The player network id {} isn't associated to a local entity", ctx->playerInfo.id);
+			return;
+		}
+		auto  entity = world.entity(it->second);
+		auto& input  = entity.get_ref<CurrentPlayerInput>()->input;
 
 		if (event.action == GLFW_PRESS || event.action == GLFW_RELEASE)
 		{
@@ -129,8 +148,14 @@ namespace Mcc
 		auto [w, h] = event.window.GetWindowSize();
 
 		const auto* ctx = static_cast<ClientWorldContext*>(world.get_ctx());
-		auto entity 	= world.entity(ctx->networkToLocal.find(ctx->playerInfo.id)->second);
-		auto& input     = entity.get_ref<CurrentPlayerInput>()->input;
+		const auto  it 	= ctx->networkToLocal.find(ctx->playerInfo.id);
+		if (it == ctx->networkToLocal.cend())
+		{
+			MCC_LOG_WARN("The player network id {} isn't associated to a local entity", ctx->playerInfo.id);
+			return;
+		}
+		auto  entity = world.entity(it->second);
+		auto& input  = entity.get_ref<CurrentPlayerInput>()->input;
 
 		if (event.x >= 0 && event.x <= w && event.y >= 0 && event.y <= h && event.window.IsFocused())
 		{

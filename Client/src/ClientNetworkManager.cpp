@@ -4,6 +4,7 @@
 
 #include <Client/ClientNetworkManager.h>
 
+#include "MinecraftLib/Utils/Logging.h"
 #include <MinecraftLib/CommandLineStore.h>
 
 namespace Mcc
@@ -37,7 +38,7 @@ namespace Mcc
 		mPeer = enet_host_connect(mHost, &mAddr, 2, 0);
 		if (!mPeer)
 		{
-			fmt::print("No available peers for initiating connection\n");
+			MCC_LOG_ERROR("No available peers for initiating connection");
 			return EXIT_FAILURE;
 		}
 
@@ -47,7 +48,6 @@ namespace Mcc
 		}
 		else
 		{
-			fmt::print("Failed to connect\n");
 			return EXIT_FAILURE;
 		}
 		enet_host_flush(mHost);
@@ -69,13 +69,12 @@ namespace Mcc
 						enet_packet_destroy(event.packet);
 						break;
 					case ENET_EVENT_TYPE_DISCONNECT:
-						fmt::print("Disconnected\n");
 						return EXIT_SUCCESS;
 					default:
 						break;
 				}
 			}
-			fmt::print("Failed to disconnect properly\n");
+			MCC_LOG_ERROR("Failed to disconnect properly");
 			return EXIT_FAILURE;
 		}
 		else

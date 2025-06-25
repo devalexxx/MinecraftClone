@@ -2,6 +2,7 @@
 // Created by Alex on 26/08/2024.
 //
 
+#include "MinecraftLib/Utils/Logging.h"
 #include <Client/Graphics/Common.h>
 #include <fmt/core.h>
 #include <glad/glad.h>
@@ -15,6 +16,7 @@ namespace Mcc
 
 		if (error_code != GL_NO_ERROR)
 		{
+#ifdef MCC_LOG_FULL
 			const char* error       = "Unknown error";
 			const char* description = "No description";
 
@@ -48,12 +50,13 @@ namespace Mcc
 					break;
 			}
 
-			fmt::print(
-				stderr,
-				"An internal OpenGL call failed in {}, ({}).\nExpression:\n\t{}\nError description:\n\t{}\n{}\n",
+			MCC_LOG_ERROR(
+				"An internal OpenGL call failed in {}, ({}).\nExpression:\n\t{}\nError description:\n\t{}\n\t{}\n",
 				file, line, expression, error, description
 			);
-			fflush(stderr);
+#else
+			MCC_LOG_ERROR("An internal OpenGL call failed in {}, ({}).", file, line);
+#endif
 		}
 	}
 

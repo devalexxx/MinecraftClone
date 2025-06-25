@@ -5,9 +5,11 @@
 #include <Server/Module/PlayerSession/Module.h>
 #include <Server/ServerNetworkManager.h>
 
-#include "MinecraftLib/Module/PlayerEntity/Module.h"
+#include "MinecraftLib/Utils/Assert.h"
+#include <MinecraftLib/Module/PlayerEntity/Module.h>
 #include <MinecraftLib/Module/PlayerEntity/Prefab.h>
 #include <MinecraftLib/Module/WorldEntity/Tag.h>
+#include <MinecraftLib/Utils/Logging.h>
 #include <MinecraftLib/World/Context.h>
 
 namespace Mcc
@@ -15,8 +17,8 @@ namespace Mcc
 
 	PlayerSessionModule::PlayerSessionModule(flecs::world& world)
 	{
-		assert(world.has<PlayerEntityModule>());
-
+		MCC_ASSERT	 (world.has<PlayerEntityModule>(), "PlayerSessionModule require PlayerEntityModule, you must import it before.");
+		MCC_LOG_DEBUG("Import PlayerSessionModule...");
 		world.module<PlayerSessionModule>();
 
 		auto* ctx = static_cast<WorldContext*>(world.get_ctx());
@@ -45,7 +47,15 @@ namespace Mcc
 					for (auto i: it)
 					{
 						auto entity = it.entity(i);
-						packet.initialStates.push_back({ ctx->localToNetwork[entity.id()], p[i], r[i], {} });
+
+						const auto idIt = ctx->localToNetwork.find(entity.id());
+						if (idIt == ctx->localToNetwork.cend())
+						{
+							MCC_LOG_WARN("No network id associated to the local entity {}", entity.id());
+							continue;
+						}
+
+						packet.initialStates.push_back({ idIt->second, p[i], r[i], {} });
 					}
 				}
 			});
@@ -53,6 +63,10 @@ namespace Mcc
 		auto id		= GenerateNetworkID();
 		auto entity = world.entity().is_a<PlayerEntityPrefab>();
 		event.peer->data = new PlayerInfo { id };
+
+		char hostname[100];
+		enet_address_get_host_ip(&event.peer->address, hostname, 100);
+		MCC_LOG_INFO("Connection opened on port {} with network id {} (from {})", event.peer->address.port, id, hostname);
 
 		ctx->localToNetwork.emplace(entity.id(), id);
 		ctx->networkToLocal.emplace(id, entity.id());
@@ -68,10 +82,25 @@ namespace Mcc
 	{
 		const auto* ctx  = static_cast<WorldContext*>(world.get_ctx());
 		auto* playerInfo = static_cast<PlayerInfo*>	 (event.peer->data);
+		auto  pInfoCopy  = *playerInfo;
+		const auto it 	 = ctx->networkToLocal.find(playerInfo->id);
 
-		world.entity(ctx->networkToLocal.find(playerInfo->id)->second).add<WorldEntityDestroyedTag>();
-
+		MCC_LOG_INFO("Connection closed on port {} with network id {}", event.peer->address.port, playerInfo->id);
 		delete playerInfo;
+
+		if (it == ctx->networkToLocal.cend())
+		{
+			MCC_LOG_WARN("The network id {} isn't associated to a local entity", pInfoCopy.id);
+			return;
+		}
+
+		if (!world.is_alive(it->second))
+		{
+			MCC_LOG_WARN("The local entity associated to the network id {} isn't alive", pInfoCopy.id);
+			return;
+		}
+
+		world.entity(it->second).add<WorldEntityDestroyedTag>();
 	}
 
 }

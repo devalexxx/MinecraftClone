@@ -1,5 +1,8 @@
 
 #include <Client/Graphics/Common.h>
+
+#include <MinecraftLib/Utils/Logging.h>
+
 #include <fmt/base.h>
 
 namespace Mcc
@@ -24,12 +27,12 @@ namespace Mcc
 					glCheck(glUniformMatrix4fv(location, 1, GL_FALSE, &matrix[0][0]));
 					break;
 				default:
-					fmt::print("glm::mat<{}, {}> is not implemented for Program::SetUniformMatrix\n", R, C);
+					MCC_LOG_WARN("glm::mat<{}, {}> is not implemented for Program::SetUniformMatrix", R, C);
 			}
 		}
 		else
 		{
-			fmt::print("glm::mat<{}, {}> is not implemented for Program::SetUniformMatrix\n", R, C);
+			MCC_LOG_WARN("glm::mat<{}, {}> is not implemented for Program::SetUniformMatrix", R, C);
 		}
 	}
 }

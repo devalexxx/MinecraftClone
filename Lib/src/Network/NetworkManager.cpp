@@ -2,8 +2,9 @@
 // Created by Alex on 11/09/2024.
 //
 
-#include <MinecraftLib/Network/NetworkManager.h>
+#include "MinecraftLib/Utils/Logging.h"
 #include <MinecraftLib/Network/Event.h>
+#include <MinecraftLib/Network/NetworkManager.h>
 
 namespace Mcc
 {
@@ -13,7 +14,7 @@ namespace Mcc
 	{
 		if (enet_initialize())
 		{
-			fmt::print("Failed to initialize Enet\n");
+			MCC_LOG_ERROR("Failed to initialize Enet");
 			exit(EXIT_FAILURE);
 		}
 		atexit(enet_deinitialize);
@@ -64,7 +65,7 @@ namespace Mcc
 		mHost = enet_host_create(addr, peers, channels, in, out);
 		if (!mHost)
 		{
-			fmt::print("Failed to create ENet host\n");
+			MCC_LOG_ERROR("Failed to create ENet host");
 			return EXIT_FAILURE;
 		}
 		return EXIT_SUCCESS;

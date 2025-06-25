@@ -2,14 +2,16 @@
 // Created by Alex on 21/06/2025.
 //
 
-#include <MinecraftLib/Module/WorldEntity/Module.h>
 #include <MinecraftLib/Module/PlayerEntity/Module.h>
+#include <MinecraftLib/Module/WorldEntity/Module.h>
+#include <MinecraftLib/Utils/Logging.h>
 
 namespace Mcc
 {
 
 	WorldEntityModule::WorldEntityModule(flecs::world& world)
 	{
+		MCC_LOG_DEBUG("Import WorldEntityModule...");
 		world.module<WorldEntityModule>();
 
 		world.component<WorldEntityTag>();

@@ -5,6 +5,8 @@
 #include <Client/Module/EntityReplication/Module.h>
 #include <Client/World/Context.h>
 
+#include "MinecraftLib/Utils/Assert.h"
+#include "MinecraftLib/Utils/Logging.h"
 #include <MinecraftLib/Module/WorldEntity/Module.h>
 #include <MinecraftLib/Module/WorldEntity/Prefab.h>
 #include <MinecraftLib/Network/Packet.h>
@@ -14,8 +16,8 @@ namespace Mcc
 
 	EntityReplicationModule::EntityReplicationModule(flecs::world& world)
 	{
-		assert(world.has<WorldEntityModule>());
-
+		MCC_ASSERT	 (world.has<WorldEntityModule>(), "EntityReplicationModule require WorldEntityModule, you must import it before.");
+		MCC_LOG_DEBUG("Import EntityReplicationModule...");
 		world.module<EntityReplicationModule>();
 
 		const auto* ctx = static_cast<ClientWorldContext*>(world.get_ctx());
@@ -31,6 +33,13 @@ namespace Mcc
 
 		for (auto& state: event.states)
 		{
+			auto it = ctx->networkToLocal.find(state.id);
+			if (it != ctx->networkToLocal.cend())
+			{
+				MCC_LOG_WARN("The network id {} is already associated to a local entity", state.id);
+				continue;
+			}
+
 			auto entity = world.entity()
 			  .is_a<WorldEntityPrefab>()
 			  .set(state.position)
@@ -49,9 +58,22 @@ namespace Mcc
 
 		for (auto& id: event.ids)
 		{
-			world.entity(ctx->networkToLocal[id]).destruct();
+			auto it = ctx->networkToLocal.find(id);
+			if (it == ctx->networkToLocal.cend())
+			{
+				MCC_LOG_WARN("The network id {} isn't associated to a local entity", id);
+				continue;
+			}
 
-			ctx->localToNetwork.erase(ctx->networkToLocal[id]);
+			if (!world.is_alive(it->second))
+			{
+				MCC_LOG_WARN("The local entity associated to the network id {} isn't alive", id);
+				continue;
+			}
+
+			world.entity(it->second).destruct();
+
+			ctx->localToNetwork.erase(it->second);
 			ctx->networkToLocal.erase(id);
 		}
 	}
@@ -62,15 +84,24 @@ namespace Mcc
 
 		for (auto& state: event.states)
 		{
-			auto id = ctx->networkToLocal.find(state.id)->second;
-			if (world.exists(id))
+			auto it = ctx->networkToLocal.find(state.id);
+			if (it == ctx->networkToLocal.cend())
 			{
-				world.entity(id)
-					.set(state.position)
-					.set(state.rotation)
-					.set(Forward::FromRotation(state.rotation))
-					.set(Right  ::FromRotation(state.rotation));
+				MCC_LOG_WARN("The network id {} isn't associated to a local entity", state.id);
+				continue;
 			}
+
+			if (!world.is_alive(it->second))
+			{
+				MCC_LOG_WARN("The local entity associated to the network id {} isn't alive", state.id);
+				continue;
+			}
+
+			world.entity(it->second)
+				.set(state.position)
+				.set(state.rotation)
+				.set(Forward::FromRotation(state.rotation))
+				.set(Right  ::FromRotation(state.rotation));
 		}
 	}
 

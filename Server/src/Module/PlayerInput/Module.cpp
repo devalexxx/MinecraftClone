@@ -5,8 +5,10 @@
 #include <Server/Module/PlayerInput/Module.h>
 #include <Server/Module/PlayerInput/System.h>
 
+#include "MinecraftLib/Utils/Assert.h"
 #include <MinecraftLib/Module/PlayerEntity/Component.h>
 #include <MinecraftLib/Module/PlayerEntity/Tag.h>
+#include <MinecraftLib/Utils/Logging.h>
 #include <MinecraftLib/World/Context.h>
 
 namespace Mcc
@@ -14,27 +16,39 @@ namespace Mcc
 
 	PlayerInputModule::PlayerInputModule(flecs::world& world)
 	{
-		assert(world.has<PlayerEntityModule>());
-
+		MCC_ASSERT	 (world.has<PlayerEntityModule>(), "PlayerInputModule require PlayerEntityModule, you must import it before.");
+		MCC_LOG_DEBUG("Import PlayerInputModule...");
 		world.module<PlayerInputModule>();
 
 		world.system<PlayerInputQueue>().with<PlayerEntityTag>().each(ProcessPlayerInputs);
 
-		auto* ctx  = static_cast<WorldContext*>(world.get_ctx());
+		auto* ctx = static_cast<WorldContext*>(world.get_ctx());
 
-		ctx->networkManager.Subscribe<From<OnPlayerInput>>([&](const auto& event) { OnPlayerInputHandler    (world, event); });
+		ctx->networkManager.Subscribe<From<OnPlayerInput>>([&](const auto& event) { OnPlayerInputHandler(world, event); });
 	}
 
 	void PlayerInputModule::OnPlayerInputHandler(flecs::world& world, const From<OnPlayerInput>& from)
 	{
 		const auto* ctx 	   = static_cast<WorldContext*>(world.get_ctx());
 		const auto* playerInfo = static_cast<PlayerInfo*>  (from.peer->data);
+		const auto  it 		   = ctx->networkToLocal.find(playerInfo->id);
 
-		if (world.exists(ctx->networkToLocal.find(playerInfo->id)->second))
+		if (it == ctx->networkToLocal.cend())
 		{
-			auto entity = world.entity(ctx->networkToLocal.find(playerInfo->id)->second);
-			entity.get_ref<PlayerInputQueue>()->push_back(from.packet.input);
+			MCC_LOG_WARN("The network id {} isn't associated to a local entity", playerInfo->id);
+			return;
 		}
+
+		if (!world.is_alive(it->second))
+		{
+			MCC_LOG_WARN("The local entity associated to the network id {} isn't alive", playerInfo->id);
+			return;
+		}
+
+		auto entity = world.entity(it->second);
+		entity.get([&from](PlayerInputQueue& queue) {
+			queue.push_back(from.packet.input);;
+		});
 	}
 
 }

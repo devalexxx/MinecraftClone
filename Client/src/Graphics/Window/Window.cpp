@@ -2,6 +2,7 @@
 // Created by Alex on 28/08/2024.
 //
 
+#include "MinecraftLib/Utils/Logging.h"
 #include <Client/Graphics/Window/Window.h>
 #include <fmt/base.h>
 #include <glad/glad.h>
@@ -53,7 +54,7 @@ namespace Mcc
 		}
 		else
 		{
-			fmt::print("Failed to create window and context\n");
+			MCC_LOG_ERROR("Failed to create window and context");
 		}
 	}
 
@@ -139,7 +140,7 @@ namespace Mcc
 		}
 		else
 		{
-			fmt::print("Failed to initialize GLFW\n");
+			MCC_LOG_ERROR("Failed to initialize GLFW");
 		}
 	}
 

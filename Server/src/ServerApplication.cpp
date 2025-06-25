@@ -15,6 +15,7 @@
 
 #include <fmt/format.h>
 
+#include "MinecraftLib/Utils/Logging.h"
 
 namespace Mcc
 {
@@ -31,7 +32,7 @@ namespace Mcc
 		{
 			unsigned long tickRate = std::stoul(param.value());
 			if (tickRate < MinTickRate || tickRate > MaxTickRate) {
-				fmt::print("TickRate must be between {} and {}, it was set at {}", MinTickRate, MaxTickRate, DefaultTickRate);
+				MCC_LOG_WARN("TickRate must be between {} and {}, it was set at {}", MinTickRate, MaxTickRate, DefaultTickRate);
 			}
 			else
 				mInfo.tickRate = tickRate;
@@ -40,10 +41,13 @@ namespace Mcc
 
 	int ServerApplication::Run()
 	{
-		int state;
-		if ((state = mNetworkManager.Setup()))
+		if (int state = mNetworkManager.Setup())
+		{
+			MCC_LOG_ERROR("Failed to create the network host");
 			return state;
+		}
 
+		MCC_LOG_DEBUG("Setup world...");
 		mWorld.set_ctx(new ServerWorldContext { { mInfo, mNetworkManager, {}, {} } }, [](void* ptr) { delete static_cast<ServerWorldContext*>(ptr); });
 		mWorld.import<WorldEntityModule> 	  ();
 		mWorld.import<PlayerEntityModule>	  ();
@@ -51,12 +55,15 @@ namespace Mcc
 		mWorld.import<PlayerSessionModule>	  ();
 		mWorld.import<PlayerInputModule>	  ();
 
+		MCC_LOG_INFO("Application started and listening on port {}", mNetworkManager.mAddr.port);
 		mWorld.set_target_fps(mInfo.tickRate);
 		while (!mWorld.should_quit())
 		{
 			mWorld.progress();
 			mNetworkManager.Poll();
 		}
+
+		MCC_LOG_INFO("Shutdown...");
 
 		return EXIT_SUCCESS;
 	}

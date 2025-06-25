@@ -2,8 +2,11 @@
 // Created by Alex on 23/06/2025.
 //
 
+#include "MinecraftLib/Module/WorldEntity/Module.h"
 #include "Client/World/Context.h"
 #include "MinecraftLib/Module/WorldEntity/Prefab.h"
+#include "MinecraftLib/Utils/Assert.h"
+#include "MinecraftLib/Utils/Logging.h"
 #include <Client/Module/PlayerSession/Component.h>
 #include <Client/Module/PlayerSession/Module.h>
 
@@ -12,6 +15,8 @@ namespace Mcc
 
 	PlayerSessionModule::PlayerSessionModule(flecs::world& world)
 	{
+		MCC_ASSERT	 (world.has<WorldEntityModule>(), "PlayerSessionModule require WorldEntityModule, you must import it before.");
+		MCC_LOG_DEBUG("Import PlayerInputModule...");
 		world.module<PlayerSessionModule>();
 
 		world.component<ServerConnectionState>();

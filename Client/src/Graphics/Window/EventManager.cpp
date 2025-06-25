@@ -5,6 +5,8 @@
 #include <Client/Graphics/Window/EventManager.h>
 #include <Client/Graphics/Window/Window.h>
 
+#include "MinecraftLib/Utils/Logging.h"
+
 namespace Mcc
 {
 
@@ -23,7 +25,7 @@ namespace Mcc
 		}
 		else
 		{
-			fmt::print("Trying to dispatch an event from a non exiting window (Should not happen)\n");
+			MCC_LOG_WARN("Trying to dispatch an event from a non exiting window (Should not happen)");
 		}
 	}
 
@@ -36,7 +38,7 @@ namespace Mcc
 		}
 		else
 		{
-			fmt::print("Trying to dispatch an event from a non exiting window (Should not happen)\n");
+			MCC_LOG_WARN("Trying to dispatch an event from a non exiting window (Should not happen)");
 		}
 	}
 

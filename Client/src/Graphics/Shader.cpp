@@ -7,6 +7,7 @@
 
 #include <fmt/core.h>
 
+#include "MinecraftLib/Utils/Logging.h"
 #include <vector>
 
 namespace Mcc
@@ -36,7 +37,7 @@ namespace Mcc
 			glCheck(glGetShaderiv(mId, GL_INFO_LOG_LENGTH, &length));
 			std::vector<char> message(length);
 			glCheck(glGetShaderInfoLog(mId, length, &length, message.data()));
-			fmt::print(stderr, "Failed to compile shader {}:\n\t{}", mId, std::string_view(message.begin(), message.end()));
+			MCC_LOG_ERROR("Failed to compile shader {}:\n\t{}", mId, std::string_view(message.begin(), message.end()));
 		}
 	}
 
