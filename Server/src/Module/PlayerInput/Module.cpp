@@ -47,7 +47,7 @@ namespace Mcc
 
 		auto entity = world.entity(it->second);
 		entity.get([&from](PlayerInputQueue& queue) {
-			queue.push_back(from.packet.input);;
+			queue.data.push_back(from.packet.input);;
 		});
 	}
 

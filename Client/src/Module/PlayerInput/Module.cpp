@@ -80,20 +80,20 @@ namespace Mcc
 				auto queue 	= entity.get_mut<PlayerInputQueue>();
 
 				// Drop inputs already processed by the server
-				for (; !queue->empty(); queue->pop_front())
+				for (; !queue->data.empty(); queue->data.pop_front())
 				{
-					auto& input = queue->front();
+					auto& input = queue->data.front();
 					if (input.meta.id == id)
 					{
-						queue->pop_front();
+						queue->data.pop_front();
 						break;
 					}
 				}
 
-				MCC_ASSERT(queue->empty() || (!queue->empty() && queue->front().meta.id - id == 1), "The difference between front PlayerInput in queue and last PlayerInput processes by server should be equal to 1");
+				MCC_ASSERT(queue->data.empty() || (!queue->data.empty() && queue->data.front().meta.id - id == 1), "The difference between front PlayerInput in queue and last PlayerInput processes by server should be equal to 1");
 
 				// Reapply all input unprocessed by the server
-				for (auto& input: *queue)
+				for (auto& input: queue->data)
 				{
 					const float speed = 5.f;
 					entity.get([&input, speed](Transform& transform) {

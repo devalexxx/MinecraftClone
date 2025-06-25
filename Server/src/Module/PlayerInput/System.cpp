@@ -15,19 +15,19 @@ namespace Mcc
 	{
 		const float speed = 5.f;
 
-		if (queue.empty())
+		if (queue.data.empty())
 		{
 			return;
 		}
 
 		entity.get([&](Transform& transform, WorldEntityExtra& extra) {
-			  for (; !queue.empty(); queue.pop_front())
+			  for (; !queue.data.empty(); queue.data.pop_front())
 			  {
-				  auto& input = queue.front();
+				  auto& input = queue.data.front();
 				  input.Apply(transform);
 				  input.Apply(transform, input.meta.dt, speed);
 
-				  if (queue.size() == 1)
+				  if (queue.data.size() == 1)
 				  {
 					  extra.data.insert_or_assign("last-input-processed", std::to_string(input.meta.id));
 				  }

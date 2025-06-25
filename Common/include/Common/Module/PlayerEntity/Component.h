@@ -5,12 +5,17 @@
 #ifndef MCC_COMMON_MODULE_PLAYER_ENTITY_COMPONENT_H
 #define MCC_COMMON_MODULE_PLAYER_ENTITY_COMPONENT_H
 
+#include "Common/PlayerInput.h"
+
 #include <deque>
 
 namespace Mcc
 {
 
-	using PlayerInputQueue = std::deque<struct PlayerInput>;
+	struct PlayerInputQueue
+	{
+			std::deque<PlayerInput> data;
+	};
 
 }
 
