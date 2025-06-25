@@ -2,8 +2,8 @@
 // Created by Alex on 28/08/2024.
 //
 
-#ifndef MINECRAFT_BUFFER_H
-#define MINECRAFT_BUFFER_H
+#ifndef MCC_CLIENT_GRAPHICS_BUFFER_H
+#define MCC_CLIENT_GRAPHICS_BUFFER_H
 
 #include <glad/glad.h>
 

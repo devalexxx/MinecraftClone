@@ -2,9 +2,10 @@
 // Created by Alex on 28/08/2024.
 //
 
-#pragma once
+#ifndef MCC_CLIENT_GRAPHICS_WINDOW_EVENT_MANAGER_H
+#define MCC_CLIENT_GRAPHICS_WINDOW_EVENT_MANAGER_H
 
-#include <MinecraftLib/Utils/EventManager.h>
+#include "Common/Utils/EventManager.h"
 
 #include <functional>
 #include <unordered_map>
@@ -31,3 +32,5 @@ namespace Mcc
 	};
 
 }
+
+#endif

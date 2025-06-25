@@ -2,14 +2,14 @@
 // Created by Alex on 23/06/2025.
 //
 
-#include <Server/Module/PlayerInput/Module.h>
-#include <Server/Module/PlayerInput/System.h>
+#include "Server/Module/PlayerInput/Module.h"
+#include "Server/Module/PlayerInput/System.h"
 
-#include "MinecraftLib/Utils/Assert.h"
-#include <MinecraftLib/Module/PlayerEntity/Component.h>
-#include <MinecraftLib/Module/PlayerEntity/Tag.h>
-#include <MinecraftLib/Utils/Logging.h>
-#include <MinecraftLib/World/Context.h>
+#include "Common/Utils/Assert.h"
+#include "Common/Module/PlayerEntity/Component.h"
+#include "Common/Module/PlayerEntity/Tag.h"
+#include "Common/Utils/Logging.h"
+#include "Common/World/Context.h"
 
 namespace Mcc
 {

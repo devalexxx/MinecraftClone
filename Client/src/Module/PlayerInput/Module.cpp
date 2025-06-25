@@ -2,18 +2,17 @@
 // Created by Alex on 23/06/2025.
 //
 
-#include <Client/Module/PlayerInput/Module.h>
-#include <Client/Module/PlayerInput/Component.h>
-#include <Client/Module/PlayerInput/System.h>
-#include <Client/Module/PlayerInput/Prefab.h>
-#include <Client/Module/PlayerInput/Tag.h>
-#include <Client/World/Context.h>
+#include "Client/Module/PlayerInput/Module.h"
+#include "Client/Module/PlayerInput/Component.h"
+#include "Client/Module/PlayerInput/System.h"
+#include "Client/Module/PlayerInput/Prefab.h"
+#include "Client/Module/PlayerInput/Tag.h"
+#include "Client/World/Context.h"
 
-#include "MinecraftLib/Utils/Assert.h"
-#include "MinecraftLib/Utils/Logging.h"
-#include <MinecraftLib/Module/PlayerEntity/Component.h>
-#include <MinecraftLib/Module/PlayerEntity/Prefab.h>
-
+#include "Common/Utils/Assert.h"
+#include "Common/Utils/Logging.h"
+#include "Common/Module/PlayerEntity/Component.h"
+#include "Common/Module/PlayerEntity/Prefab.h"
 
 namespace Mcc
 {

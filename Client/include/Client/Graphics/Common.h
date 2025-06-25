@@ -2,8 +2,8 @@
 // Created by Alex on 26/08/2024.
 //
 
-#ifndef MINECRAFT_COMMON_H
-#define MINECRAFT_COMMON_H
+#ifndef MCC_CLIENT_GRAPHICS_COMMON_H
+#define MCC_CLIENT_GRAPHICS_COMMON_H
 
 namespace Mcc
 {

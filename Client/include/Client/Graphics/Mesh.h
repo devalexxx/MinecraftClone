@@ -2,10 +2,10 @@
 // Created by Alex on 14/09/2024.
 //
 
-#ifndef MINECRAFT_MESH_H
-#define MINECRAFT_MESH_H
+#ifndef MCC_CLIENT_GRAPHICS_MESH_H
+#define MCC_CLIENT_GRAPHICS_MESH_H
 
-#include <Client/Graphics/Buffer.h>
+#include "Client/Graphics/Buffer.h"
 
 #include <glm/glm.hpp>
 

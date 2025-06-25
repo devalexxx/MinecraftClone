@@ -2,12 +2,13 @@
 // Created by Alex on 18/06/2025.
 //
 
-#ifndef MINECRAFT_CLIENT_CONTEXT_H
-#define MINECRAFT_CLIENT_CONTEXT_H
+#ifndef MCC_CLIENT_WORLD_CONTEXT_H
+#define MCC_CLIENT_WORLD_CONTEXT_H
 
 #include "Client/Graphics/Window/Window.h"
-#include "MinecraftLib/Network/Packet.h"
-#include "MinecraftLib/World/Context.h"
+
+#include "Common/Network/Packet.h"
+#include "Common/World/Context.h"
 
 namespace Mcc
 {

@@ -2,10 +2,10 @@
 // Created by Alex on 11/09/2024.
 //
 
-#ifndef MINECRAFT_SERVERNETWORKMANAGER_H
-#define MINECRAFT_SERVERNETWORKMANAGER_H
+#ifndef MCC_SERVER_SERVER_NETWORK_MANAGER_H
+#define MCC_SERVER_SERVER_NETWORK_MANAGER_H
 
-#include <MinecraftLib/Network/NetworkManager.h>
+#include "Common/Network/NetworkManager.h"
 
 namespace Mcc
 {

@@ -2,14 +2,14 @@
 // Created by Alex on 21/06/2025.
 //
 
-#include <Client/Module/EntityReplication/Module.h>
-#include <Client/World/Context.h>
+#include "Client/Module/EntityReplication/Module.h"
+#include "Client/World/Context.h"
 
-#include "MinecraftLib/Utils/Assert.h"
-#include "MinecraftLib/Utils/Logging.h"
-#include <MinecraftLib/Module/WorldEntity/Module.h>
-#include <MinecraftLib/Module/WorldEntity/Prefab.h>
-#include <MinecraftLib/Network/Packet.h>
+#include "Common/Utils/Assert.h"
+#include "Common/Utils/Logging.h"
+#include "Common/Module/WorldEntity/Module.h"
+#include "Common/Module/WorldEntity/Prefab.h"
+#include "Common/Network/Packet.h"
 
 namespace Mcc
 {

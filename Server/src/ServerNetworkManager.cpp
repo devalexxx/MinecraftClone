@@ -2,9 +2,9 @@
 // Created by Alex on 11/09/2024.
 //
 
-#include <Server/ServerNetworkManager.h>
+#include "Server/ServerNetworkManager.h"
 
-#include <MinecraftLib/CommandLineStore.h>
+#include "Common/CommandLineStore.h"
 
 namespace Mcc
 {

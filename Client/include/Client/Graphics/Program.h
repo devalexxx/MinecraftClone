@@ -2,8 +2,8 @@
 // Created by Alex on 26/08/2024.
 //
 
-#ifndef MINECRAFT_PROGRAM_H
-#define MINECRAFT_PROGRAM_H
+#ifndef MCC_CLIENT_GRAPHICS_PROGRAM_H
+#define MCC_CLIENT_GRAPHICS_PROGRAM_H
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>

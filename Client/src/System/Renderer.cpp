@@ -2,14 +2,14 @@
 // Created by Alex on 22/09/2024.
 //
 
-#include <Client/Graphics/Shader.h>
-#include <Client/Graphics/Window/Window.h>
-#include <Client/System/Renderer.h>
-#include <Client/Utils.h>
-
-#include <MinecraftLib/Network/Packet.h>
-
+#include "Client/Graphics/Shader.h"
+#include "Client/Graphics/Window/Window.h"
+#include "Client/System/Renderer.h"
 #include "Client/World/Context.h"
+#include "Client/Utils.h"
+
+#include "Common/Network/Packet.h"
+
 #include <flecs.h>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>

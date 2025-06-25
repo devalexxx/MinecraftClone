@@ -5,7 +5,7 @@
 #ifndef MCC_SERVER_MODULE_PLAYER_INPUT_SYSTEM_H
 #define MCC_SERVER_MODULE_PLAYER_INPUT_SYSTEM_H
 
-#include <MinecraftLib/Module/PlayerEntity/Component.h>
+#include "Common/Module/PlayerEntity/Component.h"
 
 #include <flecs.h>
 

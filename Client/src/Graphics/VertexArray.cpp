@@ -4,8 +4,7 @@
 
 #include "Client/Graphics/VertexArray.h"
 #include "Client/Graphics/Common.h"
-
-#include <cassert>
+#include "Common/Utils/Assert.h"
 
 namespace Mcc
 {
@@ -41,7 +40,7 @@ namespace Mcc
 
 	void VertexArray::Bind() const
 	{
-		assert(mIsValid);
+		MCC_ASSERT(mIsValid, "A VertexArray must be valid (eg. created) to be bound");
 		if (sBoundVertexArray != mId)
 			glCheck(glBindVertexArray(mId));
 		sBoundVertexArray = mId;

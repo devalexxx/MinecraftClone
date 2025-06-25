@@ -1,4 +1,4 @@
-set_project("Minecraft")
+set_project("MachinaCubicaCatalyst")
 set_version("0.0.1")
 
 set_languages("c++23")
@@ -9,26 +9,25 @@ add_requires("glfw", "fmt >= 11", "glad", "glm", "enet", "flecs", "cereal")
 
 add_requires("flecs", { debug = is_mode("debug") })
 
-
 if is_mode("debug") then 
     add_defines("MCC_DEBUG")
     --set_warnings("allextra", "error")
     set_warnings("allextra")
 end
 
-target("MinecraftLib")
+target("MCCCommon")
     set_kind("static")
 
     add_defines("MCC_LIB_BUILD")
 
-    add_includedirs("Lib/include/",  { public = true })
-    add_headerfiles("Lib/include/(**/*.h)", "Lib/include/(**/*.inl)")
+    add_includedirs("Common/include/",  { public = true })
+    add_headerfiles("Common/include/(**/*.h)", "Common/include/(**/*.inl)")
 
-    add_files("Lib/**/*.cpp")
+    add_files("Common/**/*.cpp")
 
     add_packages("glm", "fmt", "flecs", "enet", "cereal")
 
-target("MinecraftClient")
+target("MCCClient")
     set_kind("binary")
 
     -- Use to don't care about glfw and glad include order
@@ -43,10 +42,10 @@ target("MinecraftClient")
         add_defines("MACOSX")
     end
 
-    add_deps("MinecraftLib")
+    add_deps("MCCCommon")
     add_packages("glfw", "fmt", "glad", "glm", "enet", "flecs", "cereal")
 
-target("MinecraftServer")
+target("MCCServer")
     set_kind("binary")
 
     add_includedirs("Server/include/",  { public = true })
@@ -54,5 +53,5 @@ target("MinecraftServer")
 
     add_files("Server/**/*.cpp")
 
-    add_deps("MinecraftLib")
+    add_deps("MCCCommon")
     add_packages("fmt", "enet", "flecs", "cereal", "glm")

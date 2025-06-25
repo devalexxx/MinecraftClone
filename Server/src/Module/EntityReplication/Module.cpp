@@ -2,12 +2,12 @@
 // Created by Alex on 22/06/2025.
 //
 
-#include <Server/Module/EntityReplication/Module.h>
-#include <Server/Module/EntityReplication/System.h>
+#include "Server/Module/EntityReplication/Module.h"
+#include "Server/Module/EntityReplication/System.h"
 
-#include <MinecraftLib/Module/WorldEntity/Module.h>
-#include <MinecraftLib/Utils/Logging.h>
-#include <MinecraftLib/Utils/Assert.h>
+#include "Common/Module/WorldEntity/Module.h"
+#include "Common/Utils/Logging.h"
+#include "Common/Utils/Assert.h"
 
 namespace Mcc
 {

@@ -2,10 +2,10 @@
 // Created by Alex on 23/08/2024.
 //
 
-#ifndef MINECRAFT_CAMERA_H
-#define MINECRAFT_CAMERA_H
+#ifndef MCC_CLIENT_GRAPHICS_CAMERA_H
+#define MCC_CLIENT_GRAPHICS_CAMERA_H
 
-#include <MinecraftLib/Entity/Player.h>
+#include "Common/Entity/Player.h"
 
 #include <glm/glm.hpp>
 

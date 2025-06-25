@@ -5,7 +5,8 @@
 #ifndef MCC_CLIENT_MODULE_PLAYER_SESSION_MODULE_H
 #define MCC_CLIENT_MODULE_PLAYER_SESSION_MODULE_H
 
-#include "MinecraftLib/Network/Event.h"
+#include "Common/Network/Event.h"
+
 #include <flecs.h>
 
 namespace Mcc

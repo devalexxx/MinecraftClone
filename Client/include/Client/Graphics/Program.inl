@@ -1,7 +1,6 @@
+#include "Client/Graphics/Common.h"
 
-#include <Client/Graphics/Common.h>
-
-#include <MinecraftLib/Utils/Logging.h>
+#include "Common/Utils/Logging.h"
 
 #include <fmt/base.h>
 

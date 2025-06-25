@@ -2,9 +2,11 @@
 // Created by Alex on 26/08/2024.
 //
 
-#include "MinecraftLib/Utils/Logging.h"
-#include <Client/Graphics/Program.h>
-#include <Client/Graphics/Shader.h>
+#include "Client/Graphics/Program.h"
+#include "Client/Graphics/Shader.h"
+
+#include "Common/Utils/Logging.h"
+
 #include <string_view>
 #include <vector>
 

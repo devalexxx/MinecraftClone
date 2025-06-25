@@ -2,8 +2,8 @@
 // Created by Alex on 26/08/2024.
 //
 
-#ifndef MINECRAFT_SHADER_H
-#define MINECRAFT_SHADER_H
+#ifndef MCC_CLIENT_GRAPHICS_SHADER_H
+#define MCC_CLIENT_GRAPHICS_SHADER_H
 
 #include <glad/glad.h>
 

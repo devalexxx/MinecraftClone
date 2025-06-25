@@ -2,12 +2,12 @@
 // Created by Alex on 23/06/2025.
 //
 
-#ifndef MCC_MODULE_CLIENT_PLAYER_ENTITY_SYSTEM_H
-#define MCC_MODULE_CLIENT_PLAYER_ENTITY_SYSTEM_H
+#ifndef MCC_CLIENT_MODULE_PLAYER_INPUT_SYSTEM_H
+#define MCC_CLIENT_MODULE_PLAYER_INPUT_SYSTEM_H
 
-#include <Client/Module/PlayerInput/Component.h>
+#include "Client/Module/PlayerInput/Component.h"
 
-#include <MinecraftLib/Module/PlayerEntity/Component.h>
+#include "Common/Module/PlayerEntity/Component.h"
 
 #include <flecs.h>
 

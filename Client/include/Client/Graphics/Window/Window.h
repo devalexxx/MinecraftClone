@@ -2,11 +2,12 @@
 // Created by Alex on 28/08/2024.
 //
 
-#ifndef MINECRAFT_WINDOW_H
-#define MINECRAFT_WINDOW_H
+#ifndef MCC_CLIENT_GRAPHICS_WINDOW_WINDOW_H
+#define MCC_CLIENT_GRAPHICS_WINDOW_WINDOW_H
 
-#include <Client/Graphics/Window/Event.h>
-#include <Client/Graphics/Window/EventManager.h>
+#include "Client/Graphics/Window/Event.h"
+#include "Client/Graphics/Window/EventManager.h"
+
 #include <GLFW/glfw3.h>
 
 namespace Mcc

@@ -2,20 +2,19 @@
 // Created by Alex on 02/09/2024.
 //
 
-#include <Server/ServerApplication.h>
-#include <Server/Module/EntityReplication/Module.h>
-#include <Server/Module/PlayerInput/Module.h>
-#include <Server/Module/PlayerSession/Module.h>
-#include <Server/World/Context.h>
+#include "Server/ServerApplication.h"
+#include "Server/Module/EntityReplication/Module.h"
+#include "Server/Module/PlayerInput/Module.h"
+#include "Server/Module/PlayerSession/Module.h"
+#include "Server/World/Context.h"
 
-#include <MinecraftLib/Network/Packet.h>
-#include <MinecraftLib/Network/Event.h>
-#include <MinecraftLib/Module/PlayerEntity/Component.h>
-#include <MinecraftLib/Module/WorldEntity/Module.h>
+#include "Common/Network/Packet.h"
+#include "Common/Network/Event.h"
+#include "Common/Module/PlayerEntity/Component.h"
+#include "Common/Module/WorldEntity/Module.h"
+#include "Common/Utils/Logging.h"
 
 #include <fmt/format.h>
-
-#include "MinecraftLib/Utils/Logging.h"
 
 namespace Mcc
 {

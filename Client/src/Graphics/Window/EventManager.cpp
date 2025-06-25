@@ -2,10 +2,10 @@
 // Created by Alex on 28/08/2024.
 //
 
-#include <Client/Graphics/Window/EventManager.h>
-#include <Client/Graphics/Window/Window.h>
+#include "Client/Graphics/Window/EventManager.h"
+#include "Client/Graphics/Window/Window.h"
 
-#include "MinecraftLib/Utils/Logging.h"
+#include "Common/Utils/Logging.h"
 
 namespace Mcc
 {

@@ -2,19 +2,18 @@
 // Created by Alex on 02/09/2024.
 //
 
-#ifndef MINECRAFT_CLIENTAPPLICATION_H
-#define MINECRAFT_CLIENTAPPLICATION_H
+#ifndef MCC_CLIENT_CLIENT_APPLICATION_H
+#define MCC_CLIENT_CLIENT_APPLICATION_H
 
-#include <Client/ClientNetworkManager.h>
-#include <Client/Graphics/Window/Window.h>
-#include <Client/System/Renderer.h>
+#include "Client/ClientNetworkManager.h"
+#include "Client/Graphics/Window/Window.h"
+#include "Client/System/Renderer.h"
 
-#include <MinecraftLib/Application.h>
-#include <MinecraftLib/Network/Packet.h>
-#include <MinecraftLib/Module/PlayerEntity/Component.h>
+#include "Common/Application.h"
+#include "Common/Network/Packet.h"
+#include "Common/Module/PlayerEntity/Component.h"
 
 #include <enet/enet.h>
-
 
 #include <istream>
 #include <streambuf>

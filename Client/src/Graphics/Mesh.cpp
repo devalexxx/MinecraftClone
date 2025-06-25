@@ -2,8 +2,8 @@
 // Created by Alex on 14/09/2024.
 //
 
-#include <Client/Graphics/Mesh.h>
-#include <Client/Graphics/Program.h>
+#include "Client/Graphics/Mesh.h"
+#include "Client/Graphics/Program.h"
 
 #include <algorithm>
 #include <iterator>

@@ -5,8 +5,8 @@
 #ifndef MCC_SERVER_MODULE_PLAYER_SESSION_MODULE_H
 #define MCC_SERVER_MODULE_PLAYER_SESSION_MODULE_H
 
-#include <MinecraftLib/Module/WorldEntity/Component.h>
-#include <MinecraftLib/Network/Event.h>
+#include "Common/Module/WorldEntity/Component.h"
+#include "Common/Network/Event.h"
 
 #include <flecs.h>
 

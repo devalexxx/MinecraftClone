@@ -2,15 +2,15 @@
 // Created by Alex on 23/06/2025.
 //
 
-#include <Server/Module/PlayerSession/Module.h>
-#include <Server/ServerNetworkManager.h>
+#include "Server/Module/PlayerSession/Module.h"
+#include "Server/ServerNetworkManager.h"
 
-#include "MinecraftLib/Utils/Assert.h"
-#include <MinecraftLib/Module/PlayerEntity/Module.h>
-#include <MinecraftLib/Module/PlayerEntity/Prefab.h>
-#include <MinecraftLib/Module/WorldEntity/Tag.h>
-#include <MinecraftLib/Utils/Logging.h>
-#include <MinecraftLib/World/Context.h>
+#include "Common/Utils/Assert.h"
+#include "Common/Module/PlayerEntity/Module.h"
+#include "Common/Module/PlayerEntity/Prefab.h"
+#include "Common/Module/WorldEntity/Tag.h"
+#include "Common/Utils/Logging.h"
+#include "Common/World/Context.h"
 
 namespace Mcc
 {

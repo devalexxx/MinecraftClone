@@ -2,8 +2,8 @@
 // Created by Alex on 29/08/2024.
 //
 
-#ifndef MINECRAFT_VERTEXARRAY_H
-#define MINECRAFT_VERTEXARRAY_H
+#ifndef MCC_CLIENT_GRAPHICS_VERTEXARRAY_H
+#define MCC_CLIENT_GRAPHICS_VERTEXARRAY_H
 
 #include "glad/glad.h"
 

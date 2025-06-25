@@ -2,10 +2,10 @@
 // Created by Alex on 11/09/2024.
 //
 
-#include <Client/ClientNetworkManager.h>
+#include "Client/ClientNetworkManager.h"
 
-#include "MinecraftLib/Utils/Logging.h"
-#include <MinecraftLib/CommandLineStore.h>
+#include "Common/Utils/Logging.h"
+#include "Common/CommandLineStore.h"
 
 namespace Mcc
 {

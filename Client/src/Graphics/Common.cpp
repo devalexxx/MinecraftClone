@@ -2,8 +2,10 @@
 // Created by Alex on 26/08/2024.
 //
 
-#include "MinecraftLib/Utils/Logging.h"
-#include <Client/Graphics/Common.h>
+#include "Client/Graphics/Common.h"
+
+#include "Common/Utils/Logging.h"
+
 #include <fmt/core.h>
 #include <glad/glad.h>
 

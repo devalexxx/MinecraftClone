@@ -2,17 +2,17 @@
 // Created by Alex on 02/09/2024.
 //
 
-#include <Client/ClientApplication.h>
-#include <Client/World/Context.h>
-#include <Client/Module/PlayerSession/Module.h>
-#include <Client/Module/PlayerSession/Component.h>
-#include <Client/Module/EntityReplication/Module.h>
-#include <Client/Module/PlayerInput/Module.h>
+#include "Client/ClientApplication.h"
+#include "Client/World/Context.h"
+#include "Client/Module/PlayerSession/Module.h"
+#include "Client/Module/PlayerSession/Component.h"
+#include "Client/Module/EntityReplication/Module.h"
+#include "Client/Module/PlayerInput/Module.h"
 
-#include "MinecraftLib/Utils/Logging.h"
-#include <MinecraftLib/Module/PlayerEntity/Module.h>
-#include <MinecraftLib/Module/WorldEntity/Module.h>
-#include <MinecraftLib/Network/Event.h>
+#include "Common/Utils/Logging.h"
+#include "Common/Module/PlayerEntity/Module.h"
+#include "Common/Module/WorldEntity/Module.h"
+#include "Common/Network/Event.h"
 
 namespace Mcc
 {
@@ -24,7 +24,7 @@ namespace Mcc
 	ClientApplication::ClientApplication(int argc, char** argv) :
 		Application(argc, argv),
 		mNetworkManager(mCmdLineStore),
-		mWindow("Minecraft")
+		mWindow("MachinaCubicaCatalyst")
 	{
 		mNetworkManager.Subscribe<MalformedPacketEvent>([](const auto&) { MCC_LOG_WARN("Handle malformed packet"); });
 	}

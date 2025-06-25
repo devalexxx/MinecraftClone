@@ -2,11 +2,11 @@
 // Created by Alex on 23/06/2025.
 //
 
-#include <Client/Module/PlayerInput/System.h>
-#include <Client/ClientNetworkManager.h>
-#include <Client/World/Context.h>
+#include "Client/Module/PlayerInput/System.h"
+#include "Client/ClientNetworkManager.h"
+#include "Client/World/Context.h"
 
-#include <MinecraftLib/Module/WorldEntity/Component.h>
+#include "Common/Module/WorldEntity/Component.h"
 
 namespace Mcc
 {

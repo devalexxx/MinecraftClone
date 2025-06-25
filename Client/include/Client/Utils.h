@@ -2,8 +2,8 @@
 // Created by Alex on 15/09/2024.
 //
 
-#ifndef MINECRAFT_UTILS_H
-#define MINECRAFT_UTILS_H
+#ifndef MCC_CLIENT_UTILS_H
+#define MCC_CLIENT_UTILS_H
 
 #include <array>
 

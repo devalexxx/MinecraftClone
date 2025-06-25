@@ -5,9 +5,9 @@
 #ifndef MCC_SERVER_MODULE_PLAYER_INPUT_MODULE_H
 #define MCC_SERVER_MODULE_PLAYER_INPUT_MODULE_H
 
-#include <MinecraftLib/Module/PlayerEntity/Module.h>
-#include <MinecraftLib/Network/Event.h>
-#include <MinecraftLib/Network/Packet.h>
+#include "Common/Module/PlayerEntity/Module.h"
+#include "Common/Network/Event.h"
+#include "Common/Network/Packet.h"
 
 namespace Mcc
 {

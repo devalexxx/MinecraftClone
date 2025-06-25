@@ -5,7 +5,7 @@
 #ifndef MCC_SERVER_WORLD_CONTEXT_H
 #define MCC_SERVER_WORLD_CONTEXT_H
 
-#include <MinecraftLib/World/Context.h>
+#include "Common/World/Context.h"
 
 namespace Mcc
 {

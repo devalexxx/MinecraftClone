@@ -2,7 +2,7 @@
 // Created by Alex on 23/08/2024.
 //
 
-#include <Client/Graphics/Camera.h>
+#include "Client/Graphics/Camera.h"
 
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/gtc/quaternion.hpp>

@@ -2,14 +2,14 @@
 // Created by Alex on 22/06/2025.
 //
 
-#include <Server/World/Context.h>
-#include <Server/Module/EntityReplication/System.h>
-#include <Server/ServerNetworkManager.h>
+#include "Server/World/Context.h"
+#include "Server/Module/EntityReplication/System.h"
+#include "Server/ServerNetworkManager.h"
 
-#include "MinecraftLib/Module/WorldEntity/Component.h"
-#include "MinecraftLib/Utils/Logging.h"
-#include <MinecraftLib/Module/WorldEntity/Tag.h>
-#include <MinecraftLib/Network/Packet.h>
+#include "Common/Module/WorldEntity/Component.h"
+#include "Common/Utils/Logging.h"
+#include "Common/Module/WorldEntity/Tag.h"
+#include "Common/Network/Packet.h"
 
 namespace Mcc
 {

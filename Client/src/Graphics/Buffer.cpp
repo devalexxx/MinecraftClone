@@ -2,10 +2,10 @@
 // Created by Alex on 28/08/2024.
 //
 
+#include "Client/Graphics/Buffer.h"
 #include "Client/Graphics/VertexArray.h"
-#include <Client/Graphics/Buffer.h>
 
-#include <cassert>
+#include "Common/Utils/Assert.h"
 
 namespace Mcc
 {
@@ -34,7 +34,7 @@ namespace Mcc
 
 	void Buffer::Create()
 	{
-		assert(VertexArray::IsThereAnyBound());
+		MCC_ASSERT(VertexArray::IsThereAnyBound(), "A VertexArray must be bound to create a Buffer");
 		glCheck(glGenBuffers(1, &mId));
 		if (mId != 0)
 			mIsValid = true;
@@ -42,7 +42,7 @@ namespace Mcc
 
 	void Buffer::Bind() const
 	{
-		assert(mIsValid);
+		MCC_ASSERT(mIsValid, "A Buffer must be valid (eg. created) to be bound");
 		if (sBoundBuffer != mId)
 		{
 			glCheck(glBindBuffer(mTarget, mId));

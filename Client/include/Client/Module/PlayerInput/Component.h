@@ -2,10 +2,10 @@
 // Created by Alex on 23/06/2025.
 //
 
-#ifndef MCC_MODULE_CLIENT_PLAYER_ENTITY_COMPONENT_H
-#define MCC_MODULE_CLIENT_PLAYER_ENTITY_COMPONENT_H
+#ifndef MCC_CLIENT_MODULE_PLAYER_INPUT_COMPONENT_H
+#define MCC_CLIENT_MODULE_PLAYER_INPUT_COMPONENT_H
 
-#include <MinecraftLib/PlayerInput.h>
+#include <Common/PlayerInput.h>
 
 namespace Mcc
 {

@@ -2,7 +2,8 @@
 // Created by Alex on 28/08/2024.
 //
 
-#pragma once
+#ifndef MCC_CLIENT_GRAPHICS_WINDOW_EVENT_H
+#define MCC_CLIENT_GRAPHICS_WINDOW_EVENT_H
 
 namespace Mcc
 {
@@ -28,3 +29,5 @@ namespace Mcc
 	};
 
 }
+
+#endif

@@ -2,11 +2,11 @@
 // Created by Alex on 23/06/2025.
 //
 
-#include <Server/Module/PlayerInput/System.h>
+#include "Server/Module/PlayerInput/System.h"
 
-#include <MinecraftLib/Module/WorldEntity/Tag.h>
-#include <MinecraftLib/Module/WorldEntity/Component.h>
-#include <MinecraftLib/PlayerInput.h>
+#include "Common/Module/WorldEntity/Tag.h"
+#include "Common/Module/WorldEntity/Component.h"
+#include "Common/PlayerInput.h"
 
 namespace Mcc
 {

@@ -2,13 +2,13 @@
 // Created by Alex on 23/06/2025.
 //
 
-#ifndef MCC_MODULE_CLIENT_PLAYER_ENTITY_MODULE_H
-#define MCC_MODULE_CLIENT_PLAYER_ENTITY_MODULE_H
+#ifndef MCC_CLIENT_MODULE_PLAYER_INPUT_MODULE_H
+#define MCC_CLIENT_MODULE_PLAYER_INPUT_MODULE_H
 
-#include <Client/Graphics/Window/Event.h>
+#include "Client/Graphics/Window/Event.h"
 
-#include <MinecraftLib/Module/PlayerEntity/Module.h>
-#include <MinecraftLib/Network/Packet.h>
+#include "Common/Module/PlayerEntity/Module.h"
+#include "Common/Network/Packet.h"
 
 namespace Mcc
 {

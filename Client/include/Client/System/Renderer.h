@@ -2,12 +2,12 @@
 // Created by Alex on 22/09/2024.
 //
 
-#ifndef MINECRAFT_RENDERER_H
-#define MINECRAFT_RENDERER_H
+#ifndef MCC_RENDERER_H
+#define MCC_RENDERER_H
 
-#include <Client/Graphics/Mesh.h>
-#include <Client/Graphics/Program.h>
-#include <Client/Graphics/VertexArray.h>
+#include "Client/Graphics/Mesh.h"
+#include "Client/Graphics/Program.h"
+#include "Client/Graphics/VertexArray.h"
 
 namespace flecs
 {

@@ -2,12 +2,13 @@
 // Created by Alex on 26/08/2024.
 //
 
-#include <Client/Graphics/Common.h>
-#include <Client/Graphics/Shader.h>
+#include "Client/Graphics/Common.h"
+#include "Client/Graphics/Shader.h"
+
+#include "Common/Utils/Logging.h"
 
 #include <fmt/core.h>
 
-#include "MinecraftLib/Utils/Logging.h"
 #include <vector>
 
 namespace Mcc
