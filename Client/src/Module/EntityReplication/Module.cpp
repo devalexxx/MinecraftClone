@@ -42,10 +42,7 @@ namespace Mcc
 
 			auto entity = world.entity()
 			  .is_a<WorldEntityPrefab>()
-			  .set(state.position)
-			  .set(state.rotation)
-			  .set(Forward::FromRotation(state.rotation))
-			  .set(Right  ::FromRotation(state.rotation));
+			  .set(state.transform);
 
 			ctx->localToNetwork.emplace(entity.id(), state.id);
 			ctx->networkToLocal.emplace(state.id, entity.id());
@@ -98,10 +95,7 @@ namespace Mcc
 			}
 
 			world.entity(it->second)
-				.set(state.position)
-				.set(state.rotation)
-				.set(Forward::FromRotation(state.rotation))
-				.set(Right  ::FromRotation(state.rotation));
+				.set(state.transform);
 		}
 	}
 

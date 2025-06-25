@@ -18,11 +18,11 @@ namespace Mcc
 		MCC_LOG_DEBUG("Import EntityReplicationModule...");
 		world.module<EntityReplicationModule>();
 
-		world.system<const Position, const Rotation, const WorldEntityExtra>()
+		world.system<const Transform, const WorldEntityExtra>()
 			.with<WorldEntityCreatedTag>()
 			.run(BroadcastEntitiesCreated);
 
-		world.system<const Position, const Rotation, const WorldEntityExtra>()
+		world.system<const Transform, const WorldEntityExtra>()
 		    .with<WorldEntityUpdatedTag>()
 			.run(BroadcastEntitiesUpdated);
 

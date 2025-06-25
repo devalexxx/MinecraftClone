@@ -48,7 +48,7 @@ namespace Mcc
 		glDepthFunc(GL_LEFT);
 		glEnable(GL_CULL_FACE_MODE);
 
-		world.system<const Position>()
+		world.system<const Transform>()
 			.run([&, this](flecs::iter& it) {
 				static std::array<glm::mat4, 3> models = {{
 					glm::translate(glm::mat4(1.f), { 0, 0, 0 }),
@@ -62,13 +62,10 @@ namespace Mcc
 				if (id != ctx->networkToLocal.cend() && world.exists(id->second))
 				{
 					flecs::entity entity = world.entity(id->second);
-					auto* p = entity.get<Position>();
-					auto* d = entity.get<Forward>();
-					auto* r = entity.get<Right>();
+					auto* t = entity.get<Transform>();
 
-					glm::vec3 up = glm::cross(r->vec, d->vec);
-
-					glm::mat4 view = glm::lookAt(p->vec, p->vec + d->vec, up);
+					glm::vec3 up   = glm::cross(glm::right(t->rotation), glm::forward(t->rotation));
+					glm::mat4 view = glm::lookAt(t->position, t->position + glm::forward(t->rotation), up);
 
 					glCheck(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 					glCheck(glClearColor(1., 1., 1., 1.));
@@ -87,11 +84,11 @@ namespace Mcc
 
 					while (it.next())
 					{
-						auto ep = it.field<const Position>(0);
+						auto tr = it.field<const Transform>(0);
 
 						for (auto i: it)
 						{
-							mProgram.SetUniformMatrix(mProgram.GetUniformLocation("model"), glm::translate(glm::mat4(1.f), ep[i].vec - glm::vec3(0, 2, 0)));
+							mProgram.SetUniformMatrix(mProgram.GetUniformLocation("model"), glm::translate(glm::mat4(1.f), tr[i].position - glm::vec3(0, 2, 0)));
 							mCube.Draw();
 						}
 					}

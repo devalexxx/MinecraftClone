@@ -23,7 +23,7 @@ namespace Mcc
 
 		auto* ctx = static_cast<WorldContext*>(world.get_ctx());
 
-		mLookupQuery = world.query_builder<const Position, const Rotation>().with<WorldEntityTag>().build();
+		mLookupQuery = world.query_builder<const Transform>().with<WorldEntityTag>().build();
 
 		ctx->networkManager.Subscribe<ConnectEvent>   ([&](const auto& event) { OnConnectEventHandler   (world, event); });
 		ctx->networkManager.Subscribe<DisconnectEvent>([&](const auto& event) { OnDisconnectEventHandler(world, event); });
@@ -41,8 +41,7 @@ namespace Mcc
 			.run([&](flecs::iter& it) {
 				while (it.next())
 				{
-					auto p = it.field<const Position>(0);
-					auto r = it.field<const Rotation>(1);
+					auto t = it.field<const Transform>(0);
 
 					for (auto i: it)
 					{
@@ -55,7 +54,7 @@ namespace Mcc
 							continue;
 						}
 
-						packet.initialStates.push_back({ idIt->second, p[i], r[i], {} });
+						packet.initialStates.push_back({ idIt->second, t[i], {} });
 					}
 				}
 			});

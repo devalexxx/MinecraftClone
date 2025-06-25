@@ -44,8 +44,7 @@ namespace Mcc
 	{
 			NetworkID id;
 
-			Position position;
-			Rotation rotation;
+			Transform transform;
 
 			std::unordered_map<std::string, std::string> extra;
 	};

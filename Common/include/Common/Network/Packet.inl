@@ -10,7 +10,7 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, EntityState& packet)
 	{
-		ar(packet.id, packet.position, packet.rotation, packet.extra);
+		ar(packet.id, packet.transform, packet.extra);
 	}
 
 	template<typename Archive>

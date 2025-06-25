@@ -21,27 +21,24 @@ namespace Mcc
 		);
 	}
 
-	void PlayerInput::Apply(float dt, float speed, Position& position, const Forward& forward, const Right& right) const
+	void PlayerInput::Apply(Transform& transform, float dt, float speed) const
 	{
 		if (movement.forward && !movement.backward)
-			position.vec += forward.vec * speed * dt;
+			transform.position += glm::forward(transform.rotation) * speed * dt;
 
 		if (movement.backward && !movement.forward)
-			position.vec -= forward.vec * speed * dt;
+			transform.position -= glm::forward(transform.rotation) * speed * dt;
 
 		if (movement.right && !movement.left)
-			position.vec += right.vec * speed * dt;
+			transform.position += glm::right(transform.rotation) * speed * dt;
 
 		if (movement.left && !movement.right)
-			position.vec -= right.vec * speed * dt;
+			transform.position -= glm::right(transform.rotation) * speed * dt;
 	}
 
-	void PlayerInput::Apply(Rotation& rotation, Forward& forward, Right& right) const
+	void PlayerInput::Apply(Transform& transform) const
 	{
-		rotation.vec.x += axis.x;
-		rotation.vec.y += axis.y;
-
-		forward.vec = glm::forward(rotation.vec);
-		right.vec 	= glm::right  (rotation.vec);
+		transform.rotation.x += axis.x;
+		transform.rotation.z += axis.y;
 	}
 }

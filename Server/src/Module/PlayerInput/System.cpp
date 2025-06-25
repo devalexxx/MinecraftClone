@@ -20,12 +20,12 @@ namespace Mcc
 			return;
 		}
 
-		entity.get([&](Position& pos, Rotation& rot, Forward& forward, Right& right, WorldEntityExtra& extra) {
+		entity.get([&](Transform& transform, WorldEntityExtra& extra) {
 			  for (; !queue.empty(); queue.pop_front())
 			  {
 				  auto& input = queue.front();
-				  input.Apply(rot, forward, right);
-				  input.Apply(input.meta.dt, speed, pos, forward, right);
+				  input.Apply(transform);
+				  input.Apply(transform, input.meta.dt, speed);
 
 				  if (queue.size() == 1)
 				  {

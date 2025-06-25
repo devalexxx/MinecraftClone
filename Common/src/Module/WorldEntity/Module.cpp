@@ -19,18 +19,14 @@ namespace Mcc
 		world.component<WorldEntityUpdatedTag>();
 		world.component<WorldEntityDestroyedTag>();
 		world.component<WorldEntityExtra>();
-		world.component<Position>();
-		world.component<Rotation>();
-		world.component<Forward>();
-		world.component<Right>();
+		world.component<Transform>();
 
 		world.prefab<WorldEntityPrefab>()
 			.add<WorldEntityTag>()
 			.set_auto_override<WorldEntityExtra>({})
-			.set_auto_override<Position>({{ 0.f, 2.f, -4.f }})
-			.set_auto_override<Rotation>({{ 0.f, 0.f 	   }})
-			.set_auto_override<Forward> ({{ 0.f, 0.f, 0.f  }})
-			.set_auto_override<Right>	({{ 0.f, 0.f, 0.f  }});
+			.set_auto_override<Transform>({
+				{ 0.f, 0.f, 0.f }, { 0.f, 0.f, 0.f }, { 1.f, 1.f, 1.f }
+			});
 	}
 
 }

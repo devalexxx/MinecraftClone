@@ -96,9 +96,9 @@ namespace Mcc
 				for (auto& input: *queue)
 				{
 					const float speed = 5.f;
-					entity.get([&input, speed](Position& position, Rotation& rotation, Forward& forward, Right& right) {
-						input.Apply(rotation, forward, right);
-						input.Apply(input.meta.dt, speed, position, forward, right);
+					entity.get([&input, speed](Transform& transform) {
+						input.Apply(transform);
+						input.Apply(transform, input.meta.dt, speed);
 					});
 				}
 			}

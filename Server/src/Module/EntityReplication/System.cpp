@@ -21,9 +21,8 @@ namespace Mcc
 
 		while (it.next())
 		{
-			auto p = it.field<const Position>		 (0);
-			auto r = it.field<const Rotation>		 (1);
-			auto e = it.field<const WorldEntityExtra>(2);
+			auto t = it.field<const Transform>		 (0);
+			auto e = it.field<const WorldEntityExtra>(1);
 
 			OnEntitiesCreated packet;
 			for (auto i: it)
@@ -31,7 +30,7 @@ namespace Mcc
 				auto entity = it.entity(i);
 				if (auto id = ctx->localToNetwork.find(entity.id()); id != ctx->localToNetwork.cend())
 				{
-					packet.states.push_back({ id->second, p[i], r[i], e[i].data });
+					packet.states.push_back({ id->second, t[i], e[i].data });
 					MCC_LOG_INFO("Entity({}) has been created and replicated", id->second);
 				}
 				else
@@ -51,9 +50,8 @@ namespace Mcc
 
 		while (it.next())
 		{
-			auto p = it.field<const Position>		 (0);
-			auto r = it.field<const Rotation>		 (1);
-			auto e = it.field<const WorldEntityExtra>(2);
+			auto t = it.field<const Transform>		 (0);
+			auto e = it.field<const WorldEntityExtra>(1);
 
 			OnEntitiesUpdated packet;
 			for (auto i: it)
@@ -61,7 +59,7 @@ namespace Mcc
 				auto entity = it.entity(i);
 				if (auto id = ctx->localToNetwork.find(entity.id()); id != ctx->localToNetwork.cend())
 				{
-					packet.states.push_back({ id->second, p[i], r[i], e[i].data });
+					packet.states.push_back({ id->second, t[i], e[i].data });
 				}
 				else
 				{

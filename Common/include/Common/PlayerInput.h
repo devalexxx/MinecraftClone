@@ -5,6 +5,8 @@
 #ifndef MCC_COMMON_PLAYER_INPUT_H
 #define MCC_COMMON_PLAYER_INPUT_H
 
+#include "Common/Module/WorldEntity/Component.h"
+
 namespace Mcc
 {
 	struct Position;
@@ -42,8 +44,8 @@ namespace Mcc
 
 			[[nodiscard]] bool NotNull() const;
 
-			void Apply(float dt, float speed, Position& position, const Forward& forward, const Right& right) const;
-			void Apply(Rotation& rotation, Forward& forward, Right& right) const;
+			void Apply(Transform& transform, float dt, float speed) const;
+			void Apply(Transform& transform) const;
 	};
 
 	template<typename Archive>

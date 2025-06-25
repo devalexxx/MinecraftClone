@@ -19,7 +19,7 @@ namespace Mcc
 			PlayerSessionModule(flecs::world& world);
 
 		private:
-			flecs::query<const Position, const Rotation> mLookupQuery;
+			flecs::query<const Transform> mLookupQuery;
 
 			void OnConnectEventHandler   (flecs::world& world, const ConnectEvent&    event) const;
 			void OnDisconnectEventHandler(flecs::world& world, const DisconnectEvent& event) const;
