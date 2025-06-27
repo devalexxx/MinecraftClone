@@ -9,10 +9,9 @@
 #include "Client/Graphics/Program.h"
 #include "Client/Graphics/VertexArray.h"
 
-namespace flecs
-{
-	struct world;
-}
+#include "Common/Module/WorldEntity/Component.h"
+
+#include <flecs.h>
 
 namespace Mcc
 {
@@ -20,6 +19,8 @@ namespace Mcc
 	struct Renderer
 	{
 			Renderer(flecs::world& world);
+
+			flecs::query<const Transform, const Transform> mCameraQuery;
 
 			Mesh 		mCube;
 			Program 	mProgram;

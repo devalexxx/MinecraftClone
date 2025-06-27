@@ -24,21 +24,38 @@ namespace Mcc
 	void PlayerInput::Apply(Transform& transform, float dt, float speed) const
 	{
 		if (movement.forward && !movement.backward)
-			transform.position += glm::forward(transform.rotation) * speed * dt;
+			transform.position += transform.rotation * glm::forward * speed * dt;
 
 		if (movement.backward && !movement.forward)
-			transform.position -= glm::forward(transform.rotation) * speed * dt;
+			transform.position -= transform.rotation * glm::forward * speed * dt;
 
 		if (movement.right && !movement.left)
-			transform.position += glm::right(transform.rotation) * speed * dt;
+			transform.position += transform.rotation * glm::right * speed * dt;
 
 		if (movement.left && !movement.right)
-			transform.position -= glm::right(transform.rotation) * speed * dt;
+			transform.position -= transform.rotation * glm::right * speed * dt;
+	}
+
+	void PlayerInput::Apply(Transform& pTransform, Transform& cTransform) const
+	{
+		Apply(pTransform);
+
+		glm::vec3 right  = cTransform.rotation * glm::right;
+		glm::quat qPitch = glm::angleAxis(axis.y, right);
+
+		glm::quat proposed   = qPitch * cTransform.rotation;
+		glm::vec3 newForward = proposed * glm::forward;
+
+		float angle = glm::degrees(glm::asin(glm::normalize(newForward).y));
+
+		if (angle < 80.0f && angle > -80.0f)
+		{
+			cTransform.rotation = glm::normalize(qPitch * cTransform.rotation);
+		}
 	}
 
 	void PlayerInput::Apply(Transform& transform) const
 	{
-		transform.rotation.x += axis.x;
-		transform.rotation.z += axis.y;
+		transform.rotation = glm::normalize(glm::angleAxis(axis.x, glm::up) * transform.rotation);
 	}
 }

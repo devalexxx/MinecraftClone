@@ -5,11 +5,12 @@
 #include "Client/World/Context.h"
 #include "Client/Module/PlayerSession/Component.h"
 #include "Client/Module/PlayerSession/Module.h"
+#include "Client/Module/Camera/Module.h"
 
-#include "Common/Utils/Logging.h"
 #include "Common/Module/WorldEntity/Module.h"
 #include "Common/Module/WorldEntity/Prefab.h"
 #include "Common/Utils/Assert.h"
+#include "Common/Utils/Logging.h"
 
 namespace Mcc
 {

@@ -6,6 +6,7 @@
 #define MCC_COMMON_MODULE_WORLD_ENTITY_COMPONENT_H
 
 #include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include <unordered_map>
 #include <string>
@@ -19,10 +20,14 @@ namespace glm
 	void serialize(Archive& ar, glm::vec3& vec);
 
 	template<class Archive>
-	void serialize(Archive& ar, glm::vec2& vec);
+	void serialize(Archive& ar, glm::quat& quat);
 
-	glm::vec3 forward(const glm::vec3& rotation);
-	glm::vec3 right  (const glm::vec3& rotation);
+	static constexpr glm::vec3 forward { 0, 0, -1 };
+	static constexpr glm::vec3 right   { 1, 0,  0 };
+	static constexpr glm::vec3 up	   { 0, 1,  0 };
+
+//	glm::vec3 forward(const glm::quat& rotation);
+//	glm::vec3 right  (const glm::quat& rotation);
 
 }
 
@@ -40,7 +45,7 @@ namespace Mcc
 	struct Transform
 	{
 			glm::vec3 position;
-			glm::vec3 rotation;
+			glm::quat rotation;
 			glm::vec3 scale;
 	};
 

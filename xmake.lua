@@ -15,6 +15,8 @@ if is_mode("debug") then
     set_warnings("allextra")
 end
 
+add_defines("GLM_ENABLE_EXPERIMENTAL")
+
 target("MCCCommon")
     set_kind("static")
 

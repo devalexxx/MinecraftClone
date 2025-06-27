@@ -42,8 +42,8 @@ namespace Mcc
 				const auto elapsed = std::chrono::duration<float>(delayedNow - a.time).count();
 				const auto length  = std::chrono::duration<float>(b.time     - a.time).count();
 
-				transform.position = glm::mix(a.transform.position, b.transform.position, elapsed / length);
-				transform.rotation = glm::mix(a.transform.rotation, b.transform.rotation, elapsed / length);
+				transform.position = glm::mix  (a.transform.position, b.transform.position, elapsed / length);
+				transform.rotation = glm::slerp(a.transform.rotation, b.transform.rotation, elapsed / length);
 				transform.scale	   = a.transform.scale;
 				break;
 			}

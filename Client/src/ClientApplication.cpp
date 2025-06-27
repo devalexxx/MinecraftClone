@@ -9,6 +9,7 @@
 #include "Client/Module/EntityReplication/Module.h"
 #include "Client/Module/PlayerInput/Module.h"
 #include "Client/Module/EntityPrediction/Module.h"
+#include "Client/Module/Camera/Module.h"
 
 #include "Common/Module/PlayerEntity/Module.h"
 #include "Common/Module/WorldEntity/Module.h"
@@ -81,6 +82,7 @@ namespace Mcc
 		mWorld.import<EntityReplicationModule>();
 		mWorld.import<EntityPredictionModule>();
 		mWorld.import<PlayerEntityModule>();
+		mWorld.import<CameraModule>();
 		mWorld.import<PlayerInputModule>();
 		mWorld.import<Renderer>();
 

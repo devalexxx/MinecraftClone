@@ -12,9 +12,9 @@ namespace glm
 	}
 
 	template<class Archive>
-	void serialize(Archive& ar, glm::vec2& vec)
+	void serialize(Archive& ar, glm::quat& quat)
 	{
-		ar(vec.x, vec.y);
+		ar(quat.x, quat.y, quat.z, quat.w);
 	}
 
 }

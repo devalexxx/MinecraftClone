@@ -45,6 +45,7 @@ namespace Mcc
 			[[nodiscard]] bool NotNull() const;
 
 			void Apply(Transform& transform, float dt, float speed) const;
+			void Apply(Transform& pTransform, Transform& cTransform) const;
 			void Apply(Transform& transform) const;
 	};
 

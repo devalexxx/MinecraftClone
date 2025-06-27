@@ -5,6 +5,7 @@
 #include "Client/Module/PlayerInput/System.h"
 #include "Client/ClientNetworkManager.h"
 #include "Client/World/Context.h"
+#include "Client/Module/Camera/Tag.h"
 
 #include "Common/Module/WorldEntity/Component.h"
 
@@ -25,10 +26,18 @@ namespace Mcc
 			current.input.meta.dt = delta;
 			net.Send<OnPlayerInput>({ current.input }, ENET_PACKET_FLAG_RELIABLE, 0);
 
-			it.entity(row).get([&current, speed, delta](Transform& transform) {
-				current.input.Apply(transform);
-				current.input.Apply(transform, delta, speed);
-		  	});
+			auto entity = it.entity(row);
+			entity.get([&](Transform& pTransform) {
+				entity.children([&](flecs::entity child) {
+					if (child.has<CameraTag>())
+					{
+						child.get([&](Transform& cTransform) {
+							current.input.Apply(pTransform, cTransform);
+							current.input.Apply(pTransform, delta, speed);
+						});
+					}
+				});
+			});
 
 			queue.data.push_back(current.input);
 			current.input.axis = {};

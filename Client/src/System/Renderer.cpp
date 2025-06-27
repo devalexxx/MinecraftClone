@@ -7,12 +7,13 @@
 #include "Client/System/Renderer.h"
 #include "Client/World/Context.h"
 #include "Client/Utils.h"
+#include "Client/Module/Camera/Tag.h"
 
-#include "Common/Network/Packet.h"
+#include "Common/Module/WorldEntity/Tag.h"
 
-#include <flecs.h>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 namespace Mcc
 {
@@ -20,6 +21,8 @@ namespace Mcc
 	Renderer::Renderer(flecs::world& world) : mProjection(glm::perspective(glm::radians(75.f), 1024.f / 720.f, .0f, 100.f))
 	{
 		world.module<Renderer>();
+
+		mCameraQuery = world.query_builder<const Transform, const Transform>().with<ActiveCameraTag>().term_at(1).parent().cascade().build();
 
 		mCube.SetVertices(vertices);
 		mCube.SetColor({ .9f, .9f, .0f });
@@ -49,11 +52,12 @@ namespace Mcc
 		glEnable(GL_CULL_FACE_MODE);
 
 		world.system<const Transform>()
+		    .with<WorldEntityTag>()
 			.run([&, this](flecs::iter& it) {
 				static std::array<glm::mat4, 3> models = {{
 					glm::translate(glm::mat4(1.f), { 0, 0, 0 }),
-					glm::translate(glm::mat4(1.f), { 0, 1, 0 }),
 					glm::translate(glm::mat4(1.f), { 0, 2, 0 }),
+					glm::translate(glm::mat4(1.f), { 0, 4, 0 }),
 				}};
 
 				const auto ctx = static_cast<ClientWorldContext*>(world.get_ctx());
@@ -61,11 +65,15 @@ namespace Mcc
 				auto id = ctx->networkToLocal.find(ctx->playerInfo.id);
 				if (id != ctx->networkToLocal.cend() && world.exists(id->second))
 				{
-					flecs::entity entity = world.entity(id->second);
-					auto* t = entity.get<Transform>();
+					Transform cTransform {};
+					mCameraQuery.each([&cTransform](const Transform& transform, const Transform& pTransform) {
+						cTransform.position = pTransform.position + transform.position;
+						cTransform.rotation = glm::normalize(pTransform.rotation * transform.rotation);
+						cTransform.scale 	= transform.scale;
+					});
 
-					glm::vec3 up   = glm::cross(glm::right(t->rotation), glm::forward(t->rotation));
-					glm::mat4 view = glm::lookAt(t->position, t->position + glm::forward(t->rotation), up);
+					glm::vec3 up   = glm::normalize(glm::cross(cTransform.rotation * glm::right, cTransform.rotation * glm::forward));
+					glm::mat4 view = glm::lookAt(cTransform.position, cTransform.position + cTransform.rotation * glm::forward, up);
 
 					glCheck(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 					glCheck(glClearColor(1., 1., 1., 1.));
@@ -88,7 +96,10 @@ namespace Mcc
 
 						for (auto i: it)
 						{
-							mProgram.SetUniformMatrix(mProgram.GetUniformLocation("model"), glm::translate(glm::mat4(1.f), tr[i].position - glm::vec3(0, 2, 0)));
+							mProgram.SetUniformMatrix(
+								mProgram.GetUniformLocation("model"),
+								glm::translate(glm::mat4(1.f), tr[i].position) * glm::toMat4(tr[i].rotation) * glm::scale(glm::mat4(1.f), tr[i].scale)
+							);
 							mCube.Draw();
 						}
 					}

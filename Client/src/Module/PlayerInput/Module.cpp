@@ -10,6 +10,9 @@
 #include "Client/World/Context.h"
 #include "Client/Module/EntityPrediction/Tag.h"
 #include "Client/Module/EntityPrediction/Module.h"
+#include "Client/Module/Camera/Module.h"
+#include "Client/Module/Camera/Prefab.h"
+#include "Client/Module/Camera/Tag.h"
 
 #include "Common/Module/PlayerEntity/Component.h"
 #include "Common/Module/PlayerEntity/Prefab.h"
@@ -23,6 +26,7 @@ namespace Mcc
 	{
 		MCC_ASSERT	 (world.has<EntityPredictionModule>(), "PlayerInputModule require EntityPredictionModule, you must import it before.");
 		MCC_ASSERT	 (world.has<PlayerEntityModule>()    , "PlayerInputModule require PlayerEntityModule, you must import it before.");
+		MCC_ASSERT	 (world.has<CameraModule>()    		 , "PlayerInputModule require CameraModule, you must import it before.");
 		MCC_LOG_DEBUG("Import PlayerInputModule...");
 		world.module<PlayerInputModule>();
 
@@ -59,7 +63,12 @@ namespace Mcc
 				MCC_LOG_WARN("No local entity associated to the player network id, make sure to import EntityReplicationModule before PlayerInputModule");
 				return;
 			}
-			world.entity(it->second).is_a<SelfPlayerEntityPrefab>();
+			auto entity = world.entity(it->second).is_a<SelfPlayerEntityPrefab>();
+			entity.is_a<SelfPlayerEntityPrefab>();
+			world.entity().child_of(entity)
+				.is_a<CameraPrefab>()
+				.add<ActiveCameraTag>()
+				.set<Transform>({ { 0, 2, 0 }, {}, { 1, 1, 1 } });
 		}
 	}
 
