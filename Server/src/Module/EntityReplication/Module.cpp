@@ -4,30 +4,34 @@
 
 #include "Server/Module/EntityReplication/Module.h"
 #include "Server/Module/EntityReplication/System.h"
+#include "Server/Module/EntityReplication/Component.h"
 
-#include "Common/Module/WorldEntity/Module.h"
-#include "Common/Utils/Logging.h"
+#include "Common/Module/Entity/Module.h"
+#include "Common/Module/Entity/Component.h"
 #include "Common/Utils/Assert.h"
+#include "Common/Utils/Logging.h"
 
 namespace Mcc
 {
 
 	EntityReplicationModule::EntityReplicationModule(flecs::world& world)
 	{
-		MCC_ASSERT	 (world.has<WorldEntityModule>(), "EntityReplicationModule require WorldEntityModule, you must import it before.");
+		MCC_ASSERT	 (world.has<EntityModule>(), "EntityReplicationModule require WorldEntityModule, you must import it before.");
 		MCC_LOG_DEBUG("Import EntityReplicationModule...");
 		world.module<EntityReplicationModule>();
 
-		world.system<const Transform, const WorldEntityExtra>()
-			.with<WorldEntityCreatedTag>()
+		world.component<EntityDirtyTag>();
+
+		world.system<const Transform, const Extra>()
+			.with<EntityCreatedTag>()
 			.run(BroadcastEntitiesCreated);
 
-		world.system<const Transform, const WorldEntityExtra>()
-		    .with<WorldEntityUpdatedTag>()
+		world.system<const Transform, const Extra>()
+		    .with<EntityDirtyTag>()
 			.run(BroadcastEntitiesUpdated);
 
 		world.system()
-			.with<WorldEntityDestroyedTag>()
+			.with<EntityDestroyedTag>()
 			.run(BroadcastEntitiesDestroyed);
 	}
 

@@ -3,28 +3,52 @@
 //
 
 #include "Client/Module/EntityReplication/Module.h"
+#include "Client/Module/EntityReplication/System.h"
+#include "Client/Module/EntityReplication/Component.h"
+#include "Client/Module/ServerSession/Component.h"
 #include "Client/World/Context.h"
 
+#include "Common/Module/Entity/Component.h"
+#include "Common/Module/Entity/Module.h"
+#include "Common/Network/Packet.h"
 #include "Common/Utils/Assert.h"
 #include "Common/Utils/Logging.h"
-#include "Common/Module/WorldEntity/Module.h"
-#include "Common/Module/WorldEntity/Prefab.h"
-#include "Common/Network/Packet.h"
 
 namespace Mcc
 {
 
 	EntityReplicationModule::EntityReplicationModule(flecs::world& world)
 	{
-		MCC_ASSERT	 (world.has<WorldEntityModule>(), "EntityReplicationModule require WorldEntityModule, you must import it before.");
+		MCC_ASSERT	 (world.has<EntityModule>(), "EntityReplicationModule require WorldEntityModule, you must import it before.");
 		MCC_LOG_DEBUG("Import EntityReplicationModule...");
 		world.module<EntityReplicationModule>();
 
-		const auto* ctx = static_cast<ClientWorldContext*>(world.get_ctx());
+		world.component<InterpolationExcludedTag>();
+
+		world.system<Transform, SnapshotQueue>("EntityInterpolationSystem").without<InterpolationExcludedTag>().each(EntityInterpolationSystem);
+
+		auto* ctx = static_cast<ClientWorldContext*>(world.get_ctx());
 
 		ctx->networkManager.Subscribe<OnEntitiesCreated>  ([&world](const auto& event) { OnEntitiesCreatedHandler  (world, event); });
 		ctx->networkManager.Subscribe<OnEntitiesUpdated>  ([&world](const auto& event) { OnEntitiesUpdatedHandler  (world, event); });
 		ctx->networkManager.Subscribe<OnEntitiesDestroyed>([&world](const auto& event) { OnEntitiesDestroyedHandler(world, event); });
+
+		MCC_LOG_DEBUG("Load initial world state...");
+		const auto* initialState = world.get<InitialWorldState>();
+		if (initialState)
+		{
+			for (auto& state: initialState->entities)
+			{
+				auto entity = world.entity()
+					.is_a<NetworkEntityPrefab>()
+					.set<NetworkHandle>({ state.id })
+					.set(state.transform)
+					.set<SnapshotQueue>({});
+
+				ctx->localToNetwork.emplace(entity.id(), state.id);
+				ctx->networkToLocal.emplace(state.id, entity.id());
+			}
+		}
 	}
 
 	void EntityReplicationModule::OnEntitiesCreatedHandler(flecs::world& world, const OnEntitiesCreated& event)
@@ -41,8 +65,10 @@ namespace Mcc
 			}
 
 			auto entity = world.entity()
-			  .is_a<WorldEntityPrefab>()
-			  .set(state.transform);
+			  .is_a<NetworkEntityPrefab>()
+			  .set<NetworkHandle>({ state.id })
+			  .set(state.transform)
+			  .set<SnapshotQueue>({});
 
 			ctx->localToNetwork.emplace(entity.id(), state.id);
 			ctx->networkToLocal.emplace(state.id, entity.id());

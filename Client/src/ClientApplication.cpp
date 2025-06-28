@@ -4,15 +4,13 @@
 
 #include "Client/ClientApplication.h"
 #include "Client/World/Context.h"
-#include "Client/Module/PlayerSession/Module.h"
-#include "Client/Module/PlayerSession/Component.h"
 #include "Client/Module/EntityReplication/Module.h"
-#include "Client/Module/PlayerInput/Module.h"
-#include "Client/Module/EntityPrediction/Module.h"
 #include "Client/Module/Camera/Module.h"
+#include "Client/Module/ServerSession/Module.h"
+#include "Client/Module/ServerSession/Component.h"
+#include "Client/Module/Player/Module.h"
 
-#include "Common/Module/PlayerEntity/Module.h"
-#include "Common/Module/WorldEntity/Module.h"
+#include "Common/Module/Entity/Module.h"
 #include "Common/Network/Event.h"
 #include "Common/Utils/Logging.h"
 
@@ -64,8 +62,7 @@ namespace Mcc
 
 		MCC_LOG_DEBUG("Waiting for server information...");
 		mWorld.set_ctx(new ClientWorldContext { { {}, mNetworkManager, {}, {} }, {}, mWindow }, [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); });
-		mWorld.import<WorldEntityModule>();
-		mWorld.import<PlayerSessionModule>();
+		mWorld.import<ServerSessionModule>();
 
 		while (*mWorld.get<ServerConnectionState>() == ServerConnectionState::Pending)
 		{
@@ -79,11 +76,10 @@ namespace Mcc
 		}
 
 		MCC_LOG_DEBUG("Setup world...");
+		mWorld.import<EntityModule>();
 		mWorld.import<EntityReplicationModule>();
-		mWorld.import<EntityPredictionModule>();
-		mWorld.import<PlayerEntityModule>();
 		mWorld.import<CameraModule>();
-		mWorld.import<PlayerInputModule>();
+		mWorld.import<PlayerModule>();
 		mWorld.import<Renderer>();
 
 		MCC_LOG_INFO("Application started");

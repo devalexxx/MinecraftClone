@@ -4,12 +4,12 @@
 
 #include "Server/World/Context.h"
 #include "Server/Module/EntityReplication/System.h"
+#include "Server/Module/EntityReplication/Component.h"
 #include "Server/ServerNetworkManager.h"
 
-#include "Common/Module/WorldEntity/Component.h"
-#include "Common/Utils/Logging.h"
-#include "Common/Module/WorldEntity/Tag.h"
+#include "Common/Module/Entity/Component.h"
 #include "Common/Network/Packet.h"
+#include "Common/Utils/Logging.h"
 
 namespace Mcc
 {
@@ -21,8 +21,8 @@ namespace Mcc
 
 		while (it.next())
 		{
-			auto t = it.field<const Transform>		 (0);
-			auto e = it.field<const WorldEntityExtra>(1);
+			auto t = it.field<const Transform>(0);
+			auto e = it.field<const Extra>	  (1);
 
 			OnEntitiesCreated packet;
 			for (auto i: it)
@@ -37,7 +37,7 @@ namespace Mcc
 				{
 					MCC_LOG_WARN("Unable to retrieve network id for entity({})", entity.id());
 				}
-				entity.remove<WorldEntityCreatedTag>();
+				entity.remove<EntityCreatedTag>();
 			}
 			net.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
 		}
@@ -50,8 +50,8 @@ namespace Mcc
 
 		while (it.next())
 		{
-			auto t = it.field<const Transform>		 (0);
-			auto e = it.field<const WorldEntityExtra>(1);
+			auto t = it.field<const Transform>(0);
+			auto e = it.field<const Extra>    (1);
 
 			OnEntitiesUpdated packet;
 			for (auto i: it)
@@ -65,7 +65,7 @@ namespace Mcc
 				{
 					MCC_LOG_WARN("Unable to retrieve network id for entity({})", entity.id());
 				}
-				entity.remove<WorldEntityUpdatedTag>();
+				entity.remove<EntityDirtyTag>();
 			}
 			net.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
 		}

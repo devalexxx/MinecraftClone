@@ -8,9 +8,8 @@
 #include "Common/Network/PacketStream.h"
 #include "Common/Network/NetworkID.h"
 #include "Common/Utils/TypeList.h"
-#include "Common/PlayerInput.h"
 #include "Common/World/Time.h"
-#include "Common/Module/WorldEntity/Component.h"
+#include "Common/Module/Entity/Component.h"
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/queue.hpp>
@@ -76,7 +75,7 @@ namespace Mcc
 
 	struct OnPlayerInput
 	{
-			PlayerInput input;
+			UserInput input;
 	};
 
 	struct OnEntitiesCreated

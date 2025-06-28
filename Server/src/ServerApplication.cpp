@@ -4,14 +4,13 @@
 
 #include "Server/ServerApplication.h"
 #include "Server/Module/EntityReplication/Module.h"
-#include "Server/Module/PlayerInput/Module.h"
-#include "Server/Module/PlayerSession/Module.h"
+#include "Server/Module/Player/Module.h"
+#include "Server/Module/UserSession/Module.h"
 #include "Server/World/Context.h"
 
 #include "Common/Network/Packet.h"
 #include "Common/Network/Event.h"
-#include "Common/Module/PlayerEntity/Component.h"
-#include "Common/Module/WorldEntity/Module.h"
+#include "Common/Module/Entity/Module.h"
 #include "Common/Utils/Logging.h"
 
 #include <fmt/format.h>
@@ -48,11 +47,10 @@ namespace Mcc
 
 		MCC_LOG_DEBUG("Setup world...");
 		mWorld.set_ctx(new ServerWorldContext { { mInfo, mNetworkManager, {}, {} } }, [](void* ptr) { delete static_cast<ServerWorldContext*>(ptr); });
-		mWorld.import<WorldEntityModule> 	  ();
-		mWorld.import<PlayerEntityModule>	  ();
+		mWorld.import<EntityModule>		 	  ();
+		mWorld.import<UserSessionModule>	  ();
 		mWorld.import<EntityReplicationModule>();
-		mWorld.import<PlayerSessionModule>	  ();
-		mWorld.import<PlayerInputModule>	  ();
+		mWorld.import<PlayerModule>			  ();
 
 		MCC_LOG_INFO("Application started and listening on port {}", mNetworkManager.mAddr.port);
 		mWorld.set_target_fps(mInfo.tickRate);

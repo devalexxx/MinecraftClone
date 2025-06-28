@@ -7,9 +7,9 @@
 #include "Client/System/Renderer.h"
 #include "Client/World/Context.h"
 #include "Client/Utils.h"
-#include "Client/Module/Camera/Tag.h"
 
-#include "Common/Module/WorldEntity/Tag.h"
+#include "Client/Module/Camera/Component.h"
+#include "Common/Module/Entity/Component.h"
 
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
@@ -18,11 +18,11 @@
 namespace Mcc
 {
 
-	Renderer::Renderer(flecs::world& world) : mProjection(glm::perspective(glm::radians(75.f), 1024.f / 720.f, .0f, 100.f))
+	Renderer::Renderer(flecs::world& world)
 	{
 		world.module<Renderer>();
 
-		mCameraQuery = world.query_builder<const Transform, const Transform>().with<ActiveCameraTag>().term_at(1).parent().cascade().build();
+		mCameraQuery = world.query_builder<const Transform, const CameraSettings>().with<ActiveCameraTag>().build();
 
 		mCube.SetVertices(vertices);
 		mCube.SetColor({ .9f, .9f, .0f });
@@ -52,7 +52,7 @@ namespace Mcc
 		glEnable(GL_CULL_FACE_MODE);
 
 		world.system<const Transform>()
-		    .with<WorldEntityTag>()
+		    .with<NetworkEntityTag>()
 			.run([&, this](flecs::iter& it) {
 				static std::array<glm::mat4, 3> models = {{
 					glm::translate(glm::mat4(1.f), { 0, 0, 0 }),
@@ -65,15 +65,33 @@ namespace Mcc
 				auto id = ctx->networkToLocal.find(ctx->playerInfo.id);
 				if (id != ctx->networkToLocal.cend() && world.exists(id->second))
 				{
-					Transform cTransform {};
-					mCameraQuery.each([&cTransform](const Transform& transform, const Transform& pTransform) {
-						cTransform.position = pTransform.position + transform.position;
-						cTransform.rotation = glm::normalize(pTransform.rotation * transform.rotation);
-						cTransform.scale 	= transform.scale;
+					Transform 	   cTransform {};
+					CameraSettings cSettings  {};
+					mCameraQuery.run([&](flecs::iter& it) {
+						it.next();
+
+						auto t = it.field<const Transform>	   (0);
+						auto s = it.field<const CameraSettings>(1);
+
+						if (it.count() > 1)
+							MCC_LOG_WARN("More than one camera active");
+
+						if (it.count() <= 0)
+						{
+							MCC_LOG_ERROR("No active camera");
+						}
+						else
+						{
+							cTransform = t[0];
+							cSettings  = s[0];
+						}
+
+						while (it.next()) {}
 					});
 
 					glm::vec3 up   = glm::normalize(glm::cross(cTransform.rotation * glm::right, cTransform.rotation * glm::forward));
 					glm::mat4 view = glm::lookAt(cTransform.position, cTransform.position + cTransform.rotation * glm::forward, up);
+					glm::mat4 proj = glm::perspective(cSettings.fov, ctx->window.GetAspectRatio(), cSettings.zNear, cSettings.zFar);
 
 					glCheck(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 					glCheck(glClearColor(1., 1., 1., 1.));
@@ -82,7 +100,7 @@ namespace Mcc
 					mVertexArray.Bind();
 
 					mProgram.SetUniformMatrix(mProgram.GetUniformLocation("view"), view);
-					mProgram.SetUniformMatrix(mProgram.GetUniformLocation("projection"), mProjection);
+					mProgram.SetUniformMatrix(mProgram.GetUniformLocation("projection"), proj);
 
 					for (auto& model: models)
 					{

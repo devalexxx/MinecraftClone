@@ -11,7 +11,6 @@
 
 #include "Common/Application.h"
 #include "Common/Network/Packet.h"
-#include "Common/Module/PlayerEntity/Component.h"
 
 #include <enet/enet.h>
 

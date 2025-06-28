@@ -8,8 +8,9 @@
 #include "Client/Graphics/Mesh.h"
 #include "Client/Graphics/Program.h"
 #include "Client/Graphics/VertexArray.h"
+#include "Client/Module/Camera/Component.h"
 
-#include "Common/Module/WorldEntity/Component.h"
+#include "Common/Module/Entity/Component.h"
 
 #include <flecs.h>
 
@@ -20,12 +21,11 @@ namespace Mcc
 	{
 			Renderer(flecs::world& world);
 
-			flecs::query<const Transform, const Transform> mCameraQuery;
+			flecs::query<const Transform, const CameraSettings> mCameraQuery;
 
 			Mesh 		mCube;
 			Program 	mProgram;
 			VertexArray mVertexArray;
-			glm::mat4   mProjection;
 	};
 
 }

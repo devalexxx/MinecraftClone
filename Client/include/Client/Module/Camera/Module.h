@@ -10,9 +10,8 @@
 namespace Mcc
 {
 
-	class CameraModule
+	struct CameraModule
 	{
-		public:
 			CameraModule(flecs::world& world);
 	};
 
