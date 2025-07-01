@@ -37,7 +37,7 @@ namespace Mcc
 		const auto* initialState = world.get<InitialWorldState>();
 		if (initialState)
 		{
-			for (auto& state: initialState->entities)
+			for (auto& state: initialState->state.entities)
 			{
 				auto entity = world.entity()
 					.is_a<NetworkEntityPrefab>()

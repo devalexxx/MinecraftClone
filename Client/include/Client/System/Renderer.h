@@ -9,6 +9,7 @@
 #include "Client/Graphics/Program.h"
 #include "Client/Graphics/VertexArray.h"
 #include "Client/Module/Camera/Component.h"
+#include "Client/World/Context.h"
 
 #include "Common/Module/Entity/Component.h"
 
@@ -26,6 +27,10 @@ namespace Mcc
 			Mesh 		mCube;
 			Program 	mProgram;
 			VertexArray mVertexArray;
+
+			std::pair<glm::mat4, glm::mat4> GetCamera(const ClientWorldContext* ctx) const;
+			void RenderEntitiesSystem(flecs::iter& it);
+			void RenderTerrainSystem (flecs::iter& it);
 	};
 
 }

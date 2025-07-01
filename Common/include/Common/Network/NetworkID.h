@@ -11,7 +11,7 @@ namespace Mcc
 
 	inline NetworkID GenerateNetworkID()
 	{
-		static unsigned int current = 0;
+		static NetworkID current = 0;
 		return ++current;
 	}
 

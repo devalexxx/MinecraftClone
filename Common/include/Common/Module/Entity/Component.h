@@ -21,6 +21,9 @@ namespace glm
 	void serialize(Archive& ar, glm::vec3& vec);
 
 	template<class Archive>
+	void serialize(Archive& ar, glm::uvec3& vec);
+
+	template<class Archive>
 	void serialize(Archive& ar, glm::quat& quat);
 
 	static constexpr glm::vec3 forward { 0, 0, -1 };

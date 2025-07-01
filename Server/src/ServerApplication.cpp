@@ -8,10 +8,13 @@
 #include "Server/Module/UserSession/Module.h"
 #include "Server/World/Context.h"
 
-#include "Common/Network/Packet.h"
-#include "Common/Network/Event.h"
 #include "Common/Module/Entity/Module.h"
+#include "Common/Module/Terrain/Component.h"
+#include "Common/Module/Terrain/Module.h"
+#include "Common/Network/Event.h"
+#include "Common/Network/Packet.h"
 #include "Common/Utils/Logging.h"
+#include "Server/Module/TerrainReplication/Module.h"
 
 #include <fmt/format.h>
 
@@ -51,6 +54,91 @@ namespace Mcc
 		mWorld.import<UserSessionModule>	  ();
 		mWorld.import<EntityReplicationModule>();
 		mWorld.import<PlayerModule>			  ();
+		mWorld.import<TerrainModule>		  ();
+		mWorld.import<TerrainReplicationModule>();
+
+		{
+			auto* ctx = static_cast<ServerWorldContext*>(mWorld.get_ctx());
+			flecs::entity e;
+			NetworkID 	  id;
+			e = mWorld.entity("mcc:block:air")
+				.add<BlockTag>()
+				.set<BlockMeta>({ "mcc:block:air" });
+			id = GenerateNetworkID();
+			ctx->localToNetwork.emplace(e.id(), id);
+			ctx->networkToLocal.emplace(id, e.id());
+
+			e = mWorld.entity("mcc:block:stone")
+				.add<BlockTag>()
+				.set<BlockMeta>({ "mcc:block:stone" });
+			id = GenerateNetworkID();
+			ctx->localToNetwork.emplace(e.id(), id);
+			ctx->networkToLocal.emplace(id, e.id());
+			
+			e = mWorld.entity()
+				.add<ChunkTag>()
+				.set<ChunkPosition>({ { 0, 0, 0 } })
+				.set<ChunkData>({ std::make_unique<Chunk>(mWorld.lookup("mcc:block:air")) });
+			id = GenerateNetworkID();
+			ctx->localToNetwork.emplace(e.id(), id);
+			ctx->networkToLocal.emplace(id, e.id());
+
+			auto cData = e.get_mut<ChunkData>();
+			auto stone = mWorld.lookup("mcc:block:stone");
+
+			for (int x = 0; x < Chunk::Size; ++x)
+			{
+				for (int z = 0; z < Chunk::Size; ++z)
+				{
+					for (int y = 0; y < 12; ++y)
+					{
+						cData->data->Set({ x, y, z }, stone);
+					}
+				}
+			}
+
+			e = mWorld.entity()
+					.add<ChunkTag>()
+					.set<ChunkPosition>({ { 1, 0, 0 } })
+					.set<ChunkData>({ std::make_unique<Chunk>(mWorld.lookup("mcc:block:air")) });
+			id = GenerateNetworkID();
+			ctx->localToNetwork.emplace(e.id(), id);
+			ctx->networkToLocal.emplace(id, e.id());
+
+			cData = e.get_mut<ChunkData>();
+
+			for (int x = 0; x < Chunk::Size; ++x)
+			{
+				for (int z = 0; z < Chunk::Size; ++z)
+				{
+					for (int y = 0; y < 5; ++y)
+					{
+						cData->data->Set({ x, y, z }, stone);
+					}
+				}
+			}
+
+			e = mWorld.entity()
+					.add<ChunkTag>()
+					.set<ChunkPosition>({ { 0, 0, 1 } })
+					.set<ChunkData>({ std::make_unique<Chunk>(mWorld.lookup("mcc:block:air")) });
+			id = GenerateNetworkID();
+			ctx->localToNetwork.emplace(e.id(), id);
+			ctx->networkToLocal.emplace(id, e.id());
+
+			cData = e.get_mut<ChunkData>();
+
+			for (int x = 0; x < Chunk::Size; ++x)
+			{
+				for (int z = 0; z < Chunk::Size; ++z)
+				{
+					for (int y = 0; y < 16; ++y)
+					{
+						cData->data->Set({ x, y, z }, stone);
+					}
+				}
+			}
+		}
 
 		MCC_LOG_INFO("Application started and listening on port {}", mNetworkManager.mAddr.port);
 		mWorld.set_target_fps(mInfo.tickRate);

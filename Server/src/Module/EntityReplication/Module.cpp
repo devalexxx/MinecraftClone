@@ -16,7 +16,7 @@ namespace Mcc
 
 	EntityReplicationModule::EntityReplicationModule(flecs::world& world)
 	{
-		MCC_ASSERT	 (world.has<EntityModule>(), "EntityReplicationModule require WorldEntityModule, you must import it before.");
+		MCC_ASSERT	 (world.has<EntityModule>(), "EntityReplicationModule require EntityModule, you must import it before.");
 		MCC_LOG_DEBUG("Import EntityReplicationModule...");
 		world.module<EntityReplicationModule>();
 

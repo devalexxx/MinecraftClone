@@ -23,7 +23,9 @@ namespace Mcc
 
 		auto* ctx = static_cast<WorldContext*>(world.get_ctx());
 
-		mLookupQuery = world.query_builder<const Transform>().with<NetworkEntityTag>().build();
+		mLookupEntityQuery = world.query_builder<const Transform>().with<NetworkEntityTag>().build();
+		mLookupBlockQuery  = world.query_builder<const BlockMeta>().with<BlockTag>().build();
+		mLookupChunkQuery  = world.query_builder<const ChunkPosition, const ChunkData>().with<ChunkTag>().build();
 
 		ctx->networkManager.Subscribe<ConnectEvent>   ([&](const auto& event) { OnConnectEventHandler   (world, event); });
 		ctx->networkManager.Subscribe<DisconnectEvent>([&](const auto& event) { OnDisconnectEventHandler(world, event); });
@@ -35,9 +37,9 @@ namespace Mcc
 		const auto& net = dynamic_cast<ServerNetworkManager&>(ctx->networkManager);
 
 		OnConnection packet;
-		packet.initialStates = {};
+		packet.initialState = {};
 
-		mLookupQuery
+		mLookupEntityQuery
 			.run([&](flecs::iter& it) {
 				while (it.next())
 				{
@@ -54,9 +56,48 @@ namespace Mcc
 							continue;
 						}
 
-						packet.initialStates.push_back({ idIt->second, t[i], {} });
+						packet.initialState.entities.push_back({ idIt->second, t[i], {} });
 					}
 				}
+			});
+
+		mLookupBlockQuery
+			.each([&](flecs::entity entity, const BlockMeta& meta) {
+				const auto idIt = ctx->localToNetwork.find(entity.id());
+				if (idIt == ctx->localToNetwork.cend())
+				{
+					MCC_LOG_WARN("No network id associated to the local entity {}", entity.id());
+					return;
+				}
+
+				packet.initialState.blocks.push_back({ idIt->second, meta });
+			});
+
+		mLookupChunkQuery
+			.each([&](flecs::entity entity, const ChunkPosition& position, const ChunkData& data) {
+				const auto idIt = ctx->localToNetwork.find(entity.id());
+				if (idIt == ctx->localToNetwork.cend())
+				{
+					MCC_LOG_WARN("No network id associated to the local entity {}", entity.id());
+					return;
+				}
+
+				Chunk::Palette palette;
+				for (auto e: data.data->GetPalette())
+				{
+					auto eIt = ctx->localToNetwork.find(e);
+					if (eIt != ctx->localToNetwork.cend())
+					{
+						palette.push_back(eIt->second);
+					}
+					else
+					{
+						MCC_LOG_WARN("Unable to retrieve network id for block({}) in chunk({})", e, idIt->second);
+						return;
+					}
+				}
+
+				packet.initialState.chunks.push_back({ idIt->second, position, { palette, data.data->GetMapping() } });
 			});
 
 		auto id		= GenerateNetworkID();

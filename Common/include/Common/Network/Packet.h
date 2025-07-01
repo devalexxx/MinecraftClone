@@ -5,15 +5,12 @@
 #ifndef MCC_COMMON_NETWORK_PACKET_H
 #define MCC_COMMON_NETWORK_PACKET_H
 
-#include "Common/Network/PacketStream.h"
+#include "Common/Module/Entity/Component.h"
+#include "Common/Module/Terrain/Component.h"
 #include "Common/Network/NetworkID.h"
+#include "Common/Network/PacketStream.h"
 #include "Common/Utils/TypeList.h"
 #include "Common/World/Time.h"
-#include "Common/Module/Entity/Component.h"
-
-#include <cereal/archives/binary.hpp>
-#include <cereal/types/queue.hpp>
-#include <cereal/types/vector.hpp>
 
 #include <flecs.h>
 
@@ -36,7 +33,13 @@ namespace Mcc
 		struct OnPlayerInput,
 		struct OnEntitiesCreated,
 		struct OnEntitiesDestroyed,
-		struct OnEntitiesUpdated
+		struct OnEntitiesUpdated,
+		struct OnBlocksCreated,
+		struct OnBlocksDestroyed,
+		struct OnBlocksUpdated,
+		struct OnChunksCreated,
+		struct OnChunksDestroyed,
+		struct OnChunksUpdated
 	>;
 
 	struct EntityState
@@ -46,6 +49,26 @@ namespace Mcc
 			Transform transform;
 
 			std::unordered_map<std::string, std::string> extra;
+	};
+
+	struct BlockDesc
+	{
+			NetworkID id;
+			BlockMeta meta;
+	};
+
+	struct ChunkDesc
+	{
+			NetworkID  	  id;
+			ChunkPosition position;
+			Chunk	      data;
+	};
+
+	struct InitialState
+	{
+			std::vector<EntityState> entities;
+			std::vector<BlockDesc>	 blocks;
+			std::vector<ChunkDesc>   chunks;
 	};
 
 	struct PlayerInfo
@@ -61,16 +84,21 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, EntityState& packet);
 	template<typename Archive>
+	void serialize(Archive& ar, BlockDesc& packet);
+	template<typename Archive>
+	void serialize(Archive& ar, ChunkDesc& packet);
+	template<typename Archive>
+	void serialize(Archive& ar, InitialState& packet);
+	template<typename Archive>
 	void serialize(Archive& ar, PlayerInfo& packet);
 	template<typename Archive>
 	void serialize(Archive& ar, ServerInfo& packet);
 
 	struct OnConnection
 	{
-			PlayerInfo playerInfo;
-			ServerInfo serverInfo;
-
-			std::vector<EntityState> initialStates;
+			PlayerInfo   playerInfo;
+			ServerInfo   serverInfo;
+			InitialState initialState;
 	};
 
 	struct OnPlayerInput
@@ -93,6 +121,36 @@ namespace Mcc
 			std::vector<EntityState> states;
 	};
 
+	struct OnBlocksCreated
+	{
+			std::vector<BlockDesc> blocks;
+	};
+
+	struct OnBlocksDestroyed
+	{
+			std::vector<NetworkID> ids;
+	};
+
+	struct OnBlocksUpdated
+	{
+			std::vector<BlockDesc> blocks;
+	};
+
+	struct OnChunksCreated
+	{
+			std::vector<ChunkDesc> chunks;
+	};
+
+	struct OnChunksDestroyed
+	{
+			std::vector<NetworkID> ids;
+	};
+
+	struct OnChunksUpdated
+	{
+			std::vector<ChunkDesc> chunks;
+	};
+
 	template<typename Archive>
 	void serialize(Archive& ar, OnConnection& packet);
 	template<typename Archive>
@@ -103,6 +161,18 @@ namespace Mcc
 	void serialize(Archive& ar, OnEntitiesDestroyed& packet);
 	template<typename Archive>
 	void serialize(Archive& ar, OnEntitiesUpdated& packet);
+	template<typename Archive>
+	void serialize(Archive& ar, OnBlocksCreated& packet);
+	template<typename Archive>
+	void serialize(Archive& ar, OnBlocksDestroyed& packet);
+	template<typename Archive>
+	void serialize(Archive& ar, OnBlocksUpdated& packet);
+	template<typename Archive>
+	void serialize(Archive& ar, OnChunksCreated& packet);
+	template<typename Archive>
+	void serialize(Archive& ar, OnChunksDestroyed& packet);
+	template<typename Archive>
+	void serialize(Archive& ar, OnChunksUpdated& packet);
 
 }
 

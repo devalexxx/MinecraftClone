@@ -9,8 +9,10 @@
 #include "Client/Module/ServerSession/Module.h"
 #include "Client/Module/ServerSession/Component.h"
 #include "Client/Module/Player/Module.h"
+#include "Client/Module/TerrainReplication/Module.h"
 
 #include "Common/Module/Entity/Module.h"
+#include "Common/Module/Terrain/Module.h"
 #include "Common/Network/Event.h"
 #include "Common/Utils/Logging.h"
 
@@ -28,22 +30,6 @@ namespace Mcc
 	{
 		mNetworkManager.Subscribe<MalformedPacketEvent>([](const auto&) { MCC_LOG_WARN("Handle malformed packet"); });
 	}
-
-//		mWorld.system()
-//			.run([](flecs::iter& it) {
-//				static float elapsed = 0;
-//				static float frames  = 0;
-//
-//				elapsed += it.delta_time();
-//				frames	+= 1;
-//
-//				if (elapsed >= 1)
-//				{
-//					fmt::print("fps: {}\n", frames);
-//					frames  = 0;
-//					elapsed = 0;
-//				}
-//			});
 
 	int ClientApplication::Run()
 	{
@@ -81,6 +67,24 @@ namespace Mcc
 		mWorld.import<CameraModule>();
 		mWorld.import<PlayerModule>();
 		mWorld.import<Renderer>();
+		mWorld.import<TerrainModule>();
+		mWorld.import<TerrainReplicationModule>();
+
+		mWorld.system()
+			.run([](flecs::iter& it) {
+				static float elapsed = 0;
+				static float frames  = 0;
+
+				elapsed += it.delta_time();
+				frames	+= 1;
+
+				if (elapsed >= 1)
+				{
+					fmt::print("fps: {}\n", frames);
+					frames  = 0;
+					elapsed = 0;
+				}
+			});
 
 		MCC_LOG_INFO("Application started");
 

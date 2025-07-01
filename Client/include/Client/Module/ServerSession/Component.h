@@ -14,7 +14,7 @@ namespace Mcc
 
 	struct InitialWorldState
 	{
-			std::vector<EntityState> entities;
+			InitialState state;
 	};
 
 	enum class ServerConnectionState

@@ -35,7 +35,7 @@ namespace Mcc
 		ctx->playerInfo = packet.playerInfo;
 		ctx->serverInfo = packet.serverInfo;
 
-		world.set<InitialWorldState>	({ packet.initialStates });
+		world.set<InitialWorldState>	({ packet.initialState });
 		world.set<ServerConnectionState>(ServerConnectionState::Connected);
 	}
 
