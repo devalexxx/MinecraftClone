@@ -50,7 +50,7 @@ namespace Mcc
 		auto it = mParameters.find(parameter);
 		if (it != mParameters.cend())
 		{
-			return ref(it->second);
+			return it->second;
 		}
 		else
 		{

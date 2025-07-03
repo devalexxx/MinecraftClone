@@ -16,7 +16,7 @@ namespace Mcc
 	class CommandLineStore
 	{
 		public:
-			using OptParameter = std::optional<std::reference_wrapper<const std::string>>;
+			using OptParameter = std::optional<std::string_view>;
 
 		public:
 			CommandLineStore(int argc, char** argv);

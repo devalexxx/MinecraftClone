@@ -18,6 +18,8 @@
 
 #include <fmt/format.h>
 
+#include <charconv>
+
 namespace Mcc
 {
 
@@ -28,10 +30,10 @@ namespace Mcc
 	ServerApplication::ServerApplication(int argc, char** argv) :
 		Application(argc, argv), mInfo({ DefaultTickRate }), mNetworkManager(mCmdLineStore)
 	{
-		CommandLineStore::OptParameter param;
-		if ((param = mCmdLineStore.GetParameter("tick-rate").or_else([&]{ return mCmdLineStore.GetParameter("tr"); })).has_value())
+		if (CommandLineStore::OptParameter param; (param = mCmdLineStore.GetParameter("tick-rate").or_else([&]{ return mCmdLineStore.GetParameter("tr"); })).has_value())
 		{
-			unsigned long tickRate = std::stoul(param.value());
+			unsigned long tickRate;
+			std::from_chars(param->cbegin(), param->cend(), tickRate);
 			if (tickRate < MinTickRate || tickRate > MaxTickRate) {
 				MCC_LOG_WARN("TickRate must be between {} and {}, it was set at {}", MinTickRate, MaxTickRate, DefaultTickRate);
 			}

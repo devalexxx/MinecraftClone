@@ -4,8 +4,10 @@
 
 #include "Client/ClientNetworkManager.h"
 
-#include "Common/Utils/Logging.h"
 #include "Common/CommandLineStore.h"
+#include "Common/Utils/Logging.h"
+
+#include <charconv>
 
 namespace Mcc
 {
@@ -15,10 +17,10 @@ namespace Mcc
 	{
 		CommandLineStore::OptParameter param;
 		if ((param = cmdLineStore.GetParameter("host").or_else([&]{ return cmdLineStore.GetParameter("h"); })).has_value())
-			enet_address_set_host(&mAddr, param->get().c_str());
+			enet_address_set_host(&mAddr, param->cbegin());
 
 		if ((param = cmdLineStore.GetParameter("port").or_else([&]{ return cmdLineStore.GetParameter("p"); })).has_value())
-			mAddr.port = std::stoi(param->get());
+			std::from_chars(param->cbegin(), param->cend(), mAddr.port);
 	}
 
 	ClientNetworkManager::~ClientNetworkManager()
