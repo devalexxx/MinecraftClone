@@ -85,15 +85,15 @@ namespace Mcc
 					return;
 				}
 				auto entity = world.entity(idIt->second);
-				auto queue 	= entity.get_mut<UserInputQueue>();
+				auto& queue = entity.get_mut<UserInputQueue>();
 
 				// Drop inputs already processed by the server
-				for (; !queue->data.empty(); queue->data.pop_front())
+				for (; !queue.data.empty(); queue.data.pop_front())
 				{
-					auto& input = queue->data.front();
+					auto& input = queue.data.front();
 					if (input.meta.id == id)
 					{
-						queue->data.pop_front();
+						queue.data.pop_front();
 						break;
 					}
 				}
@@ -101,12 +101,12 @@ namespace Mcc
 				MCC_ASSERT(queue->data.empty() || (!queue->data.empty() && queue->data.front().meta.id - id == 1), "The difference between front Player in queue and last Player processes by server should be equal to 1");
 
 				// Empty snapshot queue
-				auto* q = entity.get_mut<SnapshotQueue>();
-				while (!q->data.empty()) { q->data.pop_back(); }
+				auto& q = entity.get_mut<SnapshotQueue>();
+				while (!q.data.empty()) { q.data.pop_back(); }
 
 				// Set last received transform & reapply all input unprocessed by the server
 				entity.set(state->transform);
-				for (auto& input: queue->data)
+				for (auto& input: queue.data)
 				{
 					const float speed = 5.f;
 					entity.get([&input, speed](Transform& transform) {
@@ -127,8 +127,8 @@ namespace Mcc
 			MCC_LOG_WARN("The player network id {} isn't associated to a local entity", ctx->playerInfo.id);
 			return;
 		}
-		auto  entity = world.entity(it->second);
-		auto& input  = entity.get_ref<CurrentPlayerInput>()->input;
+		auto entity = world.entity(it->second);
+		auto input  = entity.get_ref<CurrentPlayerInput>()->input;
 
 		if (event.action == GLFW_PRESS || event.action == GLFW_RELEASE)
 		{

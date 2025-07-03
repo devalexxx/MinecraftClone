@@ -85,7 +85,7 @@ namespace Mcc
 			ctx->localToNetwork.emplace(e.id(), id);
 			ctx->networkToLocal.emplace(id, e.id());
 
-			auto cData = e.get_mut<ChunkData>();
+			auto cData = e.get_ref<ChunkData>();
 			auto stone = mWorld.lookup("mcc:block:stone");
 
 			for (int x = 0; x < Chunk::Size; ++x)
@@ -107,7 +107,7 @@ namespace Mcc
 			ctx->localToNetwork.emplace(e.id(), id);
 			ctx->networkToLocal.emplace(id, e.id());
 
-			cData = e.get_mut<ChunkData>();
+			cData = e.get_ref<ChunkData>();
 
 			for (int x = 0; x < Chunk::Size; ++x)
 			{
@@ -128,7 +128,7 @@ namespace Mcc
 			ctx->localToNetwork.emplace(e.id(), id);
 			ctx->networkToLocal.emplace(id, e.id());
 
-			cData = e.get_mut<ChunkData>();
+			cData = e.get_ref<ChunkData>();
 
 			for (int x = 0; x < Chunk::Size; ++x)
 			{

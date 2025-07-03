@@ -50,12 +50,12 @@ namespace Mcc
 		mWorld.set_ctx(new ClientWorldContext { { {}, mNetworkManager, {}, {} }, {}, mWindow }, [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); });
 		mWorld.import<ServerSessionModule>();
 
-		while (*mWorld.get<ServerConnectionState>() == ServerConnectionState::Pending)
+		while (mWorld.get<ServerConnectionState>() == ServerConnectionState::Pending)
 		{
 			mNetworkManager.Poll();
 		}
 
-		if (*mWorld.get<ServerConnectionState>() == ServerConnectionState::Error)
+		if (mWorld.get<ServerConnectionState>() == ServerConnectionState::Error)
 		{
 			MCC_LOG_ERROR("Failed to retrieve server information");
 			return EXIT_FAILURE;

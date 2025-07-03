@@ -31,7 +31,7 @@ namespace Mcc
 		ctx->networkManager.Subscribe<OnBlocksDestroyed>([&world](const auto& event) { OnBlocksDestroyedHandler(world, event); });
 
 		MCC_LOG_DEBUG("Load initial world state...");
-		const auto* initialState = world.get<InitialWorldState>();
+		const auto* initialState = world.try_get<InitialWorldState>();
 		if (initialState)
 		{
 			for (auto& desc: initialState->state.blocks)

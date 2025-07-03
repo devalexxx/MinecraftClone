@@ -34,7 +34,7 @@ namespace Mcc
 		ctx->networkManager.Subscribe<OnEntitiesDestroyed>([&world](const auto& event) { OnEntitiesDestroyedHandler(world, event); });
 
 		MCC_LOG_DEBUG("Load initial world state...");
-		const auto* initialState = world.get<InitialWorldState>();
+		const auto* initialState = world.try_get<InitialWorldState>();
 		if (initialState)
 		{
 			for (auto& state: initialState->state.entities)
