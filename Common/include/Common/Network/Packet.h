@@ -9,8 +9,9 @@
 #include "Common/Module/Terrain/Component.h"
 #include "Common/Network/NetworkID.h"
 #include "Common/Network/PacketStream.h"
-#include "Common/Utils/TypeList.h"
 #include "Common/World/Time.h"
+
+#include <Hexis/Core/TypeList.h>
 
 #include <flecs.h>
 
@@ -28,7 +29,7 @@ namespace Mcc
 			T packet;
 	};
 
-	using PacketList = TypeList<
+	using PacketList = Hx::TypeList<
 		struct OnConnection,
 		struct OnPlayerInput,
 		struct OnEntitiesCreated,

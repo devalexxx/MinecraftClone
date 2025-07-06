@@ -10,7 +10,7 @@ namespace Mcc
 	NetworkEventManager::NetworkEventManager() :
 		EventManager<NetworkEventTag>()
 	{
-		PacketList::ForEachType<HandlerMapper>({ *this });
+		PacketList::Apply<HandlerMapper>({ *this });
 	}
 
 	void NetworkEventManager::DispatchPacket(const ENetPeer* peer, const ENetPacket* packet)
