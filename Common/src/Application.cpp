@@ -4,6 +4,7 @@
 
 #include "Common/Application.h"
 
+#include <charconv>
 #include <csignal>
 #include <thread>
 
@@ -27,11 +28,16 @@ namespace Mcc
 	{
 #if MCC_DEBUG
 		mWorld.import<flecs::stats>();
-		CommandLineStore::OptParameter param;;
-		if ((param = mCmdLineStore.GetParameter("fport").or_else([&]{ return mCmdLineStore.GetParameter("fp"); })).has_value())
-			mWorld.set<flecs::Rest>({.port=static_cast<uint16_t>(std::stoi(param->get()))});
+		if (const auto param = mCmdLineStore.GetParameter("fport").or_else([&]{ return mCmdLineStore.GetParameter("fp"); }); param.has_value())
+		{
+			flecs::Rest config;
+			std::from_chars(param->cbegin(), param->cend(), config.port);;
+			mWorld.set<flecs::Rest>(config);
+		}
 		else
+		{
 			mWorld.set<flecs::Rest>({});
+		}
 #endif
 
 		sigset_t set;

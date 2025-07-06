@@ -32,7 +32,7 @@
 #ifdef MCC_LOG_FULL
 #	define MCC_LOG_FMT           "{} | {} | {:<25.25} | {:<27.27}:{:<3} | "
 #	define MCC_LOG_FILE          strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__
-#	define MCC_LOG_TIME          Mcc::Timenow()
+#	define MCC_LOG_TIME          Mcc::_::Timenow()
 #	define MCC_LOG_NL            "\n"
 #	define MCC_LOG_ARGS(LOG_TAG) MCC_LOG_TIME, LOG_TAG, MCC_LOG_FILE, __FUNCTION__, __LINE__
 #else

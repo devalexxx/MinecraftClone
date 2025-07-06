@@ -98,7 +98,7 @@ namespace Mcc
 					}
 				}
 
-				MCC_ASSERT(queue->data.empty() || (!queue->data.empty() && queue->data.front().meta.id - id == 1), "The difference between front Player in queue and last Player processes by server should be equal to 1");
+				MCC_ASSERT(queue.data.empty() || (!queue.data.empty() && queue.data.front().meta.id - id == 1), "The difference between front Player in queue and last Player processes by server should be equal to 1");
 
 				// Empty snapshot queue
 				auto& q = entity.get_mut<SnapshotQueue>();
