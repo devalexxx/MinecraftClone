@@ -2,15 +2,17 @@
 // Created by Alex on 27/08/2024.
 //
 
+#include "Common/Module/Terrain/Component.h"
 #include "Common/World/Chunk.h"
-#include "Common/Utils/Assert.h"
+
+#include <algorithm>
 
 namespace Mcc
 {
 
 	Chunk::Chunk() :
-		mMapping({ Size * Size * Height, 2 }),
-		mPalette({})
+		mPalette({}),
+		mMapping({ Size * Size * Height, 2 })
 	{}
 
 	Chunk::Chunk(flecs::entity_t filler) : mMapping({ Size * Size * Height, 2 })
@@ -22,27 +24,54 @@ namespace Mcc
 		}
 	}
 
-	Chunk::Chunk(Chunk::Palette palette, BitArray mapping) :
+	Chunk::Chunk(Palette palette, BitArray mapping) :
 		mPalette(std::move(palette)),
 		mMapping(std::move(mapping))
 	{}
 
-	flecs::entity_t Chunk::Get(glm::uvec3 position) const
+	flecs::entity_t Chunk::Get(const glm::ivec3 position) const
 	{
-		return mPalette[mMapping.Get(IndexFromPosition(position))];
+		if (position.x < 0 || position.y < 0 || position.z < 0 || position.x >= Size || position.y >= Height || position.z >= Size)
+			return flecs::entity::null().id();
+
+		const size_t index = IndexFromPosition(position);
+		return index < mMapping.GetSize() ? mPalette[mMapping.Get(index)] : flecs::entity::null().id();
 	}
 
-	void Chunk::Set(glm::uvec3 position, flecs::entity_t entity)
+	Hx::EnumArray<BlockFace, flecs::entity_t> Chunk::GetNeighbors(const glm::ivec3 position) const
 	{
-		auto it = std::find(mPalette.begin(), mPalette.end(), entity);
-		if (it == mPalette.cend())
+		static glm::ivec3 left	(-1,  0,  0);
+		static glm::ivec3 right	( 1,  0,  0);
+		static glm::ivec3 front	( 0,  0,  1);
+		static glm::ivec3 back	( 0,  0, -1);
+		static glm::ivec3 top	( 0,  1,  0);
+		static glm::ivec3 bottom( 0, -1,  0);
+
+		return {
+			{ BlockFace::Left,   Get(position + left)   },
+			{ BlockFace::Right,  Get(position + right)  },
+			{ BlockFace::Front,  Get(position + front)  },
+			{ BlockFace::Back,   Get(position + back)   },
+			{ BlockFace::Top,    Get(position + top)    },
+			{ BlockFace::Bottom, Get(position + bottom) }
+		};
+	}
+
+	void Chunk::Set(const glm::uvec3 position, const flecs::entity_t entity)
+	{
+		const size_t index = IndexFromPosition(position);
+
+		if (index >= mMapping.GetSize())
+			return;
+
+		if (const auto it = std::ranges::find(mPalette, entity); it == mPalette.cend())
 		{
 			mPalette.push_back(entity);
-			mMapping.Set(IndexFromPosition(position), mPalette.size() - 1);
+			mMapping.Set(index, mPalette.size() - 1);
 		}
 		else
 		{
-			mMapping.Set(IndexFromPosition(position), std::distance(mPalette.begin(), it));
+			mMapping.Set(index, std::distance(mPalette.begin(), it));
 		}
 	}
 
@@ -56,8 +85,8 @@ namespace Mcc
 		return mMapping;
 	}
 
-	size_t Chunk::IndexFromPosition(glm::uvec3 position)
+	size_t Chunk::IndexFromPosition(const glm::uvec3 position)
 	{
-		return position.x + (position.y * Size) + (position.z * Size * Height);;
+		return position.x + (position.y * Size) + (position.z * Size * Height);
 	}
 }

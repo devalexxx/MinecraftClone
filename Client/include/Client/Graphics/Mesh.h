@@ -6,6 +6,7 @@
 #define MCC_CLIENT_GRAPHICS_MESH_H
 
 #include "Client/Graphics/Buffer.h"
+#include "Client/Graphics/PackedVertex.h"
 
 #include <glm/glm.hpp>
 
@@ -14,14 +15,6 @@
 namespace Mcc
 {
 
-	struct PackedVertex
-	{
-			glm::vec3 vertex;
-			glm::vec3 color;
-			glm::vec2 uv;
-			glm::vec3 normal;
-	};
-
 	class Program;
 
 	class Mesh
@@ -29,6 +22,7 @@ namespace Mcc
 		public:
 			Mesh();
 
+			void SetPackedVertex(std::span<PackedVertex> vertices);
 			void SetVertices(std::span<glm::vec3> vertices);
 			void SetColor(glm::vec3 color);
 			void SetColors(std::span<glm::vec3> colors);

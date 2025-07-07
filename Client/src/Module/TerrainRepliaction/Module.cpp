@@ -3,6 +3,8 @@
 //
 
 #include "Client/Module/TerrainReplication/Module.h"
+#include "Client/Module/TerrainReplication/Component.h"
+#include "Client/Module/TerrainReplication/System.h"
 #include "Client/Module/ServerSession/Component.h"
 #include "Client/World/Context.h"
 
@@ -18,6 +20,12 @@ namespace Mcc
 		MCC_ASSERT	 (world.has<TerrainModule>(), "TerrainReplicationModule require TerrainModule, you must import it before.");
 		MCC_LOG_DEBUG("Import TerrainReplication...");
 		world.module<TerrainReplicationModule>();
+
+		world.component<ChunkDirtyTag>();
+
+		world.system("RemoveChunkDirty")
+			.with<ChunkDirtyTag>()
+			.each(RemoveChunkDirtySystem);
 
 		auto* ctx = static_cast<ClientWorldContext*>(world.get_ctx());
 
@@ -70,6 +78,7 @@ namespace Mcc
 				{
 					auto entity = world.entity()
 						.add<ChunkTag>()
+						.add<ChunkDirtyTag>()
 						.set<ChunkPosition>(desc.position)
 						.set<ChunkData>({ std::make_unique<Chunk>(palette, desc.data.GetMapping()) });
 

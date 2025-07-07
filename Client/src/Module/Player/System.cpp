@@ -18,6 +18,7 @@ namespace Mcc
 
 		if (!Helper::IsNull(current.input))
 		{
+
 			const float speed = 5.f;
 			const float delta = it.delta_time();
 

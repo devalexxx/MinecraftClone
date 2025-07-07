@@ -26,6 +26,11 @@ namespace Mcc
 		Solid, Fluid, Gas
 	};
 
+	enum class BlockFace
+	{
+		Left, Right, Front, Back, Top, Bottom, Count
+	};
+
 	struct BlockMeta
 	{
 			std::string id;

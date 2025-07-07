@@ -3,13 +3,15 @@
 //
 
 #include "Client/ClientApplication.h"
-#include "Client/World/Context.h"
-#include "Client/Module/EntityReplication/Module.h"
 #include "Client/Module/Camera/Module.h"
-#include "Client/Module/ServerSession/Module.h"
-#include "Client/Module/ServerSession/Component.h"
+#include "Client/Module/EntityReplication/Module.h"
 #include "Client/Module/Player/Module.h"
+#include "Client/Module/Renderer/Module.h"
+#include "Client/Module/ServerSession/Component.h"
+#include "Client/Module/ServerSession/Module.h"
+#include "Client/Module/TerrainRenderer/Module.h"
 #include "Client/Module/TerrainReplication/Module.h"
+#include "Client/World/Context.h"
 
 #include "Common/Module/Entity/Module.h"
 #include "Common/Module/Terrain/Module.h"
@@ -69,6 +71,8 @@ namespace Mcc
 		mWorld.import<Renderer>();
 		mWorld.import<TerrainModule>();
 		mWorld.import<TerrainReplicationModule>();
+		mWorld.import<RendererModule>();
+		mWorld.import<TerrainRendererModule>();
 
 		mWorld.system()
 			.run([](flecs::iter& it) {
@@ -80,7 +84,7 @@ namespace Mcc
 
 				if (elapsed >= 1)
 				{
-					fmt::print("fps: {}\n", frames);
+					MCC_LOG_DEBUG("fps: {}", frames);
 					frames  = 0;
 					elapsed = 0;
 				}

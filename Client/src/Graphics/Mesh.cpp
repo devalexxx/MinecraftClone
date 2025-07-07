@@ -14,21 +14,22 @@ namespace Mcc
 		mVertexBuffer(GL_ARRAY_BUFFER), mIndexBuffer(GL_ELEMENT_ARRAY_BUFFER)
 	{}
 
+	void Mesh::SetPackedVertex(std::span<PackedVertex> vertices)
+	{
+		if (mVertices.size() < vertices.size())
+			mVertices.resize(vertices.size());
+
+		std::copy(vertices.begin(), vertices.end(), mVertices.begin());
+	}
+
 	void Mesh::SetVertices(std::span<glm::vec3> vertices)
 	{
-		if (mVertices.empty())
+		if (mVertices.size() < vertices.size())
+			mVertices.resize(vertices.size());
+
+		for (size_t i = 0; i < vertices.size(); ++i)
 		{
-			std::transform(vertices.begin(), vertices.end(), std::back_inserter(mVertices), [](const glm::vec3& v) {
-				return PackedVertex { .vertex = v };
-			});
-		}
-		else
-		{
-			assert(mVertices.size() == vertices.size());
-			for (size_t i = 0; i < mVertices.size(); ++i)
-			{
-				mVertices[i].vertex = vertices[i];
-			}
+			mVertices[i].vertex = vertices[i];
 		}
 	}
 
@@ -42,55 +43,34 @@ namespace Mcc
 
 	void Mesh::SetColors(std::span<glm::vec3> colors)
 	{
-		if (mVertices.empty())
+		if (mVertices.size() < colors.size())
+			mVertices.resize(colors.size());
+
+		for (size_t i = 0; i < colors.size(); ++i)
 		{
-			std::transform(colors.begin(), colors.end(), std::back_inserter(mVertices), [](const glm::vec3& c) {
-				return PackedVertex { .color = c };
-			});
-		}
-		else
-		{
-			assert(mVertices.size() == colors.size());
-			for (size_t i = 0; i < mVertices.size(); ++i)
-			{
-				mVertices[i].color = colors[i];
-			}
+			mVertices[i].color = colors[i];
 		}
 	}
 
 	void Mesh::SetUvs(std::span<glm::vec2> uvs)
 	{
-		if (mVertices.empty())
+		if (mVertices.size() < uvs.size())
+			mVertices.resize(uvs.size());
+
+		for (size_t i = 0; i < uvs.size(); ++i)
 		{
-			std::transform(uvs.begin(), uvs.end(), std::back_inserter(mVertices), [](const glm::vec2& uv) {
-				return PackedVertex { .uv = uv };
-			});
-		}
-		else
-		{
-			assert(mVertices.size() == uvs.size());
-			for (size_t i = 0; i < mVertices.size(); ++i)
-			{
-				mVertices[i].uv = uvs[i];
-			}
+			mVertices[i].uv = uvs[i];
 		}
 	}
 
 	void Mesh::SetNormals(std::span<glm::vec3> normals)
 	{
-		if (mVertices.empty())
+		if (mVertices.size() < normals.size())
+			mVertices.resize(normals.size());
+
+		for (size_t i = 0; i < normals.size(); ++i)
 		{
-			std::transform(normals.begin(), normals.end(), std::back_inserter(mVertices), [](const glm::vec3& n) {
-				return PackedVertex { .normal = n };
-			});
-		}
-		else
-		{
-			assert(mVertices.size() == normals.size());
-			for (size_t i = 0; i < mVertices.size(); ++i)
-			{
-				mVertices[i].normal = normals[i];
-			}
+			mVertices[i].normal = normals[i];
 		}
 	}
 
@@ -103,6 +83,7 @@ namespace Mcc
 	{
 		mVertexBuffer.Create();
 		mVertexBuffer.SetData(std::span(mVertices), GL_STATIC_DRAW);
+
 		program.SetVertexAttribPointer("inVertex", 3, GL_FLOAT, sizeof (PackedVertex), 0);
 		program.SetVertexAttribPointer("inColor" , 3, GL_FLOAT, sizeof (PackedVertex), 3 * sizeof (float));
 

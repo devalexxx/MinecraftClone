@@ -7,6 +7,8 @@
 
 #include "Common/Utils/BitArray.h"
 
+#include <Hexis/Core/EnumArray.h>
+
 #include <glm/glm.hpp>
 
 #include <flecs.h>
@@ -15,6 +17,8 @@
 
 namespace Mcc
 {
+	enum class BlockFace;
+
 	class Chunk
 	{
 		public:
@@ -27,9 +31,10 @@ namespace Mcc
 			Chunk(flecs::entity_t filler);
 			Chunk(Palette palette, BitArray mapping);
 
-			[[nodiscard]] flecs::entity_t Get(glm::uvec3 position) const;
+			[[nodiscard]] flecs::entity_t Get(glm::ivec3 position) const;
+			[[nodiscard]] Hx::EnumArray<BlockFace, flecs::entity_t> GetNeighbors(glm::ivec3 position) const;
 
-			void Set(glm::uvec3 position, flecs::entity_t block);
+			void Set(glm::uvec3 position, flecs::entity_t entity);
 
 			[[nodiscard]] const Palette&  GetPalette() const;
 			[[nodiscard]] const BitArray& GetMapping() const;

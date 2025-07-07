@@ -10,19 +10,18 @@
 namespace Mcc
 {
 
-	std::array<glm::vec3, 8> vertices
-	{{
+	inline std::array<glm::vec3, 8> vertices { {
 		{ -1.0f, 1.0f, -1.0f },
 		{ -1.0f, 1.0f, 1.0f },
-		{ -1.0f,-1.0f, -1.0f },
+		{ -1.0f, -1.0f, -1.0f },
 		{ 1.0f, -1.0f, 1.0f },
 		{ -1.0f, -1.0f, 1.0f },
 		{ 1.0f, -1.0f, -1.0f },
 		{ 1.0f, 1.0f, -1.0f },
 		{ 1.0f, 1.0f, 1.0f },
-	}};
+	} };
 
-	std::array<GLuint, 36> elements {
+	inline std::array<GLuint, 36> elements {
 		1, 3, 7,
 		3, 2, 5,
 		4, 0, 2,
@@ -37,25 +36,25 @@ namespace Mcc
 		1, 7, 6
 	};
 
-	const char* vertexCode = R"""(
+	inline auto vertexCode = R"""(
 		#version 330
 
 		in vec3 inVertex;
 		in vec3 inColor;
 
 		uniform mat4 view;
-		uniform mat4 projection;
+		uniform mat4 proj;
 		uniform mat4 model;
 
 		out vec3 color;
 
 		void main() {
-			gl_Position = projection * view * model * vec4(inVertex, 1.0);
+			gl_Position = proj * view * model * vec4(inVertex, 1.0);
 			color = inColor;
 		}
 	)""";
 
-	const char* fragmentCode = R"""(
+	inline auto fragmentCode = R"""(
 		#version 330
 
 		in vec3 color;
