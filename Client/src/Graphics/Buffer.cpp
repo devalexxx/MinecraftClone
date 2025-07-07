@@ -6,6 +6,7 @@
 #include "Client/Graphics/VertexArray.h"
 
 #include "Common/Utils/Assert.h"
+#include "Common/Utils/Logging.h"
 
 namespace Mcc
 {
@@ -19,7 +20,44 @@ namespace Mcc
 	Buffer::~Buffer()
 	{
 		if (mIsValid)
+		{
 			glCheck(glDeleteBuffers(1, &mId));
+		}
+	}
+
+	Buffer::Buffer(Buffer&& other) noexcept :
+		mId		(other.mId),
+		mTarget (other.mTarget),
+		mIsValid(other.mIsValid),
+		mHasData(other.mHasData)
+	{
+		other.mId	   = 0;
+		other.mTarget  = 0;
+		other.mIsValid = false;
+		other.mHasData = false;
+	}
+
+	Buffer& Buffer::operator=(Buffer&& other) noexcept
+	{
+		if (this != &other)
+		{
+			if (mIsValid)
+			{
+				this->~Buffer();
+			}
+
+			mId      = other.mId;
+			mTarget  = other.mTarget;
+			mIsValid = other.mIsValid;
+			mHasData = other.mHasData;
+
+			other.mId	   = 0;
+			other.mTarget  = 0;
+			other.mIsValid = false;
+			other.mHasData = false;
+
+		}
+		return *this;
 	}
 
 	bool Buffer::IsValid() const
@@ -34,6 +72,7 @@ namespace Mcc
 
 	void Buffer::Create()
 	{
+
 		MCC_ASSERT(VertexArray::IsThereAnyBound(), "A VertexArray must be bound to create a Buffer");
 		glCheck(glGenBuffers(1, &mId));
 		if (mId != 0)

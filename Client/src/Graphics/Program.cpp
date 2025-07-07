@@ -25,6 +25,28 @@ namespace Mcc
 		glCheck(glDeleteProgram(mId));
 	}
 
+	Program::Program(Program&& other) noexcept :
+		mId(other.mId)
+	{
+		other.mId = 0;
+	}
+
+	Program& Program::operator=(Program&& other) noexcept
+	{
+		if (this != &other)
+		{
+			if (IsValid())
+			{
+				this->~Program();
+			}
+
+			mId = other.mId;
+
+			other.mId = 0;
+		}
+		return *this;
+	}
+
 	void Program::Attach(const Shader& shader) const
 	{
 		glCheck(glAttachShader(mId, shader.mId));

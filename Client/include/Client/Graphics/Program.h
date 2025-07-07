@@ -21,6 +21,10 @@ namespace Mcc
 		public:
 			Program();
 			~Program();
+			Program(const Program&)   = delete;
+			Program& operator=(const Program&)  = delete;
+			Program(Program &&) noexcept;
+			Program& operator=(Program&&) noexcept;
 
 			void Attach(const Shader& shader) const;
 			void Detach(const Shader& shader) const;

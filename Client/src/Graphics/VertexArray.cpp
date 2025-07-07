@@ -23,7 +23,36 @@ namespace Mcc
 	VertexArray::~VertexArray()
 	{
 		if (mIsValid)
+		{
 			glCheck(glDeleteVertexArrays(1, &mId));
+		}
+	}
+
+	VertexArray::VertexArray(VertexArray&& other) noexcept :
+		mId		(other.mId),
+		mIsValid(other.mIsValid)
+	{
+		other.mId	   = 0;
+		other.mIsValid = false;
+	}
+
+	VertexArray& VertexArray::operator=(VertexArray&& other) noexcept
+	{
+		if (this != &other)
+		{
+			if (mIsValid)
+			{
+				this->~VertexArray();
+			}
+
+			mId		 = other.mId;
+			mIsValid = other.mIsValid;
+
+			other.mId	   = 0;
+			other.mIsValid = false;
+
+		}
+		return *this;
 	}
 
 	bool VertexArray::IsValid() const

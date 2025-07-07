@@ -20,8 +20,11 @@ namespace Mcc
 
 		public:
 			VertexArray();
-
 			~VertexArray();
+			VertexArray(const VertexArray &)  = delete;
+			VertexArray &operator=(const VertexArray &)  = delete;
+			VertexArray(VertexArray &&) noexcept;
+			VertexArray &operator=(VertexArray &&) noexcept;
 
 			[[nodiscard]] bool IsValid() const;
 

@@ -19,8 +19,11 @@ namespace Mcc
 
 		public:
 			Buffer(GLenum target);
-
 			~Buffer();
+			Buffer(const Buffer&)   = delete;
+			Buffer& operator=(const Buffer&)  = delete;
+			Buffer(Buffer &&) noexcept;
+			Buffer& operator=(Buffer&&) noexcept;
 
 			[[nodiscard]] bool IsValid() const;
 			[[nodiscard]] bool HasData() const;
