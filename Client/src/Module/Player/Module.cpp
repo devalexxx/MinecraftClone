@@ -60,7 +60,7 @@ namespace Mcc
 			}
 			auto entity = world.entity(it->second).is_a<PlayerEntityPrefab>();
 			world.entity().is_a<CameraFollowPrefab>()
-			    .set<CameraSettings>	  ({ glm::radians(75.f), 0.f, 100.f })
+			    .set<CameraSettings>	  ({ glm::radians(75.f), 0.1f, 100.f })
 			    .set<CameraFollowSettings>({ { 0, 2, 0 } })
 				.add<CameraFollowRelation>(entity)
 			    .add<ActiveCameraTag>();
@@ -127,8 +127,8 @@ namespace Mcc
 			MCC_LOG_WARN("The player network id {} isn't associated to a local entity", ctx->playerInfo.id);
 			return;
 		}
-		auto entity = world.entity(it->second);
-		auto input  = entity.get_ref<CurrentPlayerInput>()->input;
+		auto  entity = world.entity(it->second);
+		auto& input  = entity.get_ref<CurrentPlayerInput>()->input;
 
 		if (event.action == GLFW_PRESS || event.action == GLFW_RELEASE)
 		{
