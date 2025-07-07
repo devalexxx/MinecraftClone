@@ -31,6 +31,8 @@ namespace Mcc
 			void Link() const;
 			void Use() const;
 
+			[[nodiscard]] bool IsValid() const;
+
 			GLint GetAttributeLocation(const char* name) const;
 			GLint GetUniformLocation(const char* name) const;
 

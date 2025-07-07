@@ -26,20 +26,17 @@ namespace Mcc
 			Buffer& operator=(Buffer&&) noexcept;
 
 			[[nodiscard]] bool IsValid() const;
-			[[nodiscard]] bool HasData() const;
 
 			void Create();
 			void Bind() const;
 
-			void SetData(GLsizeiptr size, const void* data, GLenum usage);
+			void SetData(GLsizeiptr size, const void* data, GLenum usage) const;
 			template<typename T>
 			void SetData(std::span<T> data, GLenum usage);
 
 		private:
 			GLuint mId;
 			GLenum mTarget;
-			bool   mIsValid;
-			bool   mHasData;
 	};
 
 }

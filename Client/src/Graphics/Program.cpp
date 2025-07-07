@@ -4,6 +4,7 @@
 
 #include "Client/Graphics/Program.h"
 #include "Client/Graphics/Shader.h"
+#include "Common/Utils/Assert.h"
 
 #include "Common/Utils/Logging.h"
 
@@ -18,6 +19,7 @@ namespace Mcc
 	Program::Program()
 	{
 		glCheck(mId = glCreateProgram());
+		MCC_ASSERT(IsValid(), "Program creation failed");
 	}
 
 	Program::~Program()
@@ -70,6 +72,12 @@ namespace Mcc
 			glCheck(glUseProgram(mId));
 			sUsedProgram = mId;
 		}
+	}
+	bool Program::IsValid() const
+	{
+		bool result;
+		glCheck(result = glIsProgram(mId) == GL_TRUE);
+		return result;
 	}
 
 	GLint Program::GetAttributeLocation(const char* name) const

@@ -5,6 +5,7 @@
 #include "Client/Graphics/VertexArray.h"
 #include "Client/Graphics/Common.h"
 #include "Common/Utils/Assert.h"
+#include "Common/Utils/Logging.h"
 
 namespace Mcc
 {
@@ -17,62 +18,60 @@ namespace Mcc
 	}
 
 	VertexArray::VertexArray() :
-		mId(0), mIsValid(false)
+		mId(0)
 	{}
 
 	VertexArray::~VertexArray()
 	{
-		if (mIsValid)
+		if (IsValid())
 		{
 			glCheck(glDeleteVertexArrays(1, &mId));
 		}
 	}
 
 	VertexArray::VertexArray(VertexArray&& other) noexcept :
-		mId		(other.mId),
-		mIsValid(other.mIsValid)
+		mId(other.mId)
 	{
-		other.mId	   = 0;
-		other.mIsValid = false;
+		other.mId = 0;
 	}
 
 	VertexArray& VertexArray::operator=(VertexArray&& other) noexcept
 	{
 		if (this != &other)
 		{
-			if (mIsValid)
+			if (IsValid())
 			{
 				this->~VertexArray();
 			}
 
-			mId		 = other.mId;
-			mIsValid = other.mIsValid;
-
-			other.mId	   = 0;
-			other.mIsValid = false;
-
+			mId		  = other.mId;
+			other.mId = 0;
 		}
 		return *this;
 	}
 
 	bool VertexArray::IsValid() const
 	{
-		return mIsValid;
+		bool result;
+		glCheck(result = glIsVertexArray(mId) == GL_TRUE);
+		return result;
 	}
 
 	void VertexArray::Create()
 	{
 		glCheck(glGenVertexArrays(1, &mId));
-		if (mId != 0)
-			mIsValid = true;
+		glBindVertexArray(mId);
+		MCC_ASSERT(IsValid(), "VertexArray creation failed");
 	}
 
 	void VertexArray::Bind() const
 	{
-		MCC_ASSERT(mIsValid, "A VertexArray must be valid (eg. created) to be bound");
+		MCC_ASSERT(IsValid(), "A VertexArray must be valid (eg. created) to be bound");
 		if (sBoundVertexArray != mId)
+		{
 			glCheck(glBindVertexArray(mId));
-		sBoundVertexArray = mId;
+			sBoundVertexArray = mId;
+		}
 	}
 
 }

@@ -33,7 +33,6 @@ namespace Mcc
 
 		private:
 			GLuint mId;
-			bool   mIsValid;
 	};
 
 }

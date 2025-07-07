@@ -13,13 +13,14 @@ namespace Mcc
 
 	GLuint Buffer::sBoundBuffer = 0;
 
-	Buffer::Buffer(GLenum target) :
-		mId(0), mTarget(target), mIsValid(false), mHasData(false)
+	Buffer::Buffer(const GLenum target) :
+		mId(0),
+		mTarget(target)
 	{}
 
 	Buffer::~Buffer()
 	{
-		if (mIsValid)
+		if (IsValid())
 		{
 			glCheck(glDeleteBuffers(1, &mId));
 		}
@@ -27,34 +28,26 @@ namespace Mcc
 
 	Buffer::Buffer(Buffer&& other) noexcept :
 		mId		(other.mId),
-		mTarget (other.mTarget),
-		mIsValid(other.mIsValid),
-		mHasData(other.mHasData)
+		mTarget (other.mTarget)
 	{
 		other.mId	   = 0;
 		other.mTarget  = 0;
-		other.mIsValid = false;
-		other.mHasData = false;
 	}
 
 	Buffer& Buffer::operator=(Buffer&& other) noexcept
 	{
 		if (this != &other)
 		{
-			if (mIsValid)
+			if (IsValid())
 			{
 				this->~Buffer();
 			}
 
 			mId      = other.mId;
 			mTarget  = other.mTarget;
-			mIsValid = other.mIsValid;
-			mHasData = other.mHasData;
 
 			other.mId	   = 0;
 			other.mTarget  = 0;
-			other.mIsValid = false;
-			other.mHasData = false;
 
 		}
 		return *this;
@@ -62,26 +55,22 @@ namespace Mcc
 
 	bool Buffer::IsValid() const
 	{
-		return mIsValid;
-	}
-
-	bool Buffer::HasData() const
-	{
-		return mHasData;
+		bool result;
+		glCheck(result = glIsBuffer(mId) == GL_TRUE);
+		return result;
 	}
 
 	void Buffer::Create()
 	{
-
 		MCC_ASSERT(VertexArray::IsThereAnyBound(), "A VertexArray must be bound to create a Buffer");
 		glCheck(glGenBuffers(1, &mId));
-		if (mId != 0)
-			mIsValid = true;
+		glBindBuffer(mTarget, mId);
+		MCC_ASSERT(IsValid(), "Buffer creation failed");
 	}
 
 	void Buffer::Bind() const
 	{
-		MCC_ASSERT(mIsValid, "A Buffer must be valid (eg. created) to be bound");
+		MCC_ASSERT(IsValid(), "A Buffer must be valid (eg. created) to be bound");
 		if (sBoundBuffer != mId)
 		{
 			glCheck(glBindBuffer(mTarget, mId));
@@ -89,11 +78,10 @@ namespace Mcc
 		}
 	}
 
-	void Buffer::SetData(GLsizeiptr size, const void* data, GLenum usage)
+	void Buffer::SetData(const GLsizeiptr size, const void* data, const GLenum usage) const
 	{
 		Bind();
 		glCheck(glBufferData(mTarget, size, data, usage));
-		mHasData = true;
 	}
 
 }
