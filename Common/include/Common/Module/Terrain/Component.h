@@ -21,6 +21,11 @@ namespace Mcc
 
 	struct BlockStateRelation {};
 
+	enum class BlockType
+	{
+		Solid, Fluid, Gas
+	};
+
 	struct BlockMeta
 	{
 			std::string id;

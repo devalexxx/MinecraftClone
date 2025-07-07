@@ -21,7 +21,7 @@ namespace Mcc
 
 		private:
 			flecs::query<const Transform> mLookupEntityQuery;
-			flecs::query<const BlockMeta> mLookupBlockQuery;
+			flecs::query<const BlockMeta, const BlockType> mLookupBlockQuery;
 			flecs::query<const ChunkPosition, const ChunkData> mLookupChunkQuery;
 
 			void OnConnectEventHandler(flecs::world& world, const ConnectEvent& event) const;

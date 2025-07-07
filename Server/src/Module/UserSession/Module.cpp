@@ -24,7 +24,7 @@ namespace Mcc
 		auto* ctx = static_cast<WorldContext*>(world.get_ctx());
 
 		mLookupEntityQuery = world.query_builder<const Transform>().with<NetworkEntityTag>().build();
-		mLookupBlockQuery  = world.query_builder<const BlockMeta>().with<BlockTag>().build();
+		mLookupBlockQuery  = world.query_builder<const BlockMeta, const BlockType>().with<BlockTag>().build();
 		mLookupChunkQuery  = world.query_builder<const ChunkPosition, const ChunkData>().with<ChunkTag>().build();
 
 		ctx->networkManager.Subscribe<ConnectEvent>   ([&](const auto& event) { OnConnectEventHandler   (world, event); });
@@ -62,7 +62,7 @@ namespace Mcc
 			});
 
 		mLookupBlockQuery
-			.each([&](flecs::entity entity, const BlockMeta& meta) {
+			.each([&](flecs::entity entity, const BlockMeta& meta, const BlockType type) {
 				const auto idIt = ctx->localToNetwork.find(entity.id());
 				if (idIt == ctx->localToNetwork.cend())
 				{
@@ -70,7 +70,7 @@ namespace Mcc
 					return;
 				}
 
-				packet.initialState.blocks.push_back({ idIt->second, meta });
+				packet.initialState.blocks.push_back({ idIt->second, meta, type });
 			});
 
 		mLookupChunkQuery

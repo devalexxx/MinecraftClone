@@ -56,6 +56,7 @@ namespace Mcc
 	{
 			NetworkID id;
 			BlockMeta meta;
+			BlockType type;
 	};
 
 	struct ChunkDesc

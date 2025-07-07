@@ -39,7 +39,8 @@ namespace Mcc
 
 				auto entity = world.entity()
 					.add<BlockTag>()
-					.set<BlockMeta>(desc.meta);
+					.set<BlockMeta>(desc.meta)
+					.set<BlockType>(desc.type);
 
 				ctx->localToNetwork.emplace(entity.id(), desc.id);
 				ctx->networkToLocal.emplace(desc.id, entity.id());

@@ -65,6 +65,7 @@ namespace Mcc
 			NetworkID 	  id;
 			e = mWorld.entity("mcc:block:air")
 				.add<BlockTag>()
+				.set<BlockType>(BlockType::Gas)
 				.set<BlockMeta>({ "mcc:block:air" });
 			id = GenerateNetworkID();
 			ctx->localToNetwork.emplace(e.id(), id);
@@ -72,6 +73,7 @@ namespace Mcc
 
 			e = mWorld.entity("mcc:block:stone")
 				.add<BlockTag>()
+				.set<BlockType>(BlockType::Solid)
 				.set<BlockMeta>({ "mcc:block:stone" });
 			id = GenerateNetworkID();
 			ctx->localToNetwork.emplace(e.id(), id);

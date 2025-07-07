@@ -4,6 +4,7 @@
 
 #include "Common/Module/Terrain/Module.h"
 #include "Common/Module/Terrain/Component.h"
+#include "Common/Utils/Assert.h"
 #include "Common/Utils/Logging.h"
 
 #include <memory>
@@ -23,6 +24,7 @@ namespace Mcc
 		world.component<BlockStateRelation>();
 
 		world.component<BlockMeta>();
+		world.component<BlockType>();
 
 		world.component<ChunkPosition>();
 		world.component<ChunkData>();

@@ -21,6 +21,7 @@ namespace Mcc
 		while (it.next())
 		{
 			auto m = it.field<const BlockMeta>(0);
+			auto t = it.field<const BlockType>(1);
 
 			OnBlocksCreated packet;
 			for (auto i: it)
@@ -28,7 +29,7 @@ namespace Mcc
 				auto entity = it.entity(i);
 				if (auto id = ctx->localToNetwork.find(entity.id()); id != ctx->localToNetwork.cend())
 				{
-					packet.blocks.push_back({ id->second, m[i] });
+					packet.blocks.push_back({ id->second, m[i], t[i] });
 					MCC_LOG_INFO("Block({}) has been created and replicated", id->second);
 					entity.remove<BlockCreatedTag>();
 				}
@@ -49,6 +50,7 @@ namespace Mcc
 		while (it.next())
 		{
 			auto m = it.field<const BlockMeta>(0);
+			auto t = it.field<const BlockType>(1);
 
 			OnBlocksUpdated packet;
 			for (auto i: it)
@@ -56,7 +58,7 @@ namespace Mcc
 				auto entity = it.entity(i);
 				if (auto id = ctx->localToNetwork.find(entity.id()); id != ctx->localToNetwork.cend())
 				{
-					packet.blocks.push_back({ id->second, m[i] });
+					packet.blocks.push_back({ id->second, m[i], t[i] });
 					entity.remove<BlockDirtyTag>();
 				}
 				else
