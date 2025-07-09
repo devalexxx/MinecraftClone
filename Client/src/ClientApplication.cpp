@@ -4,6 +4,7 @@
 
 #include "Client/ClientApplication.h"
 #include "Client/Module/Camera/Module.h"
+#include "Client/Module/EntityRenderer/Module.h"
 #include "Client/Module/EntityReplication/Module.h"
 #include "Client/Module/Player/Module.h"
 #include "Client/Module/Renderer/Module.h"
@@ -68,10 +69,10 @@ namespace Mcc
 		mWorld.import<EntityReplicationModule>();
 		mWorld.import<CameraModule>();
 		mWorld.import<PlayerModule>();
-		mWorld.import<Renderer>();
 		mWorld.import<TerrainModule>();
 		mWorld.import<TerrainReplicationModule>();
 		mWorld.import<RendererModule>();
+		mWorld.import<EntityRendererModule>();
 		mWorld.import<TerrainRendererModule>();
 
 		mWorld.system()

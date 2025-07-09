@@ -5,9 +5,6 @@
 #ifndef MCC_CLIENT_GRAPHICS_MESH_H
 #define MCC_CLIENT_GRAPHICS_MESH_H
 
-#include "Client/Graphics/Buffer.h"
-#include "Client/Graphics/PackedVertex.h"
-
 #include <glm/glm.hpp>
 
 #include <vector>
@@ -15,31 +12,35 @@
 namespace Mcc
 {
 
-	class Program;
+    struct PackedVertex
+    {
+        glm::vec3 vertex;
+        glm::vec3 color;
+        glm::vec2 uv;
+        glm::vec3 normal;
+    };
 
-	class Mesh
-	{
-		public:
-			Mesh();
+    bool operator==(const PackedVertex& lhs, const PackedVertex& rhs);
+    bool operator!=(const PackedVertex& lhs, const PackedVertex& rhs);
 
-			void SetPackedVertex(std::span<PackedVertex> vertices);
-			void SetVertices(std::span<glm::vec3> vertices);
-			void SetColor(glm::vec3 color);
-			void SetColors(std::span<glm::vec3> colors);
-			void SetUvs(std::span<glm::vec2> uvs);
-			void SetNormals(std::span<glm::vec3> normals);
-			void SetIndices(std::span<unsigned int> indices);
+    using PackedVertexArray = std::vector<PackedVertex>;
+    using IndexArray		= std::vector<unsigned int>;
 
-			void Setup(const Program& program);
-			void Draw();
+    struct Mesh
+    {
+        PackedVertexArray vertex;
+        IndexArray        index;
+    };
 
-		private:
-			std::vector<PackedVertex> mVertices;
-			std::vector<unsigned int> mIndices;
+    Mesh Index   (const PackedVertexArray& vertices);
+    Mesh Optimize(const Mesh& mesh, float epsilonScale = 1.f);
 
-			Buffer mVertexBuffer;
-			Buffer mIndexBuffer;
-	};
+    namespace Helper
+    {
+        Mesh GenerateSphereMesh    (float radius, unsigned int segments, unsigned int rings);
+        Mesh GenerateHalfSphereMesh(float radius, unsigned int segments, unsigned int rings);
+        Mesh GenerateCapsuleMesh   (float radius, unsigned int segments, unsigned int rings);
+    }
 
 }
 

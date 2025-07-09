@@ -7,15 +7,8 @@
 
 #include "Client/ClientNetworkManager.h"
 #include "Client/Graphics/Window/Window.h"
-#include "Client/System/Renderer.h"
 
 #include "Common/Application.h"
-#include "Common/Network/Packet.h"
-
-#include <enet/enet.h>
-
-#include <istream>
-#include <streambuf>
 
 namespace Mcc
 {

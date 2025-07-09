@@ -2,13 +2,12 @@
 // Created by Alex Clorennec on 04/07/2025.
 //
 
-#include "Client/Graphics/PackedVertex.h"
+#include "Client/Graphics/Mesh.h"
 #include "Client/Graphics/Program.h"
 #include "Client/Graphics/Shader.h"
 #include "Client/Module/Renderer/Module.h"
 #include "Client/Module/TerrainRenderer/Component.h"
 #include "Client/Module/TerrainRenderer/Module.h"
-#include "Client/Utils.h"
 
 #include "Common/Module/Terrain/Component.h"
 #include "Common/Utils/Assert.h"
@@ -70,7 +69,7 @@ namespace Mcc
 		}
 
 		MCC_LOG_DEBUG("Raw mesh size {}", array.size());
-		auto [packed, index] = Packed(array);
+		auto [packed, index] = Index(array);
 		MCC_LOG_DEBUG("Packed mesh size {}", packed.size());
 
 		if (auto mesh = entity.try_get<ChunkMesh>())
@@ -103,8 +102,34 @@ namespace Mcc
 	{
 		while (it.next()) {}
 
-		const Shader vertexShader  (GL_VERTEX_SHADER,   vertexCode);
-		const Shader fragmentShader(GL_FRAGMENT_SHADER, fragmentCode);
+		const Shader vertexShader  (GL_VERTEX_SHADER, R"""(
+			#version 330
+
+			in vec3 inVertex;
+			in vec3 inColor;
+
+			uniform mat4 view;
+			uniform mat4 proj;
+			uniform mat4 model;
+
+			out vec3 passColor;
+
+			void main() {
+				gl_Position = proj * view * model * vec4(inVertex, 1.0);
+				passColor = inColor;
+			}
+		)""");
+		const Shader fragmentShader(GL_FRAGMENT_SHADER, R"""(
+			#version 330
+
+			in vec3 passColor;
+
+			out vec4 fragment;
+
+			void main() {
+				fragment = vec4(passColor, 1.0);
+			}
+		)""");
 
 		mProgram.Attach(vertexShader);
 		mProgram.Attach(fragmentShader);
