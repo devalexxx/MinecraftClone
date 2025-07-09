@@ -87,7 +87,7 @@ SpacesInContainerLiterals: false
 SpacesInParentheses: false
 SpacesInSquareBrackets: false
 
-UseTab: ForContinuationAndIndentation
+UseTab: Never
 
 ReferenceAlignment: Left
 QualifierAlignment: Custom
