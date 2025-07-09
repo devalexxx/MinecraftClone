@@ -76,6 +76,8 @@ namespace Mcc
 					bool backward;
 					bool left;
 					bool right;
+					bool up;
+					bool down;
 			} movement;
 
 			struct

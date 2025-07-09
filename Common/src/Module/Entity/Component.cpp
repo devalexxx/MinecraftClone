@@ -23,7 +23,9 @@ namespace Mcc
 				input.movement.backward ||
 				input.movement.left 	||
 				input.movement.right 	||
-				input.axis.x != 0 		||
+				input.movement.up       ||
+				input.movement.down     ||
+				input.axis.x != 0       ||
 				input.axis.y != 0
 		);
 		}
@@ -41,6 +43,12 @@ namespace Mcc
 
 			if (input.movement.left && !input.movement.right)
 				transform.position -= transform.rotation * glm::right * speed * dt;
+
+			if (input.movement.up && !input.movement.down)
+				transform.position += transform.rotation * glm::up * speed * dt;
+
+			if (input.movement.down && !input.movement.up)
+				transform.position -= transform.rotation * glm::up * speed * dt;
 		}
 
 		void ApplyXAxis(const UserInput& input, Transform& transform)

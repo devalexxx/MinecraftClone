@@ -146,6 +146,12 @@ namespace Mcc
 				case GLFW_KEY_D:
 					input.movement.right = event.action == GLFW_PRESS;
 					break;
+				case GLFW_KEY_SPACE:
+					input.movement.up = event.action == GLFW_PRESS;
+					break;
+				case GLFW_KEY_LEFT_SHIFT:
+					input.movement.down = event.action == GLFW_PRESS;
+					break;
 				case GLFW_KEY_ESCAPE:
 					event.window.SetShouldClose();
 				default:
