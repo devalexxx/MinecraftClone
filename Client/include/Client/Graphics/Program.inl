@@ -2,8 +2,6 @@
 
 #include "Common/Utils/Logging.h"
 
-#include <fmt/base.h>
-
 namespace Mcc
 {
 	template<glm::length_t R, glm::length_t C, glm::qualifier Q>
@@ -34,4 +32,27 @@ namespace Mcc
 			MCC_LOG_WARN("glm::mat<{}, {}> is not implemented for Program::SetUniformMatrix", R, C);
 		}
 	}
+
+	template<glm::length_t L, glm::qualifier Q>
+	void Program::SetUniformVector(GLint location, const glm::vec<L, float, Q>& vec)
+	{
+		if (sUsedProgram != mId)
+			Use();
+
+		switch (L)
+		{
+			case 2:
+				glCheck(glUniform2fv(location, 1, &vec[0]));
+				break;
+			case 3:
+				glCheck(glUniform3fv(location, 1, &vec[0]));
+				break;
+			case 4:
+				glCheck(glUniform4fv(location, 1, &vec[0]));
+				break;
+			default:
+				MCC_LOG_WARN("glm::vec<{}> is not implemented for Program::SetUniformVector", L);
+		}
+	}
+
 }

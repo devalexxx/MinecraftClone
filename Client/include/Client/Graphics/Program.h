@@ -39,6 +39,9 @@ namespace Mcc
 			template<glm::length_t R, glm::length_t C, glm::qualifier Q>
 			void SetUniformMatrix(GLint location, const glm::mat<R, C, float, Q>& matrix);
 
+			template<glm::length_t L, glm::qualifier Q>
+			void SetUniformVector(GLint location, const glm::vec<L, float, Q>& vec);
+
 			void SetVertexAttribPointer(GLuint location, GLint size, GLenum type, GLsizei stride, GLsizei offset) const;
 			void SetVertexAttribPointer(const char* name, GLint size, GLenum type, GLsizei stride, GLsizei offset) const;
 			void SetVertexAttribPointer(GLuint location, GLint size, GLenum type) const;
