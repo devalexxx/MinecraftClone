@@ -6,6 +6,7 @@
 #define MCC_SERVER_MODULE_USER_SESSION_MODULE_H
 
 #include "Common/Module/Entity/Component.h"
+#include "Common/Module/Network/Component.h"
 #include "Common/Module/Terrain/Component.h"
 #include "Common/Network/Event.h"
 
@@ -20,13 +21,13 @@ namespace Mcc
 			UserSessionModule(flecs::world& world);
 
 		private:
-			flecs::query<const Transform> mLookupEntityQuery;
-			flecs::query<const BlockMeta, const BlockType> mLookupBlockQuery;
-			flecs::query<const ChunkPosition, const ChunkData> mLookupChunkQuery;
+			flecs::query<const Transform, const NetworkProps>                        mLookupEntityQuery;
+			flecs::query<const BlockMeta, const BlockType, const NetworkProps>       mLookupBlockQuery;
+			flecs::query<const ChunkPosition, const ChunkHolder, const NetworkProps> mLookupChunkQuery;
 
-			void OnConnectEventHandler(flecs::world& world, const ConnectEvent& event) const;
+			void OnConnectEventHandler(const flecs::world& world, const ConnectEvent& event) const;
 
-			static void OnDisconnectEventHandler(flecs::world& world, const DisconnectEvent& event);
+			static void OnDisconnectEventHandler(const flecs::world& world, const DisconnectEvent& event);
 	};
 
 }

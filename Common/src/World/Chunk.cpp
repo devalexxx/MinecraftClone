@@ -2,32 +2,32 @@
 // Created by Alex on 27/08/2024.
 //
 
-#include "Common/Module/Terrain/Component.h"
 #include "Common/World/Chunk.h"
+
+#include "Common/Module/Network/Component.h"
+#include "Common/Module/Terrain/Component.h"
+#include "Common/WorldContext.h"
+
+#include "Common/Utils/Logging.h"
 
 #include <algorithm>
 
 namespace Mcc
 {
 
-	Chunk::Chunk() :
-		mPalette({}),
-		mMapping({ Size * Size * Height, 2 })
-	{}
+	Chunk::Chunk() : mData({}, { Size * Size * Height, 2 })
+    {}
 
-	Chunk::Chunk(flecs::entity_t filler) : mMapping({ Size * Size * Height, 2 })
+	Chunk::Chunk(flecs::entity_t filler) : mData({}, { Size * Size * Height, 2 })
 	{
-		mPalette.emplace_back(filler);
-		for (int i = 0; i < mMapping.GetSize(); ++i)
+		mData.palette.emplace_back(filler);
+		for (size_t i = 0; i < mData.mapping.GetSize(); ++i)
 		{
-			mMapping.Set(i, 0);
+			mData.mapping.Set(i, 0);
 		}
 	}
 
-	Chunk::Chunk(Palette palette, BitArray mapping) :
-		mPalette(std::move(palette)),
-		mMapping(std::move(mapping))
-	{}
+	Chunk::Chunk(ChunkData<flecs::entity_t> data) : mData(std::move(data)) {}
 
 	flecs::entity_t Chunk::Get(const glm::ivec3 position) const
 	{
@@ -35,7 +35,7 @@ namespace Mcc
 			return flecs::entity::null().id();
 
 		const size_t index = IndexFromPosition(position);
-		return index < mMapping.GetSize() ? mPalette[mMapping.Get(index)] : flecs::entity::null().id();
+		return index < mData.mapping.GetSize() ? mData.palette[mData.mapping.Get(index)] : flecs::entity::null().id();
 	}
 
 	Hx::EnumArray<BlockFace, flecs::entity_t> Chunk::GetNeighbors(const glm::ivec3 position) const
@@ -61,32 +61,94 @@ namespace Mcc
 	{
 		const size_t index = IndexFromPosition(position);
 
-		if (index >= mMapping.GetSize())
+		if (index >= mData.mapping.GetSize())
 			return;
 
-		if (const auto it = std::ranges::find(mPalette, entity); it == mPalette.cend())
+		if (const auto it = std::ranges::find(mData.palette, entity); it == mData.palette.cend())
 		{
-			mPalette.push_back(entity);
-			mMapping.Set(index, mPalette.size() - 1);
+			mData.palette.push_back(entity);
+			mData.mapping.Set(index, mData.palette.size() - 1);
 		}
 		else
 		{
-			mMapping.Set(index, std::distance(mPalette.begin(), it));
+			mData.mapping.Set(index, std::distance(mData.palette.begin(), it));
 		}
 	}
 
 	const Chunk::Palette& Chunk::GetPalette() const
 	{
-		return mPalette;
+		return mData.palette;
 	}
 
 	const BitArray& Chunk::GetMapping() const
-	{
-		return mMapping;
-	}
+    {
+        return mData.mapping;
+    }
 
-	size_t Chunk::IndexFromPosition(const glm::uvec3 position)
+    std::optional<ChunkData<NetworkHandle>> Chunk::ToNetwork(const flecs::world& world) const
+    {
+	    return Helper::ToNetwork(mData, world);
+    }
+
+    size_t Chunk::IndexFromPosition(const glm::uvec3 position)
 	{
 		return position.x + (position.y * Size) + (position.z * Size * Height);
+	}
+
+    namespace Helper
+	{
+
+	    std::optional<ChunkData<NetworkHandle>> ToNetwork(const ChunkData<flecs::entity_t>& data, const flecs::world& world)
+	    {
+	        ChunkData<NetworkHandle>::Palette palette;
+	        for (auto id: data.palette)
+	        {
+	            if (const auto props = world.entity(id).try_get<NetworkProps>(); props)
+	            {
+                    if (!IsValid(props->handle))
+                    {
+                        MCC_LOG_WARN("The network id attached to #{} is invalid", id);
+                        return std::nullopt;
+                    }
+
+	                palette.push_back(props->handle);
+	            }
+	            else
+	            {
+	                MCC_LOG_WARN("No network id attached to #{}", id);
+                    return std::nullopt;
+	            }
+	        }
+
+	        return {{ .palette=std::move(palette), .mapping=data.mapping }};
+	    }
+
+	    std::optional<ChunkData<flecs::entity_t>> FromNetwork(const ChunkData<NetworkHandle>& data, const flecs::world& world)
+	    {
+            const auto* ctx = WorldContext<>::Get(world);
+
+	        ChunkData<flecs::entity_t>::Palette palette;
+	        for (auto handle: data.palette)
+	        {
+                if (const auto id = ctx->networkMapping.GetLHandle(handle); id.has_value())
+                {
+                    if (!world.is_valid(*id))
+                    {
+                        MCC_LOG_WARN("The local id attached to #{} is invalid", handle);
+                        return std::nullopt;
+                    }
+
+                    palette.push_back(*id);
+                }
+	            else
+	            {
+	                MCC_LOG_WARN("No local id attached to {}", handle);
+	                return std::nullopt;
+	            }
+	        }
+
+	        return {{ .palette=std::move(palette), .mapping=data.mapping }};
+	    }
+
 	}
 }

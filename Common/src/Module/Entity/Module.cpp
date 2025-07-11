@@ -4,6 +4,7 @@
 
 #include "Common/Module/Entity/Module.h"
 #include "Common/Module/Entity/Component.h"
+#include "Common/Module/Network/Component.h"
 #include "Common/Utils/Logging.h"
 
 namespace Mcc
@@ -27,9 +28,9 @@ namespace Mcc
 		    .set_auto_override<Transform>({{ 0.f, 0.f, 0.f }, {}, { 1.f, 1.f, 1.f }});
 
 		world.prefab<NetworkEntityPrefab>()
+	        .is_a<NetworkObjectPrefab>()
 		    .is_a<EntityPrefab>()
 			.add<NetworkEntityTag>()
-			.set_auto_override<NetworkHandle>({})
 			.set_auto_override<Extra>({});
 
 		world.prefab<UserEntityPrefab>()

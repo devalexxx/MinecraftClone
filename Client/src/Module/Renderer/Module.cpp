@@ -3,9 +3,9 @@
 //
 
 #include "Client/Module/Renderer/Module.h"
+#include "../../../include/Client/WorldContext.h"
 #include "Client/Module/Camera/Component.h"
 #include "Client/Module/Renderer/System.h"
-#include "Client/World/Context.h"
 
 #include "Common/Module/Entity/Component.h"
 #include "Common/Utils/Logging.h"
@@ -37,9 +37,7 @@ namespace Mcc
 
 	std::pair<glm::mat4, glm::mat4> RendererModule::GetView(const flecs::world& world)
 	{
-		// static auto cameraQuery = world.query_builder<const Transform, const CameraSettings>().with<ActiveCameraTag>().build();
-
-		const auto* ctx = static_cast<ClientWorldContext*>(world.get_ctx());
+		const auto* ctx = ClientWorldContext::Get(world);
 
 		Transform 	   cTransform {};
 		CameraSettings cSettings  {};

@@ -8,9 +8,9 @@
 namespace Mcc
 {
 
-	void CameraFollowSystem(flecs::iter& it, size_t, Transform& transform, const CameraFollowSettings& settings)
+	void CameraFollowSystem(const flecs::iter& it, size_t, Transform& transform, const CameraFollowSettings& settings)
 	{
-		auto target = it.pair(3).second();
+        const auto target = it.pair(3).second();
 
 		target.get([&](const Transform& targetTransform) {
 			transform.position = targetTransform.position + settings.offset;

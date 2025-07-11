@@ -20,7 +20,7 @@ namespace Mcc
 	class EntityRendererModule
 	{
 		public:
-			EntityRendererModule(flecs::world& world);
+			EntityRendererModule(const flecs::world& world);
 
 			void SetupEntityMeshSystem (flecs::iter& it);
 			void RenderUserEntitySystem(flecs::iter& it);

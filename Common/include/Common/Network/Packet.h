@@ -7,13 +7,11 @@
 
 #include "Common/Module/Entity/Component.h"
 #include "Common/Module/Terrain/Component.h"
-#include "Common/Network/NetworkID.h"
+#include "Common/Network/NetworkHandle.h"
 #include "Common/Network/PacketStream.h"
 #include "Common/World/Time.h"
 
 #include <Hexis/Core/TypeList.h>
-
-#include <flecs.h>
 
 #include <vector>
 #include <unordered_map>
@@ -45,7 +43,7 @@ namespace Mcc
 
 	struct EntityState
 	{
-			NetworkID id;
+			NetworkHandle handle;
 
 			Transform transform;
 
@@ -54,16 +52,16 @@ namespace Mcc
 
 	struct BlockDesc
 	{
-			NetworkID id;
-			BlockMeta meta;
-			BlockType type;
+			NetworkHandle handle;
+			BlockMeta     meta;
+			BlockType     type;
 	};
 
 	struct ChunkDesc
 	{
-			NetworkID  	  id;
-			ChunkPosition position;
-			Chunk	      data;
+			NetworkHandle  	         handle;
+			ChunkPosition            position;
+			ChunkData<NetworkHandle> data;
 	};
 
 	struct InitialState
@@ -75,7 +73,7 @@ namespace Mcc
 
 	struct PlayerInfo
 	{
-			NetworkID id;
+			NetworkHandle handle;
 	};
 
 	struct ServerInfo
@@ -115,7 +113,7 @@ namespace Mcc
 
 	struct OnEntitiesDestroyed
 	{
-			std::vector<NetworkID> ids;
+			std::vector<NetworkHandle> handles;
 	};
 
 	struct OnEntitiesUpdated
@@ -130,7 +128,7 @@ namespace Mcc
 
 	struct OnBlocksDestroyed
 	{
-			std::vector<NetworkID> ids;
+			std::vector<NetworkHandle> handles;
 	};
 
 	struct OnBlocksUpdated
@@ -145,7 +143,7 @@ namespace Mcc
 
 	struct OnChunksDestroyed
 	{
-			std::vector<NetworkID> ids;
+			std::vector<NetworkHandle> handles;
 	};
 
 	struct OnChunksUpdated

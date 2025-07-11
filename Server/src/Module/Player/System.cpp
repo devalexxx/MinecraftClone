@@ -10,7 +10,7 @@
 namespace Mcc
 {
 
-	void ProcessPlayerInputs(flecs::entity entity, UserInputQueue& queue)
+	void ProcessPlayerInputs(const flecs::entity entity, UserInputQueue& queue)
 	{
 		const float speed = 5.f;
 

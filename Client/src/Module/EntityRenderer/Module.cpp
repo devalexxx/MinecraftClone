@@ -11,7 +11,7 @@
 namespace Mcc
 {
 
-	EntityRendererModule::EntityRendererModule(flecs::world& world) :
+	EntityRendererModule::EntityRendererModule(const flecs::world& world) :
 		mVertexBuffer(GL_ARRAY_BUFFER),
 		mIndexBuffer(GL_ELEMENT_ARRAY_BUFFER)
 	{

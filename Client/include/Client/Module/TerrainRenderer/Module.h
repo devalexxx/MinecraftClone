@@ -17,9 +17,9 @@ namespace Mcc
 	class  TerrainRendererModule
 	{
 		public:
-			TerrainRendererModule(flecs::world& world);
+			TerrainRendererModule(const flecs::world& world);
 
-			void BuildChunkMeshSystem   (flecs::entity entity, ChunkData& data) const;
+			void BuildChunkMeshSystem   (flecs::entity entity, ChunkHolder& holder) const;
 			void SetupChunkProgramSystem(flecs::iter& it) const;
 			void RenderChunkMeshSystem  (flecs::iter& it);
 

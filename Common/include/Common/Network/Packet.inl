@@ -12,19 +12,19 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, EntityState& packet)
 	{
-		ar(packet.id, packet.transform, packet.extra);
+		ar(packet.handle, packet.transform, packet.extra);
 	}
 
 	template<typename Archive>
 	void serialize(Archive& ar, BlockDesc& packet)
 	{
-		ar(packet.id, packet.meta, packet.type);
+		ar(packet.handle, packet.meta, packet.type);
 	}
 
 	template<typename Archive>
 	void serialize(Archive& ar, ChunkDesc& packet)
 	{
-		ar(packet.id, packet.position, packet.data);
+		ar(packet.handle, packet.position, packet.data);
 	}
 
 	template<typename Archive>
@@ -36,7 +36,7 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, PlayerInfo& packet)
 	{
-		ar(packet.id);
+		ar(packet.handle);
 	}
 
 	template<typename Archive>
@@ -66,7 +66,7 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, OnEntitiesDestroyed& packet)
 	{
-		ar(packet.ids);
+		ar(packet.handles);
 	}
 
 	template<typename Archive>
@@ -84,7 +84,7 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, OnBlocksDestroyed& packet)
 	{
-		ar(packet.ids);
+		ar(packet.handles);
 	}
 
 	template<typename Archive>
@@ -102,7 +102,7 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, OnChunksDestroyed& packet)
 	{
-		ar(packet.ids);
+		ar(packet.handles);
 	}
 
 	template<typename Archive>

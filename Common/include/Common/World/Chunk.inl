@@ -8,10 +8,10 @@
 namespace Mcc
 {
 
-	template<typename Archive>
-	void Chunk::serialize(Archive& ar)
+    template<typename Archive, typename T>
+    void serialize(Archive& ar, ChunkData<T>& data)
 	{
-		ar(mPalette, mMapping);
+	    ar(data.palette, data.mapping);
 	}
 
 }

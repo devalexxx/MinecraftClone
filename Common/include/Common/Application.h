@@ -6,10 +6,10 @@
 #define MCC_COMMON_APPLICATION_H
 
 #include "Common/CommandLineStore.h"
-#include "Common/Network/NetworkID.h"
+#include "Common/Network/NetworkHandle.h"
 
-#include <flecs.h>
 #include <enet/enet.h>
+#include <flecs.h>
 
 #include <unordered_map>
 

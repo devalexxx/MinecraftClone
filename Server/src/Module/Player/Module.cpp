@@ -5,11 +5,11 @@
 #include "Server/Module/Player/Module.h"
 #include "Server/Module/Player/System.h"
 
-#include "Common/Utils/Assert.h"
-#include "Common/Module/Entity/Module.h"
+#include "Common/WorldContext.h"
 #include "Common/Module/Entity/Component.h"
+#include "Common/Module/Entity/Module.h"
+#include "Common/Utils/Assert.h"
 #include "Common/Utils/Logging.h"
-#include "Common/World/Context.h"
 
 namespace Mcc
 {
@@ -22,31 +22,30 @@ namespace Mcc
 
 		world.system<UserInputQueue>().with<UserEntityTag>().each(ProcessPlayerInputs);
 
-		auto* ctx = static_cast<WorldContext*>(world.get_ctx());
+        const auto* ctx = WorldContext<>::Get(world);
 
 		ctx->networkManager.Subscribe<From<OnPlayerInput>>([&](const auto& event) { OnPlayerInputHandler(world, event); });
 	}
 
-	void PlayerModule::OnPlayerInputHandler(flecs::world& world, const From<OnPlayerInput>& from)
+	void PlayerModule::OnPlayerInputHandler(const flecs::world& world, const From<OnPlayerInput>& from)
 	{
-		const auto* ctx 	   = static_cast<WorldContext*>(world.get_ctx());
-		const auto* playerInfo = static_cast<PlayerInfo*>  (from.peer->data);
-		const auto  it 		   = ctx->networkToLocal.find(playerInfo->id);
+		const auto* ctx    = WorldContext<>::Get(world);
+		const auto* info   = static_cast<PlayerInfo*>(from.peer->data);
+		const auto  handle = ctx->networkMapping.GetLHandle(info->handle);
 
-		if (it == ctx->networkToLocal.cend())
+		if (!handle.has_value())
 		{
-			MCC_LOG_WARN("The network id {} isn't associated to a local entity", playerInfo->id);
+			MCC_LOG_WARN("The network id {} isn't associated to a local entity", info->handle);
 			return;
 		}
 
-		if (!world.is_alive(it->second))
-		{
-			MCC_LOG_WARN("The local entity associated to the network id {} isn't alive", playerInfo->id);
-			return;
-		}
+		if (!world.is_alive(*handle))
+        {
+            MCC_LOG_WARN("The local entity associated to the network id {} isn't alive", info->handle);
+            return;
+        }
 
-		auto entity = world.entity(it->second);
-		entity.get([&from](UserInputQueue& queue) {
+		world.entity(*handle).get([&from](UserInputQueue& queue) {
 			queue.data.push_back(from.packet.input);;
 		});
 	}

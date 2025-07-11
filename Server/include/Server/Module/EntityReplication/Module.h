@@ -13,7 +13,7 @@ namespace Mcc
 	class EntityReplicationModule
 	{
 		public:
-			EntityReplicationModule(flecs::world& world);
+			EntityReplicationModule(const flecs::world& world);
 	};
 
 }

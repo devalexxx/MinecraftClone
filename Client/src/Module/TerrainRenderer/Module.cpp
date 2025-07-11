@@ -14,7 +14,7 @@
 namespace Mcc
 {
 
-	TerrainRendererModule::TerrainRendererModule(flecs::world& world)
+	TerrainRendererModule::TerrainRendererModule(const flecs::world& world)
 	{
 		MCC_ASSERT(world.has<RendererModule>(), "TerrainRendererModule require RendererModule, you must import it before.");
 		MCC_LOG_DEBUG("Import TerrainRendererModule...");
@@ -22,10 +22,10 @@ namespace Mcc
 
 		world.component<ChunkMesh>();
 
-		world.system<ChunkData>("BuildChunkMesh")
+		world.system<ChunkHolder>("BuildChunkMesh")
 			.kind(flecs::PostUpdate)
 			.with<ChunkDirtyTag>()
-			.each([this](flecs::entity entity, ChunkData& data) { BuildChunkMeshSystem(entity, data); });
+			.each([this](const flecs::entity entity, ChunkHolder& data) { BuildChunkMeshSystem(entity, data); });
 
 		world.system("SetupChunkProgram")
 			.kind(flecs::OnStart)

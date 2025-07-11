@@ -14,7 +14,7 @@
 namespace Mcc
 {
 
-	void ApplyAndSendPlayerInput(flecs::iter& it, size_t row, CurrentPlayerInput& current, UserInputQueue& queue);
+	void ApplyAndSendPlayerInput(const flecs::iter& it, size_t row, CurrentPlayerInput& current, UserInputQueue& queue);
 
 }
 

@@ -17,12 +17,12 @@ namespace Mcc
 	class EntityReplicationModule
 	{
 		public:
-			EntityReplicationModule(flecs::world& world);
+			EntityReplicationModule(const flecs::world& world);
 
 		private:
-			static void OnEntitiesCreatedHandler  (flecs::world& world, const OnEntitiesCreated  & event);
-			static void OnEntitiesDestroyedHandler(flecs::world& world, const OnEntitiesDestroyed& event);
-			static void OnEntitiesUpdatedHandler  (flecs::world& world, const OnEntitiesUpdated  & event);
+			static void OnEntitiesCreatedHandler  (const flecs::world& world, const OnEntitiesCreated  & event);
+			static void OnEntitiesDestroyedHandler(const flecs::world& world, const OnEntitiesDestroyed& event);
+			static void OnEntitiesUpdatedHandler  (const flecs::world& world, const OnEntitiesUpdated  & event);
 	};
 
 }

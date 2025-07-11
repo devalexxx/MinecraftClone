@@ -10,7 +10,8 @@
 #include "Common/Module/Entity/Module.h"
 #include "Common/Utils/Assert.h"
 #include "Common/Utils/Logging.h"
-#include "Common/World/Context.h"
+#include "Common/WorldContext.h"
+#include "Server/WorldContext.h"
 
 namespace Mcc
 {
@@ -21,126 +22,105 @@ namespace Mcc
 		MCC_LOG_DEBUG("Import PlayerSessionModule...");
 		world.module<UserSessionModule>();
 
-		auto* ctx = static_cast<WorldContext*>(world.get_ctx());
+		mLookupEntityQuery = world.query_builder<const Transform, const NetworkProps>().with<NetworkEntityTag>().build();
+		mLookupBlockQuery  = world.query_builder<const BlockMeta, const BlockType, const NetworkProps>().with<BlockTag>().build();
+		mLookupChunkQuery  = world.query_builder<const ChunkPosition, const ChunkHolder, const NetworkProps>().with<ChunkTag>().build();
 
-		mLookupEntityQuery = world.query_builder<const Transform>().with<NetworkEntityTag>().build();
-		mLookupBlockQuery  = world.query_builder<const BlockMeta, const BlockType>().with<BlockTag>().build();
-		mLookupChunkQuery  = world.query_builder<const ChunkPosition, const ChunkData>().with<ChunkTag>().build();
+        const auto* ctx = WorldContext<>::Get(world);
 
 		ctx->networkManager.Subscribe<ConnectEvent>   ([&](const auto& event) { OnConnectEventHandler   (world, event); });
 		ctx->networkManager.Subscribe<DisconnectEvent>([&](const auto& event) { OnDisconnectEventHandler(world, event); });
 	}
 
-	void UserSessionModule::OnConnectEventHandler(flecs::world& world, const ConnectEvent& event) const
+	void UserSessionModule::OnConnectEventHandler(const flecs::world& world, const ConnectEvent& event) const
 	{
-		auto* 		ctx = static_cast <WorldContext*>		   (world.get_ctx());
-		const auto& net = dynamic_cast<ServerNetworkManager&>(ctx->networkManager);
+		auto* ctx = ServerWorldContext::Get(world);
 
 		OnConnection packet;
 		packet.initialState = {};
 
 		mLookupEntityQuery
-			.run([&](flecs::iter& it) {
-				while (it.next())
-				{
-					auto t = it.field<const Transform>(0);
+			.each([&](const flecs::entity entity, const Transform& transform, const NetworkProps& props) {
+			    if (!IsValid(props.handle))
+			    {
+			        MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
+			        return;
+			    }
 
-					for (auto i: it)
-					{
-						auto entity = it.entity(i);
-
-						const auto idIt = ctx->localToNetwork.find(entity.id());
-						if (idIt == ctx->localToNetwork.cend())
-						{
-							MCC_LOG_WARN("No network id associated to the local entity {}", entity.id());
-							continue;
-						}
-
-						packet.initialState.entities.push_back({ idIt->second, t[i], {} });
-					}
-				}
+				packet.initialState.entities.push_back({ props.handle, transform, {} });
 			});
 
 		mLookupBlockQuery
-			.each([&](flecs::entity entity, const BlockMeta& meta, const BlockType type) {
-				const auto idIt = ctx->localToNetwork.find(entity.id());
-				if (idIt == ctx->localToNetwork.cend())
-				{
-					MCC_LOG_WARN("No network id associated to the local entity {}", entity.id());
-					return;
-				}
+			.each([&](const flecs::entity entity, const BlockMeta& meta, const BlockType type, const NetworkProps& props) {
+			    if (!IsValid(props.handle))
+			    {
+                    MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
+                    return;
+                }
 
-				packet.initialState.blocks.push_back({ idIt->second, meta, type });
+				packet.initialState.blocks.push_back({ props.handle, meta, type });
 			});
 
 		mLookupChunkQuery
-			.each([&](flecs::entity entity, const ChunkPosition& position, const ChunkData& data) {
-				const auto idIt = ctx->localToNetwork.find(entity.id());
-				if (idIt == ctx->localToNetwork.cend())
-				{
-					MCC_LOG_WARN("No network id associated to the local entity {}", entity.id());
-					return;
-				}
+			.each([&](const flecs::entity entity, const ChunkPosition& position, const ChunkHolder& holder, const NetworkProps& props) {
+			    if (!IsValid(props.handle))
+			    {
+                    MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
+                    return;
+                }
 
-				Chunk::Palette palette;
-				for (auto e: data.data->GetPalette())
-				{
-					auto eIt = ctx->localToNetwork.find(e);
-					if (eIt != ctx->localToNetwork.cend())
-					{
-						palette.push_back(eIt->second);
-					}
-					else
-					{
-						MCC_LOG_WARN("Unable to retrieve network id for block({}) in chunk({})", e, idIt->second);
-						return;
-					}
-				}
-
-				packet.initialState.chunks.push_back({ idIt->second, position, { palette, data.data->GetMapping() } });
+			    if (auto data = holder.chunk->ToNetwork(world); data.has_value())
+			    {
+                    packet.initialState.chunks.push_back({ props.handle, position, std::move(*data) });
+                }
 			});
 
-		auto id		= GenerateNetworkID();
-		auto entity = world.entity().is_a<UserEntityPrefab>();
-		event.peer->data = new PlayerInfo { id };
+        const auto entity = world.entity()
+	        .is_a<UserEntityPrefab>();
+
+	    NetworkHandle handle;
+	    entity.get([&handle](const NetworkProps& props) {
+	        handle = props.handle;
+	    });
+
+	    event.peer->data = new PlayerInfo { handle };
 
 		char hostname[100];
 		enet_address_get_host_ip(&event.peer->address, hostname, 100);
-		MCC_LOG_INFO("Connection opened on port {} with network id {} (from {})", event.peer->address.port, id, hostname);
+		MCC_LOG_INFO("Connection opened on port {} with network id {} (from {})", event.peer->address.port, handle, hostname);
 
-		ctx->localToNetwork.emplace(entity.id(), id);
-		ctx->networkToLocal.emplace(id, entity.id());
+	    ctx->networkMapping.Set(handle, entity.id());
 
 		packet.playerInfo = *static_cast<PlayerInfo*>(event.peer->data);
 		packet.serverInfo = ctx->serverInfo;
 
-		net.Send(event.peer, std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
+		ctx->networkManager.Send(event.peer, std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
 		entity.add<EntityCreatedTag>();
 	}
 
-	void UserSessionModule::OnDisconnectEventHandler(flecs::world& world, const DisconnectEvent& event)
+	void UserSessionModule::OnDisconnectEventHandler(const flecs::world& world, const DisconnectEvent& event)
 	{
-		const auto* ctx  = static_cast<WorldContext*>(world.get_ctx());
-		auto* playerInfo = static_cast<PlayerInfo*>	 (event.peer->data);
-		auto  pInfoCopy  = *playerInfo;
-		const auto it 	 = ctx->networkToLocal.find(playerInfo->id);
+		const auto* ctx    = WorldContext<>::Get(world);
+		const auto* info   = static_cast<PlayerInfo*>(event.peer->data);
+		const auto rHandle = info->handle;
+		const auto lHandle = ctx->networkMapping.GetLHandle(info->handle);
 
-		MCC_LOG_INFO("Connection closed on port {} with network id {}", event.peer->address.port, playerInfo->id);
-		delete playerInfo;
+		MCC_LOG_INFO("Connection closed on port {} with network id {}", event.peer->address.port, rHandle);
+		delete info;
 
-		if (it == ctx->networkToLocal.cend())
+		if (!lHandle.has_value())
 		{
-			MCC_LOG_WARN("The network id {} isn't associated to a local entity", pInfoCopy.id);
+			MCC_LOG_WARN("The network id {} isn't associated to a local entity", rHandle);
 			return;
 		}
 
-		if (!world.is_alive(it->second))
+		if (!world.is_alive(*lHandle))
 		{
-			MCC_LOG_WARN("The local entity associated to the network id {} isn't alive", pInfoCopy.id);
+			MCC_LOG_WARN("The local entity associated to the network id {} isn't alive", rHandle);
 			return;
 		}
 
-		world.entity(it->second).add<EntityDestroyedTag>();
+		world.entity(*lHandle).add<EntityDestroyedTag>();
 	}
 
 }

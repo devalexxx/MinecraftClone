@@ -14,7 +14,7 @@
 namespace Mcc
 {
 
-	CameraModule::CameraModule(flecs::world& world)
+	CameraModule::CameraModule(const flecs::world& world)
 	{
 		MCC_ASSERT	 (world.has<EntityModule>(), "CameraModule require WorldEntityModule, you must import it before.");
 		MCC_LOG_DEBUG("Import CameraModule...");

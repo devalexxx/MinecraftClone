@@ -7,8 +7,6 @@
 
 #include "Common/World/Chunk.h"
 
-#include <flecs.h>
-
 #include <memory>
 #include <string>
 
@@ -18,6 +16,9 @@ namespace Mcc
 	struct BlockTag {};
 	struct BlockStateTag {};
 	struct ChunkTag {};
+
+    struct BlockPrefab {};
+    struct ChunkPrefab {};
 
 	struct BlockStateRelation {};
 
@@ -41,9 +42,9 @@ namespace Mcc
 			glm::uvec3 position;
 	};
 
-	struct ChunkData
+	struct ChunkHolder
 	{
-			std::unique_ptr<Chunk> data;
+			std::shared_ptr<Chunk> chunk;
 	};
 
 	template<typename Archive>

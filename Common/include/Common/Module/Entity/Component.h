@@ -5,7 +5,7 @@
 #ifndef MCC_COMMON_MODULE_ENTITY_COMPONENT_H
 #define MCC_COMMON_MODULE_ENTITY_COMPONENT_H
 
-#include "Common/Network/NetworkID.h"
+#include "Common/Network/NetworkHandle.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -53,11 +53,6 @@ namespace Mcc
 	struct Extra
 	{
 			std::unordered_map<std::string, std::string> data;
-	};
-
-	struct NetworkHandle
-	{
-			NetworkID id;
 	};
 
 	struct UserInput

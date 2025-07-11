@@ -21,11 +21,11 @@ namespace Mcc
 
 		private:
 
-			static void OnEntitiesCreatedHandler(flecs::world& world, const OnEntitiesCreated& event);
-			static void OnEntitiesUpdatedHandler(flecs::world& world, const OnEntitiesUpdated& event);
+			static void OnEntitiesCreatedHandler(const flecs::world& world, const OnEntitiesCreated& event);
+			static void OnEntitiesUpdatedHandler(const flecs::world& world, const OnEntitiesUpdated& event);
 
-			static void OnKeyEventHandler	    (flecs::world& world, const KeyEvent& 	   	   event);
-			static void OnCursorPosEventHandler (flecs::world& world, const CursorPosEvent&    event);
+			static void OnKeyEventHandler	    (const flecs::world& world, const KeyEvent& 	   	   event);
+			static void OnCursorPosEventHandler (const flecs::world& world, const CursorPosEvent&    event);
 
 	};
 

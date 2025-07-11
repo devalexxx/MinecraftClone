@@ -4,13 +4,20 @@
 
 #include "Client/Module/EntityReplication/System.h"
 
+#include "Common/WorldContext.h"
+
 namespace Mcc
 {
 
+    void DispatchInitialEntityStateSystem(const flecs::iter& it, size_t, InitialWorldState& iws)
+    {
+        WorldContext<>::Get(it.world())->networkManager.Dispatch<OnEntitiesCreated>({ std::move(iws.state.entities) });
+    }
+
 	void EntityInterpolationSystem(Transform& transform, SnapshotQueue& queue)
 	{
-		const auto delay      =  std::chrono::milliseconds(50);
-		const auto delayedNow = TimeClock::now() - delay;
+        constexpr auto delay      = std::chrono::milliseconds(50);
+		const     auto delayedNow = TimeClock::now() - delay;
 
 		// Cleanup old snapshot
 		while (!queue.data.empty() && queue.data.back().time < delayedNow - delay) { queue.data.pop_back(); }
@@ -22,10 +29,10 @@ namespace Mcc
 
 		if (queue.data.size() == 1)
 		{
-			const Snapshot& snapshot = queue.data.front();
-			transform.position = snapshot.transform.position;
-			transform.rotation = snapshot.transform.rotation;
-			transform.scale	   = snapshot.transform.scale;
+			const auto& [tr, time] = queue.data.front();
+			transform.position = tr.position;
+			transform.rotation = tr.rotation;
+			transform.scale	   = tr.scale;
 			return;
 		}
 
@@ -33,15 +40,15 @@ namespace Mcc
 		{
 			if (queue.data[i].time >= delayedNow && queue.data[i + 1].time <= delayedNow)
 			{
-				const auto& a = queue.data[i];
-				const auto& b = queue.data[i + 1];
+				const auto& [aTr, aTime] = queue.data[i];
+				const auto& [bTr, bTime] = queue.data[i + 1];
 
-				const auto elapsed = std::chrono::duration<float>(delayedNow - a.time).count();
-				const auto length  = std::chrono::duration<float>(b.time     - a.time).count();
+				const auto elapsed = std::chrono::duration<float>(delayedNow - aTime).count();
+				const auto length  = std::chrono::duration<float>(bTime     - aTime).count();
 
-				transform.position = glm::mix  (a.transform.position, b.transform.position, elapsed / length);
-				transform.rotation = glm::slerp(a.transform.rotation, b.transform.rotation, elapsed / length);
-				transform.scale	   = a.transform.scale;
+				transform.position = glm::mix  (aTr.position, bTr.position, elapsed / length);
+				transform.rotation = glm::slerp(aTr.rotation, bTr.rotation, elapsed / length);
+				transform.scale	   = aTr.scale;
 				break;
 			}
 		}

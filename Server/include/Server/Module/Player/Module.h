@@ -5,7 +5,6 @@
 #ifndef MCC_SERVER_MODULE_PLAYER_MODULE_H
 #define MCC_SERVER_MODULE_PLAYER_MODULE_H
 
-#include "Common/Network/Event.h"
 #include "Common/Network/Packet.h"
 
 namespace Mcc
@@ -17,7 +16,7 @@ namespace Mcc
 			PlayerModule(flecs::world& world);
 
 		private:
-			static void OnPlayerInputHandler(flecs::world& world, const From<OnPlayerInput>& from);
+			static void OnPlayerInputHandler(const flecs::world& world, const From<OnPlayerInput>& from);
 	};
 
 }

@@ -5,12 +5,15 @@
 #ifndef MCC_CLIENT_MODULE_TERRAIN_REPLICATION_SYSTEM_H
 #define MCC_CLIENT_MODULE_TERRAIN_REPLICATION_SYSTEM_H
 
+#include "Client/Module/ServerSession/Component.h"
+
 #include <flecs.h>
 
 namespace Mcc
 {
 
-	void RemoveChunkDirtySystem(flecs::entity entity);
+    void DispatchInitialTerrainStateSystem(const flecs::iter& it, size_t, InitialWorldState& iws);
+	void RemoveChunkDirtySystem           (flecs::entity entity);
 
 }
 

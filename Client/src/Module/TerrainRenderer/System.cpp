@@ -22,7 +22,7 @@
 namespace Mcc
 {
 
-	void TerrainRendererModule::BuildChunkMeshSystem(flecs::entity entity, ChunkData& data) const
+	void TerrainRendererModule::BuildChunkMeshSystem(const flecs::entity entity, ChunkHolder& holder) const
 	{
 		MCC_LOG_INFO("Building chunk({}) mesh", entity.id());
 		const auto world = entity.world();
@@ -45,11 +45,11 @@ namespace Mcc
 				for (size_t y = 0; y < Chunk::Height; ++y)
 				{
 					const auto p = glm::uvec3(x, y, z);
-					if (auto b = world.entity(data.data->Get(p)); b.is_valid() /* && b.has<BlockTag> */)
+					if (auto b = world.entity(holder.chunk->Get(p)); b.is_valid() /* && b.has<BlockTag> */)
 					{
 						if (b.get<BlockType>() == BlockType::Solid)
 						{
-							for (auto&& [ face, e ]: data.data->GetNeighbors(p))
+							for (auto&& [ face, e ]: holder.chunk->GetNeighbors(p))
 							{
 								if (auto n = world.entity(e); n == flecs::entity::null() || n.get<BlockType>() != BlockType::Solid)
 								{
@@ -72,7 +72,7 @@ namespace Mcc
 		auto [packed, index] = Index(array);
 		MCC_LOG_DEBUG("Packed mesh size {}", packed.size());
 
-		if (auto mesh = entity.try_get<ChunkMesh>())
+		if ([[maybe_unused]] auto mesh = entity.try_get<ChunkMesh>())
 		{
 			// TODO
 		}

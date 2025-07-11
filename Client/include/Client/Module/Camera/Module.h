@@ -12,7 +12,7 @@ namespace Mcc
 
 	struct CameraModule
 	{
-			CameraModule(flecs::world& world);
+			CameraModule(const flecs::world& world);
 	};
 
 }

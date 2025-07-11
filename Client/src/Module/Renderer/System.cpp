@@ -4,8 +4,8 @@
 
 
 #include "Client/Module/Renderer/System.h"
+#include "../../../include/Client/WorldContext.h"
 #include "Client/Graphics/Common.h"
-#include "Client/World/Context.h"
 
 #include <glad/glad.h>
 
@@ -36,8 +36,7 @@ namespace Mcc
 	void RenderFrameSystem(flecs::iter& it)
 	{
 		while(it.next()) {}
-		static_cast<ClientWorldContext*>(it.world().get_ctx())->window.SwapBuffer();
-		// Window::PollEvents();
+		ClientWorldContext::Get(it.world())->window.SwapBuffer();
 	}
 
 }

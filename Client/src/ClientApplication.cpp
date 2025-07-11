@@ -3,6 +3,7 @@
 //
 
 #include "Client/ClientApplication.h"
+#include "../include/Client/WorldContext.h"
 #include "Client/Module/Camera/Module.h"
 #include "Client/Module/EntityRenderer/Module.h"
 #include "Client/Module/EntityReplication/Module.h"
@@ -12,9 +13,10 @@
 #include "Client/Module/ServerSession/Module.h"
 #include "Client/Module/TerrainRenderer/Module.h"
 #include "Client/Module/TerrainReplication/Module.h"
-#include "Client/World/Context.h"
 
 #include "Common/Module/Entity/Module.h"
+#include "Common/Module/Network/Component.h"
+#include "Common/Module/Network/Module.h"
 #include "Common/Module/Terrain/Module.h"
 #include "Common/Network/Event.h"
 #include "Common/Utils/Logging.h"
@@ -36,21 +38,24 @@ namespace Mcc
 
 	int ClientApplication::Run()
 	{
-		if (int error = mNetworkManager.Setup())
+		if (const int error = mNetworkManager.Setup())
 		{
 			MCC_LOG_ERROR("Failed to setup network host");
 			return error;
 		}
 
 		MCC_LOG_INFO("Waiting for connection...");
-		if (int error = mNetworkManager.Connect())
+		if (const int error = mNetworkManager.Connect())
 		{
 			MCC_LOG_ERROR("Failed to connect to server");
 			return error;
 		}
 
+	    // flecs::log::set_level(0);
+
 		MCC_LOG_DEBUG("Waiting for server information...");
-		mWorld.set_ctx(new ClientWorldContext { { {}, mNetworkManager, {}, {} }, {}, mWindow }, [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); });
+		mWorld.set_ctx(new ClientWorldContext { { {}, mNetworkManager, {} }, {}, mWindow }, [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); });
+	    mWorld.import<NetworkModule>	  ();
 		mWorld.import<ServerSessionModule>();
 
 		while (mWorld.get<ServerConnectionState>() == ServerConnectionState::Pending)
@@ -75,8 +80,10 @@ namespace Mcc
 		mWorld.import<EntityRendererModule>();
 		mWorld.import<TerrainRendererModule>();
 
+	    mWorld.add<ClientTag>();
+
 		mWorld.system()
-			.run([](flecs::iter& it) {
+			.run([](const flecs::iter& it) {
 				static float elapsed = 0;
 				static float frames  = 0;
 
@@ -101,7 +108,7 @@ namespace Mcc
 
 		MCC_LOG_INFO("Shutdown...");
 
-		if (int error = mNetworkManager.Disconnect())
+		if (const int error = mNetworkManager.Disconnect())
 			return error;
 
 		MCC_LOG_INFO("Disconnected from server");

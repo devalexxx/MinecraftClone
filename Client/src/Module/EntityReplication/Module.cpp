@@ -3,13 +3,15 @@
 //
 
 #include "Client/Module/EntityReplication/Module.h"
-#include "Client/Module/EntityReplication/System.h"
+#include "../../../include/Client/WorldContext.h"
 #include "Client/Module/EntityReplication/Component.h"
+#include "Client/Module/EntityReplication/System.h"
 #include "Client/Module/ServerSession/Component.h"
-#include "Client/World/Context.h"
 
 #include "Common/Module/Entity/Component.h"
 #include "Common/Module/Entity/Module.h"
+
+#include "Common/Module/Network/Component.h"
 #include "Common/Network/Packet.h"
 #include "Common/Utils/Assert.h"
 #include "Common/Utils/Logging.h"
@@ -17,7 +19,7 @@
 namespace Mcc
 {
 
-	EntityReplicationModule::EntityReplicationModule(flecs::world& world)
+	EntityReplicationModule::EntityReplicationModule(const flecs::world& world)
 	{
 		MCC_ASSERT	 (world.has<EntityModule>(), "EntityReplicationModule require WorldEntityModule, you must import it before.");
 		MCC_LOG_DEBUG("Import EntityReplicationModule...");
@@ -25,104 +27,78 @@ namespace Mcc
 
 		world.component<InterpolationExcludedTag>();
 
-		world.system<Transform, SnapshotQueue>("EntityInterpolationSystem").without<InterpolationExcludedTag>().each(EntityInterpolationSystem);
+		world.system<Transform, SnapshotQueue>("EntityInterpolation")
+	        .without<InterpolationExcludedTag>()
+	        .each(EntityInterpolationSystem);
 
-		auto* ctx = static_cast<ClientWorldContext*>(world.get_ctx());
+	    world.system<InitialWorldState>("DispatchInitialEntityState")
+	        .kind(flecs::OnStart)
+	        .term_at(0).singleton()
+	        .each(DispatchInitialEntityStateSystem);
 
+		const auto* ctx = ClientWorldContext::Get(world);
 		ctx->networkManager.Subscribe<OnEntitiesCreated>  ([&world](const auto& event) { OnEntitiesCreatedHandler  (world, event); });
 		ctx->networkManager.Subscribe<OnEntitiesUpdated>  ([&world](const auto& event) { OnEntitiesUpdatedHandler  (world, event); });
 		ctx->networkManager.Subscribe<OnEntitiesDestroyed>([&world](const auto& event) { OnEntitiesDestroyedHandler(world, event); });
-
-		MCC_LOG_DEBUG("Load initial world state...");
-		const auto* initialState = world.try_get<InitialWorldState>();
-		if (initialState)
-		{
-			for (auto& state: initialState->state.entities)
-			{
-				auto entity = world.entity()
-					.is_a<NetworkEntityPrefab>()
-					.set<NetworkHandle>({ state.id })
-					.set(state.transform)
-					.set<SnapshotQueue>({});
-
-				ctx->localToNetwork.emplace(entity.id(), state.id);
-				ctx->networkToLocal.emplace(state.id, entity.id());
-			}
-		}
 	}
 
-	void EntityReplicationModule::OnEntitiesCreatedHandler(flecs::world& world, const OnEntitiesCreated& event)
+	void EntityReplicationModule::OnEntitiesCreatedHandler(const flecs::world& world, const OnEntitiesCreated& event)
 	{
-		auto* ctx = static_cast<ClientWorldContext*>(world.get_ctx());
+        const auto* ctx = ClientWorldContext::Get(world);
 
 		for (auto& state: event.states)
 		{
-			auto it = ctx->networkToLocal.find(state.id);
-			if (it != ctx->networkToLocal.cend())
+			if (ctx->networkMapping.GetLHandle(state.handle).has_value())
 			{
-				MCC_LOG_WARN("The network id {} is already associated to a local entity", state.id);
+				MCC_LOG_WARN("The network id {} is already associated to a local entity", state.handle);
 				continue;
 			}
 
-			auto entity = world.entity()
+			world.entity()
 			  .is_a<NetworkEntityPrefab>()
-			  .set<NetworkHandle>({ state.id })
+			  .set<NetworkProps>({ state.handle })
 			  .set(state.transform)
 			  .set<SnapshotQueue>({});
-
-			ctx->localToNetwork.emplace(entity.id(), state.id);
-			ctx->networkToLocal.emplace(state.id, entity.id());
 		}
 	}
 
-	void EntityReplicationModule::OnEntitiesDestroyedHandler(flecs::world& world, const OnEntitiesDestroyed& event)
+	void EntityReplicationModule::OnEntitiesDestroyedHandler(const flecs::world& world, const OnEntitiesDestroyed& event)
 	{
-		auto* ctx = static_cast<ClientWorldContext*>(world.get_ctx());
+        const auto* ctx = ClientWorldContext::Get(world);
 
-		for (auto& id: event.ids)
+		for (const auto handle: event.handles)
 		{
-			auto it = ctx->networkToLocal.find(id);
-			if (it == ctx->networkToLocal.cend())
-			{
-				MCC_LOG_WARN("The network id {} isn't associated to a local entity", id);
-				continue;
-			}
+		    if (auto id = ctx->networkMapping.GetLHandle(handle); id.has_value())
+		    {
+		        if (!world.is_alive(*id))
+		        {
+		            MCC_LOG_WARN("The local entity associated to the network id {} isn't alive", handle);
+		            continue;
+		        }
 
-			if (!world.is_alive(it->second))
-			{
-				MCC_LOG_WARN("The local entity associated to the network id {} isn't alive", id);
-				continue;
-			}
-
-			world.entity(it->second).destruct();
-
-			ctx->localToNetwork.erase(it->second);
-			ctx->networkToLocal.erase(id);
+		        world.entity(*id).destruct();
+		    }
 		}
 	}
 
-	void EntityReplicationModule::OnEntitiesUpdatedHandler(flecs::world& world, const OnEntitiesUpdated& event)
+	void EntityReplicationModule::OnEntitiesUpdatedHandler(const flecs::world& world, const OnEntitiesUpdated& event)
 	{
-		const auto* ctx = static_cast<ClientWorldContext*>(world.get_ctx());
+		const auto* ctx = ClientWorldContext::Get(world);
 
-		for (auto& state: event.states)
+		for (const auto& state: event.states)
 		{
-			auto it = ctx->networkToLocal.find(state.id);
-			if (it == ctx->networkToLocal.cend())
-			{
-				MCC_LOG_WARN("The network id {} isn't associated to a local entity", state.id);
-				continue;
-			}
+		    if (auto id = ctx->networkMapping.GetLHandle(state.handle); id.has_value())
+		    {
+		        if (!world.is_alive(*id))
+		        {
+		            MCC_LOG_WARN("The local entity associated to the network id {} isn't alive", state.handle);
+		            continue;
+		        }
 
-			if (!world.is_alive(it->second))
-			{
-				MCC_LOG_WARN("The local entity associated to the network id {} isn't alive", state.id);
-				continue;
-			}
-
-			world.entity(it->second).get([&state](SnapshotQueue& queue) {
-				queue.data.push_front({ state.transform, TimeClock::now() });
-			});
+		        world.entity(*id).get([&state](SnapshotQueue& queue) {
+		            queue.data.push_front({ state.transform, TimeClock::now() });
+		        });
+		    }
 		}
 	}
 

@@ -92,21 +92,20 @@ namespace Mcc
 			for (const auto i: it)
 			{
 				auto entity  = it.entity(i).id();
-				auto colorIt = colorMapper.find(entity);
-				if (colorIt == colorMapper.cend())
-				{
-					auto color = glm::vec3(
-					    static_cast<float>(std::rand()) / RAND_MAX,
-					    static_cast<float>(std::rand()) / RAND_MAX,
-					    static_cast<float>(std::rand()) / RAND_MAX
-					);
-					colorMapper[entity] = color;
-					mProgram.SetUniformVector(colorLocation, color);
-				}
+                if (const auto colorIt = colorMapper.find(entity); colorIt == colorMapper.cend())
+                {
+                    auto color = glm::vec3(
+                        static_cast<float>(std::rand()) / RAND_MAX,
+                        static_cast<float>(std::rand()) / RAND_MAX,
+                        static_cast<float>(std::rand()) / RAND_MAX
+                    );
+                    colorMapper[entity] = color;
+                    mProgram.SetUniformVector(colorLocation, color);
+                }
 				else
-				{
-					mProgram.SetUniformVector(colorLocation, colorIt->second);
-				}
+                {
+                    mProgram.SetUniformVector(colorLocation, colorIt->second);
+                }
 
 				mProgram.SetUniformMatrix(
 					modelLocation,

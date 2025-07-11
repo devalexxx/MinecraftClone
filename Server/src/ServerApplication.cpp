@@ -3,15 +3,15 @@
 //
 
 #include "Server/ServerApplication.h"
+#include "../include/Server/WorldContext.h"
 #include "Server/Module/EntityReplication/Module.h"
 #include "Server/Module/Player/Module.h"
 #include "Server/Module/UserSession/Module.h"
-#include "Server/World/Context.h"
 
 #include "Common/Module/Entity/Module.h"
+#include "Common/Module/Network/Module.h"
 #include "Common/Module/Terrain/Component.h"
 #include "Common/Module/Terrain/Module.h"
-#include "Common/Network/Event.h"
 #include "Common/Network/Packet.h"
 #include "Common/Utils/Logging.h"
 #include "Server/Module/TerrainReplication/Module.h"
@@ -19,6 +19,7 @@
 #include <fmt/format.h>
 
 #include <charconv>
+#include <utility>
 
 namespace Mcc
 {
@@ -51,7 +52,8 @@ namespace Mcc
 		}
 
 		MCC_LOG_DEBUG("Setup world...");
-		mWorld.set_ctx(new ServerWorldContext { { mInfo, mNetworkManager, {}, {} } }, [](void* ptr) { delete static_cast<ServerWorldContext*>(ptr); });
+		mWorld.set_ctx(new ServerWorldContext { { mInfo, mNetworkManager, {} } }, [](void* ptr) { delete static_cast<ServerWorldContext*>(ptr); });
+	    mWorld.import<NetworkModule>          ();
 		mWorld.import<EntityModule>		 	  ();
 		mWorld.import<UserSessionModule>	  ();
 		mWorld.import<EntityReplicationModule>();
@@ -59,86 +61,68 @@ namespace Mcc
 		mWorld.import<TerrainModule>		  ();
 		mWorld.import<TerrainReplicationModule>();
 
+	    mWorld.add<ServerTag>();
+
 		{
-			auto* ctx = static_cast<ServerWorldContext*>(mWorld.get_ctx());
-			flecs::entity e;
-			NetworkID 	  id;
-			e = mWorld.entity("mcc:block:air")
-				.add<BlockTag>()
+			mWorld.entity("mcc:block:air")
+		        .is_a<BlockPrefab>()
 				.set<BlockType>(BlockType::Gas)
 				.set<BlockMeta>({ "mcc:block:air" });
-			id = GenerateNetworkID();
-			ctx->localToNetwork.emplace(e.id(), id);
-			ctx->networkToLocal.emplace(id, e.id());
 
-			e = mWorld.entity("mcc:block:stone")
-				.add<BlockTag>()
+			mWorld.entity("mcc:block:stone")
+                .is_a<BlockPrefab>()
 				.set<BlockType>(BlockType::Solid)
 				.set<BlockMeta>({ "mcc:block:stone" });
-			id = GenerateNetworkID();
-			ctx->localToNetwork.emplace(e.id(), id);
-			ctx->networkToLocal.emplace(id, e.id());
-			
-			e = mWorld.entity()
-				.add<ChunkTag>()
+
+			auto e = mWorld.entity()
+                .is_a<ChunkPrefab>()
 				.set<ChunkPosition>({ { 0, 0, 0 } })
-				.set<ChunkData>({ std::make_unique<Chunk>(mWorld.lookup("mcc:block:air")) });
-			id = GenerateNetworkID();
-			ctx->localToNetwork.emplace(e.id(), id);
-			ctx->networkToLocal.emplace(id, e.id());
+				.set<ChunkHolder>({ std::make_shared<Chunk>(mWorld.lookup("mcc:block:air")) });
 
-			auto cData = e.get_ref<ChunkData>();
-			auto stone = mWorld.lookup("mcc:block:stone");
+            const auto stone = mWorld.lookup("mcc:block:stone");
 
-			for (int x = 0; x < Chunk::Size; ++x)
+			auto cHolder = e.get_ref<ChunkHolder>();
+			for (unsigned int x = 0; x < Chunk::Size; ++x)
 			{
-				for (int z = 0; z < Chunk::Size; ++z)
+				for (unsigned int z = 0; z < Chunk::Size; ++z)
 				{
 					for (int y = 0; y < 12; ++y)
 					{
-						cData->data->Set({ x, y, z }, stone);
+						cHolder->chunk->Set({ x, y, z }, stone);
 					}
 				}
 			}
 
 			e = mWorld.entity()
-					.add<ChunkTag>()
-					.set<ChunkPosition>({ { 1, 0, 0 } })
-					.set<ChunkData>({ std::make_unique<Chunk>(mWorld.lookup("mcc:block:air")) });
-			id = GenerateNetworkID();
-			ctx->localToNetwork.emplace(e.id(), id);
-			ctx->networkToLocal.emplace(id, e.id());
+                .is_a<ChunkPrefab>()
+			    .set<ChunkPosition>({ { 1, 0, 0 } })
+			    .set<ChunkHolder>({ std::make_shared<Chunk>(mWorld.lookup("mcc:block:air")) });
 
-			cData = e.get_ref<ChunkData>();
-
-			for (int x = 0; x < Chunk::Size; ++x)
+			cHolder = e.get_ref<ChunkHolder>();
+			for (unsigned int x = 0; x < Chunk::Size; ++x)
 			{
-				for (int z = 0; z < Chunk::Size; ++z)
+				for (unsigned int z = 0; z < Chunk::Size; ++z)
 				{
 					for (int y = 0; y < 5; ++y)
 					{
-						cData->data->Set({ x, y, z }, stone);
+						cHolder->chunk->Set({ x, y, z }, stone);
 					}
 				}
 			}
 
 			e = mWorld.entity()
-					.add<ChunkTag>()
-					.set<ChunkPosition>({ { 0, 0, 1 } })
-					.set<ChunkData>({ std::make_unique<Chunk>(mWorld.lookup("mcc:block:air")) });
-			id = GenerateNetworkID();
-			ctx->localToNetwork.emplace(e.id(), id);
-			ctx->networkToLocal.emplace(id, e.id());
+                .is_a<ChunkPrefab>()
+			    .set<ChunkPosition>({ { 0, 0, 1 } })
+			    .set<ChunkHolder>({ std::make_shared<Chunk>(mWorld.lookup("mcc:block:air")) });
 
-			cData = e.get_ref<ChunkData>();
-
-			for (int x = 0; x < Chunk::Size; ++x)
+			cHolder = e.get_ref<ChunkHolder>();
+			for (int x = 0; std::cmp_less(x , Chunk::Size); ++x)
 			{
-				for (int z = 0; z < Chunk::Size; ++z)
+				for (int z = 0; std::cmp_less(z , Chunk::Size); ++z)
 				{
 					for (int y = 0; y < 16; ++y)
 					{
-						cData->data->Set({ x, y, z }, stone);
+						cHolder->chunk->Set({ x, y, z }, stone);
 					}
 				}
 			}

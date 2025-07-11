@@ -3,9 +3,10 @@
 //
 
 #include "Server/Module/TerrainReplication/System.h"
+#include "Server/WorldContext.h"
+#include "Common/Module/Network/Component.h"
 #include "Server/Module/TerrainReplication/Component.h"
 #include "Server/ServerNetworkManager.h"
-#include "Server/World/Context.h"
 
 #include "Common/Module/Terrain/Component.h"
 #include "Common/Utils/Logging.h"
@@ -15,217 +16,187 @@ namespace Mcc
 
 	void BroadcastCreatedBlocks(flecs::iter& it)
 	{
-		const auto* ctx = static_cast <ServerWorldContext*>  (it.world().get_ctx());
-		const auto&	net = dynamic_cast<ServerNetworkManager&>(ctx->networkManager);
+		const auto* ctx = ServerWorldContext::Get(it.world());
 
 		while (it.next())
 		{
-			auto m = it.field<const BlockMeta>(0);
-			auto t = it.field<const BlockType>(1);
+			auto m = it.field<const BlockMeta>   (0);
+			auto t = it.field<const BlockType>   (1);
+			auto n = it.field<const NetworkProps>(2);
 
 			OnBlocksCreated packet;
-			for (auto i: it)
+			for (const auto i: it)
 			{
-				auto entity = it.entity(i);
-				if (auto id = ctx->localToNetwork.find(entity.id()); id != ctx->localToNetwork.cend())
-				{
-					packet.blocks.push_back({ id->second, m[i], t[i] });
-					MCC_LOG_INFO("Block({}) has been created and replicated", id->second);
-					entity.remove<BlockCreatedTag>();
-				}
-				else
-				{
-					MCC_LOG_WARN("Unable to retrieve network id for entity({})", entity.id());
-				}
+			    const auto entity = it.entity(i);
+			    const auto handle = n[i].handle;
+
+			    if (!IsValid(handle))
+			    {
+			        MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
+			        continue;
+			    }
+
+			    packet.blocks.push_back({ handle, m[i], t[i] });
+			    entity.remove<BlockCreatedTag>();
+			    MCC_LOG_INFO("Block({}) has been created and replicated", handle);
 			}
-			net.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
+			ctx->networkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
 		}
 	}
 
 	void BroadcastDirtyBlocks(flecs::iter& it)
 	{
-		const auto* ctx = static_cast <ServerWorldContext*>  (it.world().get_ctx());
-		const auto&	net = dynamic_cast<ServerNetworkManager&>(ctx->networkManager);
+	    const auto* ctx = ServerWorldContext::Get(it.world());
 
 		while (it.next())
 		{
-			auto m = it.field<const BlockMeta>(0);
-			auto t = it.field<const BlockType>(1);
+		    auto m = it.field<const BlockMeta>   (0);
+		    auto t = it.field<const BlockType>   (1);
+		    auto n = it.field<const NetworkProps>(2);
 
 			OnBlocksUpdated packet;
-			for (auto i: it)
+			for (const auto i: it)
 			{
-				auto entity = it.entity(i);
-				if (auto id = ctx->localToNetwork.find(entity.id()); id != ctx->localToNetwork.cend())
-				{
-					packet.blocks.push_back({ id->second, m[i], t[i] });
-					entity.remove<BlockDirtyTag>();
-				}
-				else
-				{
-					MCC_LOG_WARN("Unable to retrieve network id for block({})", entity.id());
-				}
+			    const auto entity = it.entity(i);
+                const auto handle = n[i].handle;
+
+			    if (!IsValid(handle))
+			    {
+			        MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
+			        continue;
+			    }
+
+				packet.blocks.push_back({ handle, m[i], t[i] });
+				entity.remove<BlockDirtyTag>();
 			}
-			net.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
+			ctx->networkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
 		}
 	}
 
 	void BroadcastDestroyedBlocks(flecs::iter& it)
 	{
-		auto* 		ctx = static_cast <ServerWorldContext*>  (it.world().get_ctx());
-		const auto& net = dynamic_cast<ServerNetworkManager&>(ctx->networkManager);
+        const auto* ctx = ServerWorldContext::Get(it.world());
 
 		while (it.next())
 		{
+		    auto n = it.field<const NetworkProps>(0);
+
 			OnBlocksDestroyed packet;
-			for (auto i: it)
+			for (const auto i: it)
 			{
-				auto entity = it.entity(i);
-				if (auto id = ctx->localToNetwork.find(entity.id()); id != ctx->localToNetwork.cend())
-				{
-					packet.ids.push_back(id->second);
+			    const auto entity = it.entity(i);
+			    const auto handle = n[i].handle;
 
-					MCC_LOG_INFO("Block({}) has been destroyed and replicated", id->second);
+			    if (!IsValid(handle))
+			    {
+			        MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
+			        entity.destruct();
+			        continue;
+			    }
 
-					ctx->networkToLocal.erase(id->second);
-					ctx->localToNetwork.erase(id->first);
-				}
-				else
-				{
-					MCC_LOG_WARN("Unable to retrieve network id for block({})", entity.id());
-				}
-
+				packet.handles.push_back(handle);
 				entity.destruct();
+			    MCC_LOG_INFO("Block({}) has been destroyed and replicated", handle);
 			}
-			net.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
+			ctx->networkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
 		}
 	}
 
 	void BroadcastCreatedChunks(flecs::iter& it)
 	{
-		const auto* ctx = static_cast <ServerWorldContext*>  (it.world().get_ctx());
-		const auto&	net = dynamic_cast<ServerNetworkManager&>(ctx->networkManager);
+		const auto* ctx   = ServerWorldContext::Get(it.world());
+	    const auto& world = it.world();
 
 		while (it.next())
 		{
 			auto t = it.field<const ChunkPosition>(0);
-			auto d = it.field<const ChunkData>	  (1);
+			auto h = it.field<const ChunkHolder>  (1);
+		    auto n = it.field<const NetworkProps> (2);
 
 			OnChunksCreated packet;
-			for (auto i: it)
+			for (const auto i: it)
 			{
-				auto entity = it.entity(i);
-				if (auto id = ctx->localToNetwork.find(entity.id()); id != ctx->localToNetwork.cend())
-				{
-					Chunk::Palette palette;
-					bool 		   success = true;
-					for (auto e: d[i].data->GetPalette())
-					{
-						auto eIt = ctx->localToNetwork.find(e);
-						if (eIt != ctx->localToNetwork.cend())
-						{
-							palette.push_back(eIt->second);
-						}
-						else
-						{
-							MCC_LOG_WARN("Unable to retrieve network id for block({}) in chunk({})", e, id->second);
-							success = false;
-							break;
-						}
-					}
+			    const auto entity = it.entity(i);
+			    const auto handle = n[i].handle;
 
-					if (success)
-					{
-						packet.chunks.push_back({ id->second, t[i], { palette, d[i].data->GetMapping() } });
-						MCC_LOG_INFO("Chunk({}) has been created and replicated", id->second);
-						entity.remove<ChunkCreatedTag>();
-					}
-				}
-				else
+			    if (!IsValid(handle))
+			    {
+			        MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
+			        continue;
+			    }
+
+				if (auto data = h[i].chunk->ToNetwork(world); data.has_value())
 				{
-					MCC_LOG_WARN("Unable to retrieve network id for chunk({})", entity.id());
+					packet.chunks.push_back({ handle, t[i], std::move(*data) });
+					MCC_LOG_INFO("Chunk({}) has been created and replicated", handle);
 				}
+
+			    entity.remove<ChunkCreatedTag>();
 			}
-			net.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
+			ctx->networkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
 		}
 	}
 
 	void BroadcastDirtyChunks(flecs::iter& it)
 	{
-		const auto* ctx = static_cast <ServerWorldContext*>  (it.world().get_ctx());
-		const auto&	net = dynamic_cast<ServerNetworkManager&>(ctx->networkManager);
+		const auto* ctx   = ServerWorldContext::Get(it.world());
+	    const auto& world = it.world();
 
 		while (it.next())
 		{
 			auto t = it.field<const ChunkPosition>(0);
-			auto d = it.field<const ChunkData>	  (1);
+			auto h = it.field<const ChunkHolder>  (1);
+		    auto n = it.field<const NetworkProps> (2);
 
 			OnChunksUpdated packet;
-			for (auto i: it)
+			for (const auto i: it)
 			{
-				auto entity = it.entity(i);
-				if (auto id = ctx->localToNetwork.find(entity.id()); id != ctx->localToNetwork.cend())
-				{
-					Chunk::Palette palette;
-					bool 		   success = true;
-					for (auto e: d[i].data->GetPalette())
-					{
-						auto eIt = ctx->localToNetwork.find(e);
-						if (eIt != ctx->localToNetwork.cend())
-						{
-							palette.push_back(eIt->second);
-						}
-						else
-						{
-							MCC_LOG_WARN("Unable to retrieve network id for block({}) in chunk({})", e, id->second);
-							success = false;
-							break;
-						}
-					}
+			    const auto entity = it.entity(i);
+			    const auto handle = n[i].handle;
 
-					if (success)
-					{
-						packet.chunks.push_back({ id->second, t[i], { palette, d[i].data->GetMapping() } });
-						entity.remove<ChunkDirtyTag>();
-					}
-				}
-				else
+			    if (!IsValid(handle))
+			    {
+			        MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
+			        continue;
+			    }
+
+				if (auto data = h[i].chunk->ToNetwork(world); data.has_value())
 				{
-					MCC_LOG_WARN("Unable to retrieve network id for chunk({})", entity.id());
+					packet.chunks.push_back({ handle, t[i], std::move(*data) });
 				}
+
+			    entity.remove<ChunkDirtyTag>();
 			}
-			net.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
+			ctx->networkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
 		}
 	}
 
 	void BroadcastDestroyedChunks(flecs::iter& it)
 	{
-		auto* 		ctx = static_cast <ServerWorldContext*>  (it.world().get_ctx());
-		const auto& net = dynamic_cast<ServerNetworkManager&>(ctx->networkManager);
+        const auto* ctx = ServerWorldContext::Get(it.world());
 
 		while (it.next())
 		{
+		    auto n = it.field<const NetworkProps>(0);
+
 			OnChunksDestroyed packet;
-			for (auto i: it)
+			for (const auto i: it)
 			{
-				auto entity = it.entity(i);
-				if (auto id = ctx->localToNetwork.find(entity.id()); id != ctx->localToNetwork.cend())
-				{
-					packet.ids.push_back(id->second);
+			    const auto entity = it.entity(i);
+			    const auto handle = n[i].handle;
 
-					MCC_LOG_INFO("Chunk({}) has been destroyed and replicated", id->second);
+			    if (!IsValid(handle))
+			    {
+			        MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
+			        entity.destruct();
+			        continue;
+			    }
 
-					ctx->networkToLocal.erase(id->second);
-					ctx->localToNetwork.erase(id->first);
-				}
-				else
-				{
-					MCC_LOG_WARN("Unable to retrieve network id for chunk({})", entity.id());
-				}
-
+			    packet.handles.push_back(handle);
 				entity.destruct();
+			    MCC_LOG_INFO("Chunk({}) has been destroyed and replicated", handle);
 			}
-			net.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
+			ctx->networkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
 		}
 	}
 

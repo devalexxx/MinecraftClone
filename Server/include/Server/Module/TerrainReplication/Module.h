@@ -12,7 +12,7 @@ namespace Mcc
 
 	struct TerrainReplicationModule
 	{
-			TerrainReplicationModule(flecs::world& world);
+			TerrainReplicationModule(const flecs::world& world);
 	};
 
 }

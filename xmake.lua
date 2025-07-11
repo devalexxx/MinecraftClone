@@ -27,6 +27,7 @@ target("MCCCommon")
     add_defines("MCC_LIB_BUILD")
 
     add_includedirs("Common/include/",  { public = true })
+    add_headerfiles("Common/include/(*.h)", "Common/include/(*.inl)")
     add_headerfiles("Common/include/(**/*.h)", "Common/include/(**/*.inl)")
 
     add_files("Common/**/*.cpp")
