@@ -15,7 +15,7 @@ namespace Mcc
 	{
 			RendererModule(flecs::world& world);
 
-			static std::pair<glm::mat4, glm::mat4> GetView(const flecs::world& world);
+			static std::tuple<glm::vec3, glm::mat4, glm::mat4> GetView(const flecs::world& world);
 	};
 
 }

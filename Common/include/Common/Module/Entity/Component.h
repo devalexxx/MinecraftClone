@@ -26,9 +26,12 @@ namespace glm
 	template<class Archive>
 	void serialize(Archive& ar, glm::quat& quat);
 
-	static constexpr glm::vec3 forward { 0, 0, -1 };
-	static constexpr glm::vec3 right   { 1, 0, 0 };
-	static constexpr glm::vec3 up 	   { 0, 1, 0 };
+	static constexpr glm::vec3 forward {  0,  0, -1 };
+	static constexpr glm::vec3 back    {  0,  0,  1 };
+	static constexpr glm::vec3 right   {  1,  0,  0 };
+	static constexpr glm::vec3 left    { -1,  0,  0 };
+	static constexpr glm::vec3 up 	   {  0,  1,  0 };
+	static constexpr glm::vec3 down    {  0, -1,  0 };
 
 }
 

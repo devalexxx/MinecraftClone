@@ -78,7 +78,7 @@ namespace Mcc
 
 		mProgram.Use();
 
-		const auto&& [view, proj] = RendererModule::GetView(it.world());
+		const auto&& [_, view, proj] = RendererModule::GetView(it.world());
 		mProgram.SetUniformMatrix(mProgram.GetUniformLocation("view"), view);
 		mProgram.SetUniformMatrix(mProgram.GetUniformLocation("proj"), proj);
 

@@ -35,7 +35,7 @@ namespace Mcc
 			.run(RenderFrameSystem);
 	}
 
-	std::pair<glm::mat4, glm::mat4> RendererModule::GetView(const flecs::world& world)
+	std::tuple<glm::vec3, glm::mat4, glm::mat4> RendererModule::GetView(const flecs::world& world)
 	{
 		const auto* ctx = ClientWorldContext::Get(world);
 
@@ -71,7 +71,7 @@ namespace Mcc
 		const glm::mat4 view = glm::lookAt(cTransform.position, cTransform.position + cTransform.rotation * glm::forward, up);
 		const glm::mat4 proj = glm::perspective(cSettings.fov, ctx->window.GetAspectRatio(), cSettings.zNear, cSettings.zFar);
 
-		return { view, proj };
+		return { cTransform.position, view, proj };
 	}
 
 

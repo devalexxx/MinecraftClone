@@ -8,6 +8,7 @@
 #include "Client/Module/Renderer/Module.h"
 #include "Client/Module/TerrainRenderer/Component.h"
 #include "Client/Module/TerrainRenderer/Module.h"
+#include "Common/Module/Entity/Component.h"
 
 #include "Common/Module/Terrain/Component.h"
 #include "Common/Utils/Assert.h"
@@ -38,6 +39,15 @@ namespace Mcc
 			{ BlockFace::Top,    {{ { -1.f,  1.f,  1.f }, {  1.f,  1.f, -1.f }, { -1.f,  1.f, -1.f }, { -1.f,  1.f,  1.f }, {  1.f,  1.f,  1.f }, {  1.f,  1.f, -1.f } }} }
 		}};
 
+	    Hx::EnumArray<BlockFace, glm::vec3> quadNormals {{
+	        { BlockFace::Front,  glm::forward },
+            { BlockFace::Back,   glm::back    },
+            { BlockFace::Left,   glm::left    },
+            { BlockFace::Right,  glm::right   },
+            { BlockFace::Bottom, glm::down    },
+            { BlockFace::Top,    glm::up      }
+	    }};
+
 		for (size_t x = 0; x < Chunk::Size; ++x)
 		{
 			for (size_t z = 0; z < Chunk::Size; ++z)
@@ -59,7 +69,7 @@ namespace Mcc
 										auto	   offset = glm::vec3(p) + ((vertex + 1.f) / 2.f);
 										auto       scaled = offset / glm::vec3(Chunk::Size, Chunk::Height, Chunk::Size);
 										const auto final  = scaled * 2.f - 1.f;
-										array.push_back({final, color, {}, {}});
+										array.push_back({final, color, {}, quadNormals[face]});
 										// array.push_back({final, { 0, 1, 0 }, {}, {}});
 									}
 								}
@@ -92,6 +102,7 @@ namespace Mcc
 			vBuffer.SetData(std::span(packed), GL_STATIC_DRAW);
 			mProgram.SetVertexAttribPointer("inVertex", 3, GL_FLOAT, sizeof (PackedVertex), 0);
 			mProgram.SetVertexAttribPointer("inColor" , 3, GL_FLOAT, sizeof (PackedVertex), 3 * sizeof (float));
+			mProgram.SetVertexAttribPointer("inNormal", 3, GL_FLOAT, sizeof (PackedVertex), 8 * sizeof (float));
 
 			iBuffer.Create();
 			iBuffer.SetData(std::span(index), GL_STATIC_DRAW);
@@ -109,27 +120,60 @@ namespace Mcc
 
 			in vec3 inVertex;
 			in vec3 inColor;
+            in vec3 inNormal;
 
 			uniform mat4 view;
 			uniform mat4 proj;
 			uniform mat4 model;
 
 			out vec3 passColor;
+            out vec3 passPos;
+            out vec3 passNormal;
 
 			void main() {
 				gl_Position = proj * view * model * vec4(inVertex, 1.0);
-				passColor = inColor;
+				passColor  = inColor;
+                passPos    = vec3(model * vec4(inVertex, 1.0));
+                passNormal = inNormal;
 			}
 		)""");
 		const Shader fragmentShader(GL_FRAGMENT_SHADER, R"""(
 			#version 330
 
 			in vec3 passColor;
+            in vec3 passPos;
+            in vec3 passNormal;
+
+            uniform mat3 invModel;
+            uniform vec3 viewPos;
 
 			out vec4 fragment;
 
+            vec3 lightPos   = vec3(0, 100, 0);
+            vec3 lightColor = vec3(1, 1, 1);
+
+            float ambientStrength  = 0.1;
+            float specularStrength = 1;
+
 			void main() {
-				fragment = vec4(passColor, 1.0);
+                vec3 normal = invModel * passNormal;
+                vec3 norm = normalize(normal);
+                vec3 lightDir = normalize(lightPos - passPos);
+
+                // Ambient lighting
+                vec3 ambient = ambientStrength * lightColor;
+
+                // Diffuse lighting
+                float diff = max(dot(norm, lightDir), 0.0);
+                vec3 diffuse = diff * lightColor;
+
+                // Specular lighting
+                vec3 viewDir = normalize(viewPos - passPos);
+                vec3 reflectDir = reflect(-lightDir, norm);
+                float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+                vec3 specular = specularStrength * spec * lightColor;
+
+				fragment = vec4((ambient + diffuse + specular) * passColor, 1.0);
 			}
 		)""");
 
@@ -144,13 +188,16 @@ namespace Mcc
 
 	void TerrainRendererModule::RenderChunkMeshSystem(flecs::iter& it)
 	{
-		const auto modelLocation = mProgram.GetUniformLocation("model");
+		const auto modelLocation    = mProgram.GetUniformLocation("model");
+		const auto invModelLocation = mProgram.GetUniformLocation("invModel");
 
 		mProgram.Use();
 
-		const auto&& [view, proj] = RendererModule::GetView(it.world());
+		const auto&& [p, view, proj] = RendererModule::GetView(it.world());
 		mProgram.SetUniformMatrix(mProgram.GetUniformLocation("view"), view);
 		mProgram.SetUniformMatrix(mProgram.GetUniformLocation("proj"), proj);
+
+	    mProgram.SetUniformVector(mProgram.GetUniformLocation("viewPos"), p);
 
 		while (it.next())
 		{
@@ -159,13 +206,13 @@ namespace Mcc
 
 			for (const auto i: it)
 			{
-				mProgram.SetUniformMatrix(
-					modelLocation,
-					glm::scale(
-						glm::translate(glm::mat4(1.f), glm::vec3(pos[i].position * glm::uvec3(2 * Chunk::Size, 0, 2 * Chunk::Size))),
-						glm::vec3(Chunk::Size, Chunk::Height, Chunk::Size)
-					)
-				);
+			    glm::mat4 model = glm::scale(
+                    glm::translate(glm::mat4(1.f), glm::vec3(pos[i].position * glm::uvec3(2 * Chunk::Size, 0, 2 * Chunk::Size))),
+                    glm::vec3(Chunk::Size, Chunk::Height, Chunk::Size)
+                );
+
+                mProgram.SetUniformMatrix(invModelLocation, glm::transpose(glm::inverse(glm::mat3(model))));
+				mProgram.SetUniformMatrix(modelLocation   , model);
 
 				mesh[i].vertexArray.Bind();
 				mesh[i].indexBuffer.Bind();
