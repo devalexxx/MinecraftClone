@@ -32,6 +32,11 @@ namespace Mcc
 		Left, Right, Front, Back, Top, Bottom, Count
 	};
 
+    struct BlockColor
+    {
+            glm::vec3 color;
+    };
+
 	struct BlockMeta
 	{
 			std::string id;

@@ -55,7 +55,10 @@ namespace Mcc
 
         auto comp = [epsilonScale, &inVertex](unsigned int i) {
             return [i, epsilonScale, &inVertex](const auto& v) {
-                return glm::all(glm::epsilonEqual(inVertex[i].vertex, v.vertex, std::numeric_limits<float>::epsilon() * epsilonScale));
+                return (
+                    glm::all(glm::epsilonEqual(inVertex[i].vertex, v.vertex, std::numeric_limits<float>::epsilon() * epsilonScale)) &&
+                    inVertex[i] == v
+                );
             };
         };
 

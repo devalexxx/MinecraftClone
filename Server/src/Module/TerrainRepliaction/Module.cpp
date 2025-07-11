@@ -30,7 +30,7 @@ namespace Mcc
 		world.component<ChunkDirtyTag>();
 		world.component<ChunkDestroyedTag>();
 
-		world.system<const BlockMeta, const BlockType, const NetworkProps>("BroadcastCreatedBlocksSystem")
+		world.system<const BlockMeta, const BlockType, const BlockColor, const NetworkProps>("BroadcastCreatedBlocksSystem")
 			.kind(flecs::PreStore)
 			.with<BlockCreatedTag>()
 			.run(BroadcastCreatedBlocks);
@@ -40,7 +40,7 @@ namespace Mcc
 			.with<ChunkCreatedTag>()
 			.run(BroadcastCreatedChunks);
 
-		world.system<const BlockMeta, const BlockType, const NetworkProps>("BroadcastDirtyBlocksSystem")
+		world.system<const BlockMeta, const BlockType, const BlockColor, const NetworkProps>("BroadcastDirtyBlocksSystem")
 			.kind(flecs::OnStore)
 			.with<BlockDirtyTag>()
 			.run(BroadcastDirtyBlocks);

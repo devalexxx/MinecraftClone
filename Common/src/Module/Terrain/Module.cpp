@@ -34,14 +34,15 @@ namespace Mcc
 	    world.prefab<BlockPrefab>()
 	        .is_a<NetworkObjectPrefab>()
 	        .add<BlockTag>()
-	        .set_auto_override<BlockMeta>({})
-	        .set_auto_override<BlockType>({});
+	        .set_auto_override<BlockMeta> ({})
+	        .set_auto_override<BlockColor>({})
+	        .set_auto_override<BlockType> ({});
 
 	    world.prefab<ChunkPrefab>()
 	        .is_a<NetworkObjectPrefab>()
 	        .add<ChunkTag>()
 	        .set_auto_override<ChunkPosition>({})
-	        .set_auto_override<ChunkHolder>({});
+	        .set_auto_override<ChunkHolder>  ({});
 	}
 
 }

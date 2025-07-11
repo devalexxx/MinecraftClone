@@ -53,12 +53,14 @@ namespace Mcc
 							{
 								if (auto n = world.entity(e); n == flecs::entity::null() || n.get<BlockType>() != BlockType::Solid)
 								{
+								    auto color = b.get<BlockColor>().color;
 									for (const auto& vertex: quadVertices[face])
 									{
 										auto	   offset = glm::vec3(p) + ((vertex + 1.f) / 2.f);
 										auto       scaled = offset / glm::vec3(Chunk::Size, Chunk::Height, Chunk::Size);
 										const auto final  = scaled * 2.f - 1.f;
-										array.push_back({final, { 0, .3, .75 }, {}, {}});
+										array.push_back({final, color, {}, {}});
+										// array.push_back({final, { 0, 1, 0 }, {}, {}});
 									}
 								}
 							}

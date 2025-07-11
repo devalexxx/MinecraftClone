@@ -18,7 +18,7 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, BlockDesc& packet)
 	{
-		ar(packet.handle, packet.meta, packet.type);
+		ar(packet.handle, packet.meta, packet.color, packet.type);
 	}
 
 	template<typename Archive>

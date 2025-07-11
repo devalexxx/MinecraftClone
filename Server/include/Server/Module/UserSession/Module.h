@@ -21,9 +21,9 @@ namespace Mcc
 			UserSessionModule(flecs::world& world);
 
 		private:
-			flecs::query<const Transform, const NetworkProps>                        mLookupEntityQuery;
-			flecs::query<const BlockMeta, const BlockType, const NetworkProps>       mLookupBlockQuery;
-			flecs::query<const ChunkPosition, const ChunkHolder, const NetworkProps> mLookupChunkQuery;
+			flecs::query<const Transform, const NetworkProps>                                    mLookupEntityQuery;
+			flecs::query<const BlockMeta, const BlockType, const BlockColor, const NetworkProps> mLookupBlockQuery;
+			flecs::query<const ChunkPosition, const ChunkHolder, const NetworkProps>             mLookupChunkQuery;
 
 			void OnConnectEventHandler(const flecs::world& world, const ConnectEvent& event) const;
 

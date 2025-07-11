@@ -22,7 +22,8 @@ namespace Mcc
 		{
 			auto m = it.field<const BlockMeta>   (0);
 			auto t = it.field<const BlockType>   (1);
-			auto n = it.field<const NetworkProps>(2);
+			auto c = it.field<const BlockColor>  (2);
+			auto n = it.field<const NetworkProps>(3);
 
 			OnBlocksCreated packet;
 			for (const auto i: it)
@@ -36,7 +37,7 @@ namespace Mcc
 			        continue;
 			    }
 
-			    packet.blocks.push_back({ handle, m[i], t[i] });
+			    packet.blocks.push_back({ handle, m[i], c[i].color, t[i] });
 			    entity.remove<BlockCreatedTag>();
 			    MCC_LOG_INFO("Block({}) has been created and replicated", handle);
 			}
@@ -52,7 +53,8 @@ namespace Mcc
 		{
 		    auto m = it.field<const BlockMeta>   (0);
 		    auto t = it.field<const BlockType>   (1);
-		    auto n = it.field<const NetworkProps>(2);
+		    auto c = it.field<const BlockColor>  (2);
+		    auto n = it.field<const NetworkProps>(3);
 
 			OnBlocksUpdated packet;
 			for (const auto i: it)
@@ -66,7 +68,7 @@ namespace Mcc
 			        continue;
 			    }
 
-				packet.blocks.push_back({ handle, m[i], t[i] });
+				packet.blocks.push_back({ handle, m[i], c[i].color, t[i] });
 				entity.remove<BlockDirtyTag>();
 			}
 			ctx->networkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);

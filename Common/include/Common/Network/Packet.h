@@ -54,6 +54,7 @@ namespace Mcc
 	{
 			NetworkHandle handle;
 			BlockMeta     meta;
+	        glm::vec3     color;
 			BlockType     type;
 	};
 

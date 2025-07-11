@@ -72,14 +72,25 @@ namespace Mcc
 			mWorld.entity("mcc:block:stone")
                 .is_a<BlockPrefab>()
 				.set<BlockType>(BlockType::Solid)
+		        .set<BlockColor>({ { .5f, .5f, .5f } })
 				.set<BlockMeta>({ "mcc:block:stone" });
+
+		    mWorld.entity("mcc:block:dirt")
+                .is_a<BlockPrefab>()
+                .set<BlockType>(BlockType::Solid)
+                .set<BlockColor>({ { .0f, .7f, .3f } })
+                .set<BlockMeta>({ "mcc:block:dirt" });
 
 			auto e = mWorld.entity()
                 .is_a<ChunkPrefab>()
 				.set<ChunkPosition>({ { 0, 0, 0 } })
 				.set<ChunkHolder>({ std::make_shared<Chunk>(mWorld.lookup("mcc:block:air")) });
 
-            const auto stone = mWorld.lookup("mcc:block:stone");
+            std::vector<flecs::entity> block
+            {
+                mWorld.lookup("mcc:block:stone"),
+                mWorld.lookup("mcc:block:dirt")
+            };
 
 			auto cHolder = e.get_ref<ChunkHolder>();
 			for (unsigned int x = 0; x < Chunk::Size; ++x)
@@ -88,7 +99,9 @@ namespace Mcc
 				{
 					for (int y = 0; y < 12; ++y)
 					{
-						cHolder->chunk->Set({ x, y, z }, stone);
+					    auto it = block.begin();
+					    std::advance(it, std::rand() % block.size());
+						cHolder->chunk->Set({ x, y, z }, *it);
 					}
 				}
 			}
@@ -105,7 +118,9 @@ namespace Mcc
 				{
 					for (int y = 0; y < 5; ++y)
 					{
-						cHolder->chunk->Set({ x, y, z }, stone);
+					    auto it = block.begin();
+					    std::advance(it, std::rand() % block.size());
+					    cHolder->chunk->Set({ x, y, z }, *it);
 					}
 				}
 			}
@@ -122,7 +137,9 @@ namespace Mcc
 				{
 					for (int y = 0; y < 16; ++y)
 					{
-						cHolder->chunk->Set({ x, y, z }, stone);
+					    auto it = block.begin();
+					    std::advance(it, std::rand() % block.size());
+					    cHolder->chunk->Set({ x, y, z }, *it);
 					}
 				}
 			}

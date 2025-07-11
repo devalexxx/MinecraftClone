@@ -52,7 +52,7 @@ namespace Mcc
 	{
         const auto* ctx = ClientWorldContext::Get(world);
 
-		for (const auto& [handle, meta, type]: event.blocks)
+		for (const auto& [handle, meta, color, type]: event.blocks)
 		{
 			if (ctx->networkMapping.GetLHandle(handle).has_value())
 			{
@@ -66,6 +66,7 @@ namespace Mcc
                 .is_a<BlockPrefab>()
 		        .set<NetworkProps>({ handle })
                 .set<BlockMeta>(meta)
+		        .set<BlockColor>({ color })
 		        .set<BlockType>(type);
 
 		    world.defer_resume();

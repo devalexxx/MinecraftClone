@@ -23,7 +23,7 @@ namespace Mcc
 		world.module<UserSessionModule>();
 
 		mLookupEntityQuery = world.query_builder<const Transform, const NetworkProps>().with<NetworkEntityTag>().build();
-		mLookupBlockQuery  = world.query_builder<const BlockMeta, const BlockType, const NetworkProps>().with<BlockTag>().build();
+		mLookupBlockQuery  = world.query_builder<const BlockMeta, const BlockType, const BlockColor, const NetworkProps>().with<BlockTag>().build();
 		mLookupChunkQuery  = world.query_builder<const ChunkPosition, const ChunkHolder, const NetworkProps>().with<ChunkTag>().build();
 
         const auto* ctx = WorldContext<>::Get(world);
@@ -51,14 +51,14 @@ namespace Mcc
 			});
 
 		mLookupBlockQuery
-			.each([&](const flecs::entity entity, const BlockMeta& meta, const BlockType type, const NetworkProps& props) {
+			.each([&](const flecs::entity entity, const BlockMeta& meta, const BlockType type, const BlockColor& color, const NetworkProps& props) {
 			    if (!IsValid(props.handle))
 			    {
                     MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
                     return;
                 }
 
-				packet.initialState.blocks.push_back({ props.handle, meta, type });
+				packet.initialState.blocks.push_back({ props.handle, meta, color.color, type });
 			});
 
 		mLookupChunkQuery
