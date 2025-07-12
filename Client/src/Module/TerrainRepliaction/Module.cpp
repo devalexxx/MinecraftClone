@@ -26,15 +26,9 @@ namespace Mcc
 
 		world.component<ChunkDirtyTag>();
 
-		world.system("RemoveChunkDirty")
-			.with<ChunkDirtyTag>()
-			.each(RemoveChunkDirtySystem);
-
-	    world.system<InitialWorldState>("DispatchInitialTerrainState")
-            .kind(flecs::OnStart)
-	        .immediate()
-            .term_at(0).singleton()
-            .each(DispatchInitialTerrainStateSystem);
+		// world.system("RemoveChunkDirty")
+		// 	.with<ChunkDirtyTag>()
+		// 	.each(RemoveChunkDirtySystem);
 
         const auto* ctx = ClientWorldContext::Get(world);
 
@@ -60,16 +54,12 @@ namespace Mcc
 				continue;
 			}
 
-		    world.defer_suspend();
-
 			world.entity()
                 .is_a<BlockPrefab>()
 		        .set<NetworkProps>({ handle })
                 .set<BlockMeta>(meta)
 		        .set<BlockColor>({ color })
 		        .set<BlockType>(type);
-
-		    world.defer_resume();
 		}
 	}
 
@@ -87,16 +77,12 @@ namespace Mcc
 
 	        if (auto from = Helper::FromNetwork(data, world); from.has_value())
 	        {
-	            world.defer_suspend();
-
 	            world.entity()
                     .is_a<ChunkPrefab>()
                     .add<ChunkDirtyTag>()
 	                .set<NetworkProps>({ handle })
                     .set<ChunkPosition>(position)
                     .set<ChunkHolder>({ std::make_shared<Chunk>(std::move(*from)) });
-
-	            world.defer_resume();
 	        }
 	    }
 	}

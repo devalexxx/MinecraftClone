@@ -9,6 +9,7 @@
 #include "Client/Graphics/Window/Window.h"
 
 #include "Common/Application.h"
+#include "Common/Utils/ThreadPool.h"
 
 namespace Mcc
 {
@@ -24,6 +25,7 @@ namespace Mcc
 		private:
 			ClientNetworkManager mNetworkManager;
 			Window mWindow;
+	        ThreadPool mThreadPool;
 	};
 
 }

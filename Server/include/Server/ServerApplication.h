@@ -9,6 +9,7 @@
 
 #include "Common/Application.h"
 #include "Common/Network/EventManager.h"
+#include "Common/Utils/ThreadPool.h"
 
 #include <enet/enet.h>
 
@@ -32,6 +33,8 @@ namespace Mcc
 			ServerInfo mInfo;
 
 			ServerNetworkManager mNetworkManager;
+
+	        ThreadPool mThreadPool;
 	};
 
 }

@@ -13,7 +13,8 @@ namespace Mcc
 
 	EntityRendererModule::EntityRendererModule(const flecs::world& world) :
 		mVertexBuffer(GL_ARRAY_BUFFER),
-		mIndexBuffer(GL_ELEMENT_ARRAY_BUFFER)
+		mIndexBuffer(GL_ELEMENT_ARRAY_BUFFER),
+        mIndexCount(0)
 	{
 		MCC_ASSERT(world.has<RendererModule>(), "EntityRendererModule require RendererModule, you must import it before.");
 		MCC_LOG_DEBUG("Import EntityRendererModule...");

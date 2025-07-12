@@ -22,10 +22,14 @@ namespace Mcc
 
 		world.component<ChunkMesh>();
 
-		world.system<ChunkHolder>("BuildChunkMesh")
+		world.system<const ChunkHolder>("BuildChunkMesh")
 			.kind(flecs::PostUpdate)
 			.with<ChunkDirtyTag>()
-			.each([this](const flecs::entity entity, ChunkHolder& data) { BuildChunkMeshSystem(entity, data); });
+			.each([this](const flecs::entity entity, const ChunkHolder& data) { BuildChunkMeshSystem(entity, data); });
+
+	    world.system<MeshHolder>("SetupChunkRenderingMesh")
+	        .kind(flecs::PostUpdate)
+            .each([this](const flecs::entity entity, MeshHolder& holder) { SetupChunkRenderingMeshSystem(entity, holder); } );
 
 		world.system("SetupChunkProgram")
 			.kind(flecs::OnStart)

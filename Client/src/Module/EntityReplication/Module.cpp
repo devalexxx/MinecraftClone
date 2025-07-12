@@ -3,7 +3,7 @@
 //
 
 #include "Client/Module/EntityReplication/Module.h"
-#include "../../../include/Client/WorldContext.h"
+#include "Client/WorldContext.h"
 #include "Client/Module/EntityReplication/Component.h"
 #include "Client/Module/EntityReplication/System.h"
 #include "Client/Module/ServerSession/Component.h"
@@ -30,11 +30,6 @@ namespace Mcc
 		world.system<Transform, SnapshotQueue>("EntityInterpolation")
 	        .without<InterpolationExcludedTag>()
 	        .each(EntityInterpolationSystem);
-
-	    world.system<InitialWorldState>("DispatchInitialEntityState")
-	        .kind(flecs::OnStart)
-	        .term_at(0).singleton()
-	        .each(DispatchInitialEntityStateSystem);
 
 		const auto* ctx = ClientWorldContext::Get(world);
 		ctx->networkManager.Subscribe<OnEntitiesCreated>  ([&world](const auto& event) { OnEntitiesCreatedHandler  (world, event); });

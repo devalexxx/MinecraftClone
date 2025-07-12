@@ -8,6 +8,7 @@
 #include "Common/Network/NetworkHandle.h"
 #include "Common/Network/NetworkManager.h"
 #include "Common/Network/Packet.h"
+#include "Utils/ThreadPool.h"
 
 #include <unordered_map>
 
@@ -43,6 +44,8 @@ namespace Mcc
 
 			NManager&      networkManager;
             NetworkMapping networkMapping;
+
+            ThreadPool& threadPool;
 	};
 
 }

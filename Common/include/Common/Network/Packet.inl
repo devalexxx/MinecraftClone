@@ -28,12 +28,6 @@ namespace Mcc
 	}
 
 	template<typename Archive>
-	void serialize(Archive& ar, InitialState& packet)
-	{
-		ar(packet.entities, packet.blocks, packet.chunks);
-	}
-
-	template<typename Archive>
 	void serialize(Archive& ar, PlayerInfo& packet)
 	{
 		ar(packet.handle);
@@ -48,7 +42,7 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, OnConnection& packet)
 	{
-		ar(packet.playerInfo, packet.serverInfo, packet.initialState);
+		ar(packet.playerInfo, packet.serverInfo);
 	}
 
 	template<typename Archive>

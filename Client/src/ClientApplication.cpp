@@ -3,7 +3,7 @@
 //
 
 #include "Client/ClientApplication.h"
-#include "../include/Client/WorldContext.h"
+#include "Client/WorldContext.h"
 #include "Client/Module/Camera/Module.h"
 #include "Client/Module/EntityRenderer/Module.h"
 #include "Client/Module/EntityReplication/Module.h"
@@ -54,7 +54,8 @@ namespace Mcc
 	    // flecs::log::set_level(0);
 
 		MCC_LOG_DEBUG("Waiting for server information...");
-		mWorld.set_ctx(new ClientWorldContext { { {}, mNetworkManager, {} }, {}, mWindow }, [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); });
+	    // mWorld.set_threads(16);
+		mWorld.set_ctx(new ClientWorldContext { { {}, mNetworkManager, {}, mThreadPool }, {}, mWindow }, [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); });
 	    mWorld.import<NetworkModule>	  ();
 		mWorld.import<ServerSessionModule>();
 

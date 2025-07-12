@@ -5,13 +5,13 @@
 #include "Server/Module/UserSession/Module.h"
 #include "Server/Module/EntityReplication/Component.h"
 #include "Server/ServerNetworkManager.h"
+#include "Server/WorldContext.h"
 
 #include "Common/Module/Entity/Component.h"
 #include "Common/Module/Entity/Module.h"
 #include "Common/Utils/Assert.h"
 #include "Common/Utils/Logging.h"
 #include "Common/WorldContext.h"
-#include "Server/WorldContext.h"
 
 namespace Mcc
 {
@@ -36,8 +36,10 @@ namespace Mcc
 	{
 		auto* ctx = ServerWorldContext::Get(world);
 
-		OnConnection packet;
-		packet.initialState = {};
+		OnConnection      packet{};
+	    OnEntitiesCreated oecPacket{};
+	    OnBlocksCreated   obcPacket{};
+	    OnChunksCreated   occPacket{};
 
 		mLookupEntityQuery
 			.each([&](const flecs::entity entity, const Transform& transform, const NetworkProps& props) {
@@ -47,7 +49,7 @@ namespace Mcc
 			        return;
 			    }
 
-				packet.initialState.entities.push_back({ props.handle, transform, {} });
+				oecPacket.states.push_back({ props.handle, transform, {} });
 			});
 
 		mLookupBlockQuery
@@ -58,7 +60,7 @@ namespace Mcc
                     return;
                 }
 
-				packet.initialState.blocks.push_back({ props.handle, meta, color.color, type });
+				obcPacket.blocks.push_back({ props.handle, meta, color.color, type });
 			});
 
 		mLookupChunkQuery
@@ -71,12 +73,13 @@ namespace Mcc
 
 			    if (auto data = holder.chunk->ToNetwork(world); data.has_value())
 			    {
-                    packet.initialState.chunks.push_back({ props.handle, position, std::move(*data) });
+                    occPacket.chunks.push_back({ props.handle, position, std::move(*data) });
                 }
 			});
 
         const auto entity = world.entity()
-	        .is_a<UserEntityPrefab>();
+	        .is_a<UserEntityPrefab>()
+	        .set<Transform>({ { 0, 100, 0 }, {}, { 1, 1, 1 } });
 
 	    NetworkHandle handle;
 	    entity.get([&handle](const NetworkProps& props) {
@@ -94,7 +97,13 @@ namespace Mcc
 		packet.playerInfo = *static_cast<PlayerInfo*>(event.peer->data);
 		packet.serverInfo = ctx->serverInfo;
 
-		ctx->networkManager.Send(event.peer, std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
+		ctx->networkManager.Send(event.peer, packet, ENET_PACKET_FLAG_RELIABLE, 0);
+	    ctx->threadPool.ExecuteTask([ctx, peer = event.peer, a = std::move(oecPacket), b = std::move(obcPacket), c = std::move(occPacket)]() {
+	        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	        ctx->networkManager.Send(peer, a, ENET_PACKET_FLAG_RELIABLE, 0);
+            ctx->networkManager.Send(peer, b, ENET_PACKET_FLAG_RELIABLE, 0);
+            ctx->networkManager.Send(peer, c, ENET_PACKET_FLAG_RELIABLE, 0);
+	    });
 		entity.add<EntityCreatedTag>();
 	}
 

@@ -53,7 +53,7 @@ namespace Mcc
 		}
 
 		MCC_LOG_DEBUG("Setup world...");
-		mWorld.set_ctx(new ServerWorldContext { { mInfo, mNetworkManager, {} } }, [](void* ptr) { delete static_cast<ServerWorldContext*>(ptr); });
+		mWorld.set_ctx(new ServerWorldContext { { mInfo, mNetworkManager, {}, mThreadPool } }, [](void* ptr) { delete static_cast<ServerWorldContext*>(ptr); });
 	    mWorld.import<NetworkModule>          ();
 		mWorld.import<EntityModule>		 	  ();
 		mWorld.import<UserSessionModule>	  ();

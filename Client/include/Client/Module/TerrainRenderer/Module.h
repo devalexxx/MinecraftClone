@@ -6,6 +6,7 @@
 #define MCC_CLIENT_MODULE_TERRAIN_RENDERER_MODULE_H
 
 #include "Client/Graphics/Program.h"
+#include "Client/Module/TerrainRenderer/Component.h"
 
 #include "Common/Module/Terrain/Component.h"
 
@@ -14,14 +15,15 @@
 namespace Mcc
 {
 
-	class  TerrainRendererModule
+	class TerrainRendererModule
 	{
 		public:
 			TerrainRendererModule(const flecs::world& world);
 
-			void BuildChunkMeshSystem   (flecs::entity entity, ChunkHolder& holder) const;
-			void SetupChunkProgramSystem(flecs::iter& it) const;
-			void RenderChunkMeshSystem  (flecs::iter& it);
+			void BuildChunkMeshSystem         (flecs::entity entity, const ChunkHolder& holder) const;
+	        void SetupChunkRenderingMeshSystem(flecs::entity entity, MeshHolder& holder) const;
+			void SetupChunkProgramSystem      (flecs::iter& it) const;
+			void RenderChunkMeshSystem        (flecs::iter& it);
 
 		private:
 			Program mProgram;

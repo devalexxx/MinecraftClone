@@ -12,11 +12,6 @@
 namespace Mcc
 {
 
-	struct InitialWorldState
-	{
-			InitialState state;
-	};
-
 	enum class ServerConnectionState
 	{
 		Pending, Connected, Error

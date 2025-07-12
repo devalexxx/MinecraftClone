@@ -9,11 +9,6 @@
 namespace Mcc
 {
 
-    void DispatchInitialEntityStateSystem(const flecs::iter& it, size_t, InitialWorldState& iws)
-    {
-        WorldContext<>::Get(it.world())->networkManager.Dispatch<OnEntitiesCreated>({ std::move(iws.state.entities) });
-    }
-
 	void EntityInterpolationSystem(Transform& transform, SnapshotQueue& queue)
 	{
         constexpr auto delay      = std::chrono::milliseconds(50);

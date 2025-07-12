@@ -65,13 +65,6 @@ namespace Mcc
 			ChunkData<NetworkHandle> data;
 	};
 
-	struct InitialState
-	{
-			std::vector<EntityState> entities;
-			std::vector<BlockDesc>	 blocks;
-			std::vector<ChunkDesc>   chunks;
-	};
-
 	struct PlayerInfo
 	{
 			NetworkHandle handle;
@@ -89,8 +82,6 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, ChunkDesc& packet);
 	template<typename Archive>
-	void serialize(Archive& ar, InitialState& packet);
-	template<typename Archive>
 	void serialize(Archive& ar, PlayerInfo& packet);
 	template<typename Archive>
 	void serialize(Archive& ar, ServerInfo& packet);
@@ -99,7 +90,6 @@ namespace Mcc
 	{
 			PlayerInfo   playerInfo;
 			ServerInfo   serverInfo;
-			InitialState initialState;
 	};
 
 	struct OnPlayerInput

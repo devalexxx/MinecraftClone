@@ -16,7 +16,6 @@ namespace Mcc
 		MCC_LOG_DEBUG("Import ServerSessionModule...");
 		world.module<ServerSessionModule>();
 
-		world.component<InitialWorldState>();
 		world.component<ServerConnectionState>();
 
 		world.set<ServerConnectionState>(ServerConnectionState::Pending);
@@ -34,7 +33,6 @@ namespace Mcc
 		ctx->playerInfo = packet.playerInfo;
 		ctx->serverInfo = packet.serverInfo;
 
-		world.set<InitialWorldState>	({ packet.initialState });
 		world.set<ServerConnectionState>(ServerConnectionState::Connected);
 	}
 
