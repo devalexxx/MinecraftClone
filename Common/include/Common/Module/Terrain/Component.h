@@ -44,7 +44,7 @@ namespace Mcc
 
 	struct ChunkPosition
 	{
-			glm::uvec3 position;
+			glm::ivec3 position;
 	};
 
 	struct ChunkHolder

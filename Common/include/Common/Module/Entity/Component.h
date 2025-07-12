@@ -23,6 +23,9 @@ namespace glm
 	template<class Archive>
 	void serialize(Archive& ar, glm::uvec3& vec);
 
+    template<class Archive>
+    void serialize(Archive& ar, glm::ivec3& vec);
+
 	template<class Archive>
 	void serialize(Archive& ar, glm::quat& quat);
 

@@ -8,7 +8,7 @@ add_rules("mode.debug", "mode.release")
 add_repositories("devalexxx-repo https://github.com/devalexxx/xmake-repo.git")
 add_requires("hexis", { debug = is_mode("debug"), configs = { shared = false } })
 
-add_requires("glfw", "fmt >= 11", "glad", "glm", "enet", "flecs", "cereal")
+add_requires("glfw", "fmt >= 11", "glad", "glm", "enet", "flecs", "cereal", "perlinnoise")
 
 add_requires("flecs", { debug = is_mode("debug") })
 
@@ -19,7 +19,7 @@ if is_mode("debug") then
 end
 
 add_defines("GLM_ENABLE_EXPERIMENTAL")
-add_defines("MCC_LOG_FULL")
+--add_defines("MCC_LOG_FULL")
 
 target("MCCCommon")
     set_kind("static")
@@ -62,4 +62,4 @@ target("MCCServer")
     add_files("Server/**/*.cpp")
 
     add_deps("MCCCommon")
-    add_packages("fmt", "enet", "flecs", "cereal", "glm")
+    add_packages("fmt", "enet", "flecs", "cereal", "glm", "perlinnoise")

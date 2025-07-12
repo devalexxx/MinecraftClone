@@ -15,6 +15,7 @@
 #include "Common/Network/Packet.h"
 #include "Common/Utils/Logging.h"
 #include "Server/Module/TerrainReplication/Module.h"
+#include "Server/World/ChunkGenerator.h"
 
 #include <fmt/format.h>
 
@@ -81,68 +82,19 @@ namespace Mcc
                 .set<BlockColor>({ { .0f, .7f, .3f } })
                 .set<BlockMeta>({ "mcc:block:dirt" });
 
-			auto e = mWorld.entity()
-                .is_a<ChunkPrefab>()
-				.set<ChunkPosition>({ { 0, 0, 0 } })
-				.set<ChunkHolder>({ std::make_shared<Chunk>(mWorld.lookup("mcc:block:air")) });
 
-            std::vector<flecs::entity> block
+            const ChunkGenerator gen(mWorld, 12345u);
+            constexpr int size = 1;
+            for (int x = -size; x <= size; ++x)
             {
-                mWorld.lookup("mcc:block:stone"),
-                mWorld.lookup("mcc:block:dirt")
-            };
-
-			auto cHolder = e.get_ref<ChunkHolder>();
-			for (unsigned int x = 0; x < Chunk::Size; ++x)
-			{
-				for (unsigned int z = 0; z < Chunk::Size; ++z)
-				{
-					for (int y = 0; y < 12; ++y)
-					{
-					    auto it = block.begin();
-					    std::advance(it, std::rand() % block.size());
-						cHolder->chunk->Set({ x, y, z }, *it);
-					}
-				}
-			}
-
-			e = mWorld.entity()
-                .is_a<ChunkPrefab>()
-			    .set<ChunkPosition>({ { 1, 0, 0 } })
-			    .set<ChunkHolder>({ std::make_shared<Chunk>(mWorld.lookup("mcc:block:air")) });
-
-			cHolder = e.get_ref<ChunkHolder>();
-			for (unsigned int x = 0; x < Chunk::Size; ++x)
-			{
-				for (unsigned int z = 0; z < Chunk::Size; ++z)
-				{
-					for (int y = 0; y < 5; ++y)
-					{
-					    auto it = block.begin();
-					    std::advance(it, std::rand() % block.size());
-					    cHolder->chunk->Set({ x, y, z }, *it);
-					}
-				}
-			}
-
-			e = mWorld.entity()
-                .is_a<ChunkPrefab>()
-			    .set<ChunkPosition>({ { 0, 0, 1 } })
-			    .set<ChunkHolder>({ std::make_shared<Chunk>(mWorld.lookup("mcc:block:air")) });
-
-			cHolder = e.get_ref<ChunkHolder>();
-			for (int x = 0; std::cmp_less(x , Chunk::Size); ++x)
-			{
-				for (int z = 0; std::cmp_less(z , Chunk::Size); ++z)
-				{
-					for (int y = 0; y < 16; ++y)
-					{
-					    auto it = block.begin();
-					    std::advance(it, std::rand() % block.size());
-					    cHolder->chunk->Set({ x, y, z }, *it);
-					}
-				}
-			}
+                for (int z = -size; z <= size; ++z)
+                {
+                    mWorld.entity()
+                        .is_a<ChunkPrefab>()
+                        .set<ChunkPosition>({ { x, 0, z } })
+                        .set<ChunkHolder>({ std::make_shared<Chunk>(gen.Generate({ x + size, 0, z + size })) });
+                }
+            }
 		}
 
 		MCC_LOG_INFO("Application started and listening on port {}", mNetworkManager.mAddr.port);

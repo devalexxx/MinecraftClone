@@ -17,6 +17,12 @@ namespace glm
 		ar(vec.x, vec.y, vec.z);
 	}
 
+    template<class Archive>
+    void serialize(Archive& ar, glm::ivec3& vec)
+	{
+	    ar(vec.x, vec.y, vec.z);
+	}
+
 	template<class Archive>
 	void serialize(Archive& ar, glm::quat& quat)
 	{
