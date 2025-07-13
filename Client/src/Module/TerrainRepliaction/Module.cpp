@@ -10,6 +10,7 @@
 
 #include "Common/Module/Terrain/Module.h"
 
+#include "Client/Module/EntityReplication/Component.h"
 #include "Common/Module/Network/Component.h"
 #include "Common/Utils/Assert.h"
 #include "Common/Utils/Logging.h"
@@ -65,7 +66,7 @@ namespace Mcc
 
 	void TerrainReplicationModule::OnChunksCreatedHandler(const flecs::world& world, const OnChunksCreated& event)
 	{
-        const auto* ctx = ClientWorldContext::Get(world);
+	    auto* ctx = ClientWorldContext::Get(world);
 
 	    for (const auto& [handle, position, data]: event.chunks)
 	    {
@@ -77,12 +78,14 @@ namespace Mcc
 
 	        if (auto from = Helper::FromNetwork(data, world); from.has_value())
 	        {
-	            world.entity()
+	            auto e =world.entity()
                     .is_a<ChunkPrefab>()
                     .add<ChunkDirtyTag>()
 	                .set<NetworkProps>({ handle })
                     .set<ChunkPosition>(position)
                     .set<ChunkHolder>({ std::make_shared<Chunk>(std::move(*from)) });
+
+	            ctx->chunkMap.emplace(position.position, e.id());
 	        }
 	    }
 	}
@@ -127,7 +130,7 @@ namespace Mcc
 
 	void TerrainReplicationModule::OnChunksDestroyedHandler(const flecs::world& world, const OnChunksDestroyed& event)
 	{
-        const auto* ctx = ClientWorldContext::Get(world);
+	    auto* ctx = ClientWorldContext::Get(world);
 
 		for (auto handle: event.handles)
 		{
@@ -139,7 +142,9 @@ namespace Mcc
 		            continue;
 		        }
 
-		        world.entity(*id).destruct();
+		        auto e = world.entity(*id);
+		        ctx->chunkMap.erase(e.get<ChunkPosition>().position);
+		        e.destruct();
 		    }
 		}
 	}

@@ -55,7 +55,7 @@ namespace Mcc
 
 		MCC_LOG_DEBUG("Waiting for server information...");
 	    // mWorld.set_threads(16);
-		mWorld.set_ctx(new ClientWorldContext { { {}, mNetworkManager, {}, mThreadPool }, {}, mWindow }, [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); });
+		mWorld.set_ctx(new ClientWorldContext { { {}, mNetworkManager, {}, mThreadPool }, {}, mWindow, {} }, [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); });
 	    mWorld.import<NetworkModule>	  ();
 		mWorld.import<ServerSessionModule>();
 

@@ -23,6 +23,11 @@ namespace Mcc
     bool operator==(const PackedVertex& lhs, const PackedVertex& rhs);
     bool operator!=(const PackedVertex& lhs, const PackedVertex& rhs);
 
+    struct PackedVertexHasher
+    {
+        std::size_t operator()(const PackedVertex& pv) const;
+    };
+
     using PackedVertexArray = std::vector<PackedVertex>;
     using IndexArray		= std::vector<unsigned int>;
 

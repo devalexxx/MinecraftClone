@@ -5,10 +5,13 @@
 #include "Client/Graphics/Mesh.h"
 #include "Client/Graphics/Program.h"
 #include "Client/Graphics/Shader.h"
+#include "Client/Module/EntityReplication/Component.h"
 #include "Client/Module/Renderer/Module.h"
 #include "Client/Module/TerrainRenderer/Component.h"
+#include "Client/Module/TerrainRenderer/System.h"
 #include "Client/Module/TerrainRenderer/Module.h"
 #include "Client/Module/TerrainReplication/Component.h"
+#include "Client/WorldContext.h"
 
 #include "Common/Module/Entity/Component.h"
 #include "Common/WorldContext.h"
@@ -17,19 +20,60 @@
 #include <Hexis/Core/EnumArray.h>
 
 #include <numeric>
+#include <atomic>
 
 #include <glm/ext/matrix_transform.hpp>
+#include <utility>
 
 namespace Mcc
 {
 
-	void TerrainRendererModule::BuildChunkMeshSystem(const flecs::entity entity, const ChunkHolder& holder) const
+	void BuildChunkMeshSystem(const flecs::entity entity, const ChunkHolder& holder, const ChunkPosition& pos)
 	{
-		const auto  world = entity.world();
-        const auto* ctx   = WorldContext<>::Get(world);
-	    auto chunk = holder.chunk;
+#ifdef MCC_DEBUG
+	    static std::atomic<float> timeSpent;
+	    static std::atomic<size_t> totalIter;
+	    static auto dt = [](auto&& v) { return std::chrono::duration<float>(v).count(); };
+#endif
 
-	    auto meshFuture = ctx->threadPool.ExecuteTask([world, chunk] {
+	    static auto emptyChunk = std::make_shared<Chunk>();
+	    static auto solid = [](const flecs::world& world, flecs::entity_t e) {
+	        if (world.is_valid(e))
+	        {
+	            return world.entity(e).get<BlockType>() == BlockType::Solid;
+	        }
+	        return false;
+	    };
+
+	    static auto index = []<std::integral A, std::integral B, std::integral C>(const A x, const B y, const C z) {
+            return x + 1 + ((y + 1) * (Chunk::Size + 2)) + ((z + 1) * (Chunk::Size + 2) * (Chunk::Height + 2));
+        };
+
+		const auto  world = entity.world();
+        const auto* ctx   = ClientWorldContext::Get(world);
+	    const auto  chunk = holder.chunk;
+
+	    auto meshFuture = ctx->threadPool.ExecuteTask([ctx, pos, world, chunk] {
+	        TimePoint start = TimeClock::now();
+
+	        std::shared_ptr<Chunk> left = emptyChunk, right = emptyChunk, front = emptyChunk, back = emptyChunk;
+            if (const auto it = ctx->chunkMap.find(pos.position + glm::ivec3(glm::left)); it != ctx->chunkMap.end())
+            {
+                left = world.entity(it->second).get<ChunkHolder>().chunk;
+            }
+            if (const auto it = ctx->chunkMap.find(pos.position + glm::ivec3(glm::right)); it != ctx->chunkMap.end())
+            {
+                right = world.entity(it->second).get<ChunkHolder>().chunk;
+            }
+            if (const auto it = ctx->chunkMap.find(pos.position + glm::ivec3(glm::forward)); it != ctx->chunkMap.end())
+            {
+                front = world.entity(it->second).get<ChunkHolder>().chunk;
+            }
+            if (const auto it = ctx->chunkMap.find(pos.position + glm::ivec3(glm::back)); it != ctx->chunkMap.end())
+            {
+                back = world.entity(it->second).get<ChunkHolder>().chunk;
+            }
+
 	        static Hx::EnumArray<BlockFace, std::array<glm::vec3, 6>> quadVertices {{
                 { BlockFace::Front,  {{ { -1.f,  1.f,  1.f }, {  1.f, -1.f,  1.f }, {  1.f,  1.f,  1.f }, { -1.f,  1.f,  1.f }, { -1.f, -1.f,  1.f }, {  1.f, -1.f,  1.f } }} },
                 { BlockFace::Back,   {{ {  1.f,  1.f, -1.f }, { -1.f, -1.f, -1.f }, { -1.f,  1.f, -1.f }, {  1.f,  1.f, -1.f }, {  1.f, -1.f, -1.f }, { -1.f, -1.f, -1.f } }} },
@@ -48,38 +92,73 @@ namespace Mcc
                 { BlockFace::Top,    glm::up      }
             }};
 
-	        PackedVertexArray array{};
+	        static Hx::EnumArray<BlockFace, glm::ivec3> neighbours {{
+                { BlockFace::Front,  glm::back    },
+                { BlockFace::Back,   glm::forward },
+                { BlockFace::Left,   glm::left    },
+                { BlockFace::Right,  glm::right   },
+                { BlockFace::Bottom, glm::down    },
+                { BlockFace::Top,    glm::up      }
+            }};
 
-            std::unordered_map<flecs::entity_t, std::tuple<BlockType, BlockColor>> cache{};
-            for (auto& e: chunk->GetPalette())
+	        Mesh mesh;
+	        std::unordered_map<PackedVertex, size_t, PackedVertexHasher> indexMap;
+
+	        std::vector mask((Chunk::Size + 2) * (Chunk::Size + 2) * (Chunk::Height + 2), true);
+
+	        // Compute border
+            for (int xz = 0; std::cmp_less(xz , Chunk::Size); ++xz)
             {
-                world.entity(e).get([e, &cache](const BlockType& type, const BlockColor& color) {
-                    cache.emplace(e, std::make_tuple(type, color));
-                });
+                for (int y = 0; std::cmp_less(y , Chunk::Height); ++y)
+                {
+                    mask[index(-1, y, xz)]          = solid(world, left ->Get({ Chunk::Size - 1, y, xz }));
+                    mask[index(Chunk::Size, y, xz)] = solid(world, right->Get({ 0, y, xz }));
+
+                    mask[index(xz, y, -1)]          = solid(world, front->Get({ xz, y, Chunk::Size - 1 }));
+                    mask[index(xz, y, Chunk::Size)] = solid(world, back ->Get({ xz, y, 0 }));
+                }
             }
 
-            for (size_t x = 0; x < Chunk::Size; ++x)
-            {
-                for (size_t z = 0; z < Chunk::Size; ++z)
-                {
+	        // Compute chunk mask
+	        for (size_t x = 0; x < Chunk::Size; ++x)
+	        {
+	            for (size_t z = 0; z < Chunk::Size; ++z)
+	            {
                     for (size_t y = 0; y < Chunk::Height; ++y)
                     {
-                        const auto p = glm::uvec3(x, y, z);
-                        if (auto b = cache.find(chunk->Get(p)); b != cache.end())
+                        mask[index(x, y, z)] = solid(world, chunk->Get({ x, y, z }));
+                    }
+                }
+	        }
+
+	        constexpr auto chunkSize = glm::vec3(Chunk::Size, Chunk::Height, Chunk::Size);
+	        for (int x = 0; std::cmp_less(x ,Chunk::Size); ++x)
+	        {
+                for (int z = 0; std::cmp_less(z ,Chunk::Size); ++z)
+                {
+                    for (int y = 0; std::cmp_less(y ,Chunk::Height); ++y)
+                    {
+                        if (mask[index(x, y, z)])
                         {
-                            if (auto [type, color] = b->second; type == BlockType::Solid)
+                            for (auto [face, n]: neighbours)
                             {
-                                for (auto&& [ face, e ]: chunk->GetNeighbors(p))
+                                if (!mask[index(x + n.x, y + n.y, z + n.z)])
                                 {
-                                    if (auto n = cache.find(e); n == cache.end() || std::get<BlockType>(n->second) != BlockType::Solid)
+                                    const auto color = world.entity(chunk->Get({ x, y, z })).get<BlockColor>().color;
+                                    for (const auto& vertex: quadVertices[face])
                                     {
-                                        for (const auto& vertex: quadVertices[face])
+                                        const auto offset = glm::vec3(x, y, z) + ((vertex + 1.f) / 2.f);
+                                        const auto scaled = offset / chunkSize;
+                                        const auto final  = scaled * 2.f - 1.f;
+
+                                        // Add tris to the mesh
+                                        const PackedVertex pv = { final, color, {}, quadNormals[face] };
+                                        auto [it, inserted]   = indexMap.try_emplace(pv, mesh.vertex.size());
+                                        if (inserted)
                                         {
-                                            auto	   offset = glm::vec3(p) + ((vertex + 1.f) / 2.f);
-                                            auto       scaled = offset / glm::vec3(Chunk::Size, Chunk::Height, Chunk::Size);
-                                            const auto final  = scaled * 2.f - 1.f;
-                                            array.push_back({final, color.color, {}, quadNormals[face]});
+                                            mesh.vertex.push_back(pv);
                                         }
+                                        mesh.index.push_back(it->second);
                                     }
                                 }
                             }
@@ -88,7 +167,18 @@ namespace Mcc
                 }
             }
 
-	        return Index(array);
+#ifdef MCC_DEBUG
+	        totalIter.fetch_add(1);
+	        timeSpent.fetch_add(dt(TimeClock::now() - start));
+
+            auto tIter = totalIter.load();
+	        MCC_LOG_DEBUG("{} : avg t = {:.3f}",
+                tIter,
+                (timeSpent.load()) / static_cast<float>(totalIter)
+            );
+#endif
+
+	        return mesh;
 	    });
 
         entity.set<MeshHolder>({ (std::move(meshFuture)) });

@@ -5,7 +5,9 @@
 #include "Client/Module/Renderer/Module.h"
 #include "Client/Module/TerrainRenderer/Component.h"
 #include "Client/Module/TerrainRenderer/Module.h"
+#include "Client/Module/TerrainRenderer/System.h"
 #include "Client/Module/TerrainReplication/Component.h"
+
 
 #include "Common/Module/Terrain/Component.h"
 #include "Common/Utils/Assert.h"
@@ -22,10 +24,10 @@ namespace Mcc
 
 		world.component<ChunkMesh>();
 
-		world.system<const ChunkHolder>("BuildChunkMesh")
+		world.system<const ChunkHolder, const ChunkPosition>("BuildChunkMesh")
 			.kind(flecs::PostUpdate)
 			.with<ChunkDirtyTag>()
-			.each([this](const flecs::entity entity, const ChunkHolder& data) { BuildChunkMeshSystem(entity, data); });
+			.each(BuildChunkMeshSystem);
 
 	    world.system<MeshHolder>("SetupChunkRenderingMesh")
 	        .kind(flecs::PostUpdate)

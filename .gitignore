@@ -5,6 +5,7 @@
 # Cmake
 CMakeLists.txt
 cmake-build-debug
+cmake-build-release
 
 # Xmake cache
 .xmake/

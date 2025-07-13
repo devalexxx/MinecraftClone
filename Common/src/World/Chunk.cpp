@@ -31,11 +31,16 @@ namespace Mcc
 
 	flecs::entity_t Chunk::Get(const glm::ivec3 position) const
 	{
+	    static auto null = flecs::entity::null().id();
+
+	    if (mData.palette.empty())
+            return null;
+
 		if (position.x < 0 || position.y < 0 || position.z < 0 || position.x >= Size || position.y >= Height || position.z >= Size)
-			return flecs::entity::null().id();
+			return null;
 
 		const size_t index = IndexFromPosition(position);
-		return index < mData.mapping.GetSize() ? mData.palette[mData.mapping.Get(index)] : flecs::entity::null().id();
+		return index < mData.mapping.GetSize() ? mData.palette[mData.mapping.Get(index)] : null;
 	}
 
 	Hx::EnumArray<BlockFace, flecs::entity_t> Chunk::GetNeighbors(const glm::ivec3 position) const

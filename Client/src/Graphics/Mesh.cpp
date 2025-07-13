@@ -12,13 +12,39 @@
 #include <glm/ext/matrix_transform.hpp>
 
 #include <algorithm>
+#include <unordered_map>
 
 namespace Mcc
 {
 
+    inline float Quantize(const float x, const float step = 1e-3f)
+    {
+        return std::round(x / step) * step;
+    }
+
+    inline glm::vec3 QVec(const glm::vec3& v, const float step = 1e-3f)
+    {
+        return { Quantize(v.x), Quantize(v.y), Quantize(v.z) };
+    }
+
+    inline glm::vec2 QVec(const glm::vec2& v, const float step = 1e-3f)
+    {
+        return { Quantize(v.x), Quantize(v.y) };
+    }
+
+    inline size_t QHash(const float x, const float step = 1e-3f)
+    {
+        return std::hash<float>()(Quantize(x, step));
+    }
+
     bool operator==(const PackedVertex& lhs, const PackedVertex& rhs)
     {
-        return lhs.vertex == rhs.vertex && lhs.color == rhs.color && lhs.normal == rhs.normal && lhs.uv == rhs.uv;
+        return (
+            QVec(lhs.vertex) == QVec(rhs.vertex) &&
+            QVec(lhs.color)  == QVec(rhs.color)  &&
+            QVec(lhs.uv)     == QVec(rhs.uv)     &&
+            QVec(lhs.normal) == QVec(rhs.normal)
+        );
     }
 
     bool operator!=(const PackedVertex& lhs, const PackedVertex& rhs)
@@ -26,21 +52,28 @@ namespace Mcc
         return !(lhs == rhs);
     }
 
+    std::size_t PackedVertexHasher::operator()(const PackedVertex& pv) const
+    {
+        const std::size_t h1 = QHash(pv.vertex.x) ^ QHash(pv.vertex.y) << 1 ^ QHash(pv.vertex.z) << 2;
+        const std::size_t h2 = QHash(pv.color.x)  ^ QHash(pv.color.y)  << 1 ^ QHash(pv.color.z)  << 2;
+        const std::size_t h3 = QHash(pv.uv.x)     ^ QHash(pv.uv.y)     << 1;
+        const std::size_t h4 = QHash(pv.normal.x) ^ QHash(pv.normal.y) << 1 ^ QHash(pv.normal.z) << 2;
+        return h1 ^ h2 ^ h3 ^ h4;
+    }
+
+
     Mesh Index(const PackedVertexArray& vertices)
     {
         Mesh mesh;
-
+        std::unordered_map<PackedVertex, size_t, PackedVertexHasher> vertexMap;
         for (auto& vertex: vertices)
         {
-            if (auto found = std::ranges::find(mesh.vertex, vertex); found != mesh.vertex.end())
-            {
-                mesh.index.push_back(std::distance(mesh.vertex.begin(), found));
-            }
-            else
+            auto [it, inserted] = vertexMap.try_emplace(vertex, mesh.vertex.size());
+            if (inserted)
             {
                 mesh.vertex.push_back(vertex);
-                mesh.index.push_back(mesh.vertex.size() - 1);
             }
+            mesh.index.push_back(it->second);
         }
 
         return mesh;
