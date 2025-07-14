@@ -165,13 +165,13 @@ namespace Mcc
 							auto v2 = (i - offset)	   * segments + (j % segments);	// current top
 							auto v3 = (i - offset - 1) * segments + (j % segments); // current bottom
 
-							mesh.index.push_back(v2);
+							mesh.index.push_back(v1);
 							mesh.index.push_back(v3);
-							mesh.index.push_back(v1);
-
-							mesh.index.push_back(v0);
 							mesh.index.push_back(v2);
+
 							mesh.index.push_back(v1);
+							mesh.index.push_back(v2);
+							mesh.index.push_back(v0);
 						}
 					}
 				}
@@ -186,9 +186,9 @@ namespace Mcc
 						auto v1 = i - 1;		  // previous top
 						auto v2 = (i % segments); // current top
 
-						mesh.index.push_back(v0);
-						mesh.index.push_back(v2);
 						mesh.index.push_back(v1);
+						mesh.index.push_back(v2);
+						mesh.index.push_back(v0);
 					}
 				}
 
@@ -200,9 +200,9 @@ namespace Mcc
 					auto v1 = (rRings - offset - 1) * segments + i - 1;			// previous top
 					auto v2 = (rRings - offset - 1) * segments + (i % segments);	// current top
 
-					mesh.index.push_back(v0);
-					mesh.index.push_back(v2);
 					mesh.index.push_back(v1);
+					mesh.index.push_back(v2);
+					mesh.index.push_back(v0);
 				}
 
 
