@@ -12,7 +12,6 @@ namespace Mcc
     void GenerateNetworkHandleObserver(flecs::entity entity, NetworkProps& props)
     {
         props.handle = GenerateNetworkHandle();
-        MCC_LOG_DEBUG("Generated #{} {}", entity.id(), props.handle);
     }
 
     void AddToContextObserver(flecs::iter& it)
@@ -28,7 +27,6 @@ namespace Mcc
                 if (IsValid(props[i].handle))
                 {
                     ctx->networkMapping.Set(props[i].handle, entity.id());
-                    MCC_LOG_DEBUG("AddToContext #{} {}", entity.id() , props[i].handle);
                 }
             }
         }
@@ -43,11 +41,9 @@ namespace Mcc
 
             for (const auto i: it)
             {
-                auto entity = it.entity(i);
                 if (IsValid(props[i].handle))
                 {
                     ctx->networkMapping.RRemove(props[i].handle);
-                    MCC_LOG_DEBUG("RmFromContext {} {}", entity.id() , props[i].handle);
                 }
             }
         }
