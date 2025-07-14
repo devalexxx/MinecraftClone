@@ -84,7 +84,7 @@ namespace Mcc
 
 
             const ChunkGenerator gen(mWorld, 12345u);
-            constexpr int size = 1;
+            constexpr int size = 13;
             for (int x = -size; x <= size; ++x)
             {
                 for (int z = -size; z <= size; ++z)

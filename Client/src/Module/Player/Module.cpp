@@ -64,7 +64,7 @@ namespace Mcc
 
             const auto entity = world.entity(*handle).is_a<PlayerEntityPrefab>();
 			world.entity().is_a<CameraFollowPrefab>()
-			    .set<CameraSettings>	  ({ glm::radians(75.f), 0.1f, 100.f })
+			    .set<CameraSettings>	  ({ glm::radians(75.f), 0.1f, 1000.f })
 			    .set<CameraFollowSettings>({ { 0, 2, 0 } })
 				.add<CameraFollowRelation>(entity)
 			    .add<ActiveCameraTag>();
