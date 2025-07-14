@@ -60,9 +60,9 @@ namespace Mcc
 
 	struct ChunkDesc
 	{
-			NetworkHandle  	         handle;
-			ChunkPosition            position;
-			ChunkData<NetworkHandle> data;
+			NetworkHandle  	    handle;
+			ChunkPosition       position;
+			CompressedChunkData compressed;
 	};
 
 	struct PlayerInfo

@@ -90,7 +90,7 @@ namespace Mcc
         return mData.mapping;
     }
 
-    std::optional<ChunkData<NetworkHandle>> Chunk::ToNetwork(const flecs::world& world) const
+    std::optional<CompressedChunkData> Chunk::ToNetwork(const flecs::world& world) const
     {
 	    return Helper::ToNetwork(mData, world);
     }
@@ -103,38 +103,57 @@ namespace Mcc
     namespace Helper
 	{
 
-	    std::optional<ChunkData<NetworkHandle>> ToNetwork(const ChunkData<flecs::entity_t>& data, const flecs::world& world)
+	    std::optional<CompressedChunkData> ToNetwork(const ChunkData<flecs::entity_t>& data, const flecs::world& world)
 	    {
-	        ChunkData<NetworkHandle>::Palette palette;
-	        for (auto id: data.palette)
-	        {
-	            if (const auto props = world.entity(id).try_get<NetworkProps>(); props)
-	            {
-                    if (!IsValid(props->handle))
+            CompressedChunkData compressed;
+
+	        size_t currentIndex = 0;
+	        size_t count        = 0;
+            for (size_t i = 0; i < data.mapping.GetSize(); ++i)
+            {
+                const auto index = data.mapping.Get(i);
+                if (index == currentIndex)
+                {
+                    ++count;
+                    if (i < data.mapping.GetSize() - 1)
+                        continue;
+                }
+
+                if (count > 0)
+                {
+                    const auto id = data.palette[currentIndex];
+                    if (const auto props = world.entity(id).try_get<NetworkProps>(); props)
                     {
-                        MCC_LOG_WARN("The network id attached to #{} is invalid", id);
+                        if (!IsValid(props->handle))
+                        {
+                            MCC_LOG_WARN("The network id attached to #{} is invalid", id);
+                            return std::nullopt;
+                        }
+
+                        compressed.data.emplace_back(props->handle, count);
+                    }
+                    else
+                    {
+                        MCC_LOG_WARN("No network id attached to #{}", id);
                         return std::nullopt;
                     }
+                }
 
-	                palette.push_back(props->handle);
-	            }
-	            else
-	            {
-	                MCC_LOG_WARN("No network id attached to #{}", id);
-                    return std::nullopt;
-	            }
-	        }
+                currentIndex = index;
+                count        = 1;
+            }
 
-	        return {{ .palette=std::move(palette), .mapping=data.mapping }};
+	        return compressed;
 	    }
 
-	    std::optional<ChunkData<flecs::entity_t>> FromNetwork(const ChunkData<NetworkHandle>& data, const flecs::world& world)
+	    std::optional<ChunkData<flecs::entity_t>> FromNetwork(const CompressedChunkData& compressed, const flecs::world& world)
 	    {
             const auto* ctx = WorldContext<>::Get(world);
 
-	        ChunkData<flecs::entity_t>::Palette palette;
-	        for (auto handle: data.palette)
-	        {
+	        ChunkData<flecs::entity_t> data {{}, { Chunk::Size * Chunk::Size * Chunk::Height, 2 }};
+	        size_t currentOffset = 0;
+            for (auto [handle, count]: compressed.data)
+            {
                 if (const auto id = ctx->networkMapping.GetLHandle(handle); id.has_value())
                 {
                     if (!world.is_valid(*id))
@@ -143,16 +162,32 @@ namespace Mcc
                         return std::nullopt;
                     }
 
-                    palette.push_back(*id);
-                }
-	            else
-	            {
-	                MCC_LOG_WARN("No local id attached to {}", handle);
-	                return std::nullopt;
-	            }
-	        }
+                    size_t index;
+                    if (auto it = std::ranges::find(data.palette, *id); it != data.palette.cend())
+                    {
+                        index = std::distance(data.palette.begin(), it);
+                    }
+                    else
+                    {
+                        index = data.palette.size();
+                        data.palette.push_back(*id);
+                    }
 
-	        return {{ .palette=std::move(palette), .mapping=data.mapping }};
+                    for (size_t i = currentOffset; i < currentOffset + count; ++i)
+                    {
+                        data.mapping.Set(i, index);
+                    }
+
+                    currentOffset += count;
+                }
+                else
+                {
+                    MCC_LOG_WARN("No local id attached to {}", handle);
+                    return std::nullopt;
+                }
+            }
+
+	        return data;
 	    }
 
 	}

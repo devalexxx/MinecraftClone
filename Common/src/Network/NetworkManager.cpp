@@ -6,6 +6,8 @@
 #include "Common/Network/Event.h"
 #include "Common/Network/NetworkManager.h"
 
+#include "zlib.h"
+
 namespace Mcc
 {
 
@@ -55,9 +57,22 @@ namespace Mcc
 		}
 	}
 
-	ENetPacket* NetworkManager::CreatePacket(ByteSpan&& data, enet_uint32 flag)
+    ENetPacket* NetworkManager::CreatePacket(ByteSpan&& data, enet_uint32 flag)
 	{
-		return enet_packet_create(data.data(), data.size(), flag);
+        const size_t baseLength = data.size();
+	    size_t length = compressBound(data.size());
+	    std::vector<uint8_t> buffer(length);
+	    if (compress(buffer.data(), &length, reinterpret_cast<uint8_t*>(data.data()), data.size()) != Z_OK)
+	    {
+	        MCC_LOG_ERROR("Failed to compress data");
+	    }
+	    buffer.resize(length);
+
+	    std::vector<uint8_t> packet(length + sizeof(length));
+	    std::memcpy(packet.data(), &baseLength, sizeof(length));
+	    std::memcpy(packet.data() + sizeof(length), buffer.data(), buffer.size());
+
+	    return enet_packet_create(packet.data(), length + sizeof(length), flag);
 	}
 
 	int NetworkManager::CreateHost(const ENetAddress* addr, size_t peers, size_t channels, enet_uint32 in, enet_uint32 out)

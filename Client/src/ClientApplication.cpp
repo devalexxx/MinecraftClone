@@ -51,14 +51,22 @@ namespace Mcc
 			return error;
 		}
 
-	    // flecs::log::set_level(0);
 
-		MCC_LOG_DEBUG("Waiting for server information...");
-	    // mWorld.set_threads(16);
+	    MCC_LOG_DEBUG("Setup modules...");
 		mWorld.set_ctx(new ClientWorldContext { { {}, mNetworkManager, {}, mThreadPool }, {}, mWindow, {} }, [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); });
-	    mWorld.import<NetworkModule>	  ();
+	    mWorld.import<NetworkModule>();
 		mWorld.import<ServerSessionModule>();
+	    mWorld.import<EntityModule>();
+	    mWorld.import<EntityReplicationModule>();
+	    mWorld.import<CameraModule>();
+	    mWorld.import<PlayerModule>();
+	    mWorld.import<TerrainModule>();
+	    mWorld.import<TerrainReplicationModule>();
+	    mWorld.import<RendererModule>();
+	    mWorld.import<EntityRendererModule>();
+	    mWorld.import<TerrainRendererModule>();
 
+	    MCC_LOG_DEBUG("Waiting for server information...");
 		while (mWorld.get<ServerConnectionState>() == ServerConnectionState::Pending)
 		{
 			mNetworkManager.Poll();
@@ -70,7 +78,6 @@ namespace Mcc
 			return EXIT_FAILURE;
 		}
 
-		MCC_LOG_DEBUG("Setup world...");
 		mWorld.import<EntityModule>();
 		mWorld.import<EntityReplicationModule>();
 		mWorld.import<CameraModule>();

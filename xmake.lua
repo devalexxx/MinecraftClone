@@ -8,7 +8,7 @@ add_rules("mode.debug", "mode.release")
 add_repositories("devalexxx-repo https://github.com/devalexxx/xmake-repo.git")
 add_requires("hexis", { debug = is_mode("debug"), configs = { shared = false } })
 
-add_requires("glfw", "fmt >= 11", "glad", "glm", "enet", "flecs", "cereal", "perlinnoise")
+add_requires("glfw", "fmt >= 11", "glad", "glm", "enet", "flecs", "cereal", "perlinnoise", "zlib")
 
 add_requires("flecs", { debug = is_mode("debug") })
 
@@ -51,7 +51,7 @@ target("MCCClient")
     end
 
     add_deps("MCCCommon")
-    add_packages("glfw", "fmt", "glad", "glm", "enet", "flecs", "cereal", "hexis")
+    add_packages("glfw", "fmt", "glad", "glm", "enet", "flecs", "cereal", "hexis", "zlib")
 
 target("MCCServer")
     set_kind("binary")

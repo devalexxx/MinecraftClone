@@ -4,6 +4,7 @@
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
+#include <cereal/types/tuple.hpp>
 
 namespace Mcc
 {
@@ -13,5 +14,11 @@ namespace Mcc
 	{
 	    ar(data.palette, data.mapping);
 	}
+
+    template<typename Archive>
+    void serialize(Archive& ar, CompressedChunkData& data)
+    {
+        ar(data.data);
+    }
 
 }

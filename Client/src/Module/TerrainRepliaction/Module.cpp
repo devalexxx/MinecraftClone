@@ -27,9 +27,10 @@ namespace Mcc
 
 		world.component<ChunkDirtyTag>();
 
-		// world.system("RemoveChunkDirty")
-		// 	.with<ChunkDirtyTag>()
-		// 	.each(RemoveChunkDirtySystem);
+		world.system("RemoveChunkDirty")
+	        .kind(flecs::OnStore)
+			.with<ChunkDirtyTag>()
+			.each(RemoveChunkDirtySystem);
 
         const auto* ctx = ClientWorldContext::Get(world);
 

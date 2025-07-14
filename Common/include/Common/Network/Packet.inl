@@ -24,7 +24,7 @@ namespace Mcc
 	template<typename Archive>
 	void serialize(Archive& ar, ChunkDesc& packet)
 	{
-		ar(packet.handle, packet.position, packet.data);
+		ar(packet.handle, packet.position, packet.compressed);
 	}
 
 	template<typename Archive>

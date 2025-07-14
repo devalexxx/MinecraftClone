@@ -29,8 +29,15 @@ namespace Mcc
         BitArray mapping{0, 1};
     };
 
+    struct CompressedChunkData
+    {
+        std::vector<std::tuple<NetworkHandle, size_t>> data;
+    };
+
     template<typename Archive, typename T>
     void serialize(Archive& ar, ChunkData<T>& data);
+    template<typename Archive>
+    void serialize(Archive& ar, CompressedChunkData& data);
 
 	class Chunk
 	{
@@ -38,7 +45,7 @@ namespace Mcc
 			using Palette = ChunkData<flecs::entity_t>::Palette;
 
 			static constexpr unsigned char Size   = 15;
-			static constexpr unsigned char Height = 31;
+			static constexpr unsigned char Height = 127;
 
 			Chunk();
 			Chunk(flecs::entity_t filler);
@@ -52,7 +59,7 @@ namespace Mcc
 			[[nodiscard]] const Palette&  GetPalette() const;
 			[[nodiscard]] const BitArray& GetMapping() const;
 
-	        [[nodiscard]] std::optional<ChunkData<NetworkHandle>> ToNetwork(const flecs::world& world) const;
+	        [[nodiscard]] std::optional<CompressedChunkData> ToNetwork(const flecs::world& world) const;
 
 		private:
 	        ChunkData<flecs::entity_t> mData;
@@ -63,8 +70,8 @@ namespace Mcc
     namespace Helper
     {
 
-        std::optional<ChunkData<NetworkHandle>>   ToNetwork  (const ChunkData<flecs::entity_t>& data, const flecs::world& world);
-        std::optional<ChunkData<flecs::entity_t>> FromNetwork(const ChunkData<NetworkHandle>&   data, const flecs::world& world);
+        std::optional<CompressedChunkData>        ToNetwork  (const ChunkData<flecs::entity_t>& data, const flecs::world& world);
+        std::optional<ChunkData<flecs::entity_t>> FromNetwork(const CompressedChunkData&        data, const flecs::world& world);
 
     }
 

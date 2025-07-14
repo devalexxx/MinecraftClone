@@ -1,3 +1,5 @@
+#include "Common/Utils/Logging.h"
+
 namespace Mcc
 {
 
@@ -11,15 +13,12 @@ namespace Mcc
 		archive(type);
 		archive(data);
 
-		auto packet = CreatePacket(stream.GetBuffer(), flag);
-		if (packet)
-		{
-			return enet_peer_send(peer, channel, packet);
-		}
-		else
-		{
-			return EXIT_FAILURE;
-		}
-	}
+        if (const auto packet = CreatePacket(stream.GetBuffer(), flag))
+        {
+            return enet_peer_send(peer, channel, packet);
+        }
+
+        return EXIT_FAILURE;
+    }
 
 }

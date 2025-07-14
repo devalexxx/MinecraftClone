@@ -99,7 +99,6 @@ namespace Mcc
 
 		ctx->networkManager.Send(event.peer, packet, ENET_PACKET_FLAG_RELIABLE, 0);
 	    ctx->threadPool.ExecuteTask([ctx, peer = event.peer, a = std::move(oecPacket), b = std::move(obcPacket), c = std::move(occPacket)]() {
-	        std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	        ctx->networkManager.Send(peer, a, ENET_PACKET_FLAG_RELIABLE, 0);
             ctx->networkManager.Send(peer, b, ENET_PACKET_FLAG_RELIABLE, 0);
             ctx->networkManager.Send(peer, c, ENET_PACKET_FLAG_RELIABLE, 0);
