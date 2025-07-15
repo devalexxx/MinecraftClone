@@ -4,6 +4,8 @@
 
 #include "Common/Application.h"
 
+#include "Common/Utils/Logging.h"
+
 #include <charconv>
 #include <csignal>
 #include <thread>
@@ -24,7 +26,8 @@ namespace Mcc
 	}
 
 	Application::Application(int argc, char** argv) :
-		mCmdLineStore(argc, argv)
+		mCmdLineStore(argc, argv),
+        mArgs        ({}, mWorld)
 	{
 #if MCC_DEBUG
 		mWorld.import<flecs::stats>();
@@ -48,8 +51,8 @@ namespace Mcc
 		sigaddset(&set, SIGABRT);
 		sigprocmask(SIG_BLOCK, &set, nullptr);
 
-		std::tuple<sigset_t, flecs::world&> args(set, mWorld);
-		pthread_create(&thread, nullptr, SigHandler, &args);
+        std::get<sigset_t>(mArgs) = set;
+		pthread_create(&thread, nullptr, SigHandler, &mArgs);
 	}
 
 }
