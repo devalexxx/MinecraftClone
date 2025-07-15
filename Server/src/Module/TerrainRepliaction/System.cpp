@@ -9,6 +9,7 @@
 #include "Server/ServerNetworkManager.h"
 
 #include "Common/Module/Terrain/Component.h"
+#include "Common/Utils/Benchmark.h"
 #include "Common/Utils/Logging.h"
 
 namespace Mcc
@@ -127,7 +128,7 @@ namespace Mcc
 			        continue;
 			    }
 
-				if (auto data = h[i].chunk->ToNetwork(world); data.has_value())
+				if (auto data = MCC_BENCH_TIME(RLECompression, [&] { return h[i].chunk->ToNetwork(world); })(); data.has_value())
 				{
 					packet.chunks.push_back({ handle, t[i], std::move(*data) });
 					MCC_LOG_INFO("Chunk({}) has been created and replicated", handle);

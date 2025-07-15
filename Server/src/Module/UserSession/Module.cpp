@@ -10,6 +10,7 @@
 #include "Common/Module/Entity/Component.h"
 #include "Common/Module/Entity/Module.h"
 #include "Common/Utils/Assert.h"
+#include "Common/Utils/Benchmark.h"
 #include "Common/Utils/Logging.h"
 #include "Common/WorldContext.h"
 
@@ -71,7 +72,7 @@ namespace Mcc
                     return;
                 }
 
-			    if (auto data = holder.chunk->ToNetwork(world); data.has_value())
+			    if (auto data = MCC_BENCH_TIME(RLECompression, [&] { return holder.chunk->ToNetwork(world); })(); data.has_value())
 			    {
                     occPacket.chunks.push_back({ props.handle, position, std::move(*data) });
                 }

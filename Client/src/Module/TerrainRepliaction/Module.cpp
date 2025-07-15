@@ -13,6 +13,7 @@
 #include "Client/Module/EntityReplication/Component.h"
 #include "Common/Module/Network/Component.h"
 #include "Common/Utils/Assert.h"
+#include "Common/Utils/Benchmark.h"
 #include "Common/Utils/Logging.h"
 #include "Common/World/Block.h"
 
@@ -77,7 +78,7 @@ namespace Mcc
 	            continue;
 	        }
 
-	        if (auto from = Helper::FromNetwork(data, world); from.has_value())
+	        if (auto from = MCC_BENCH_TIME(RLEDecompression, Helper::FromNetwork)(data, world); from.has_value())
 	        {
 	            auto e =world.entity()
                     .is_a<ChunkPrefab>()

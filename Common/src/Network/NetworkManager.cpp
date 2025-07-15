@@ -6,6 +6,7 @@
 #include "Common/Network/Event.h"
 #include "Common/Network/NetworkManager.h"
 
+#include "Common/Utils/Benchmark.h"
 #include "zlib.h"
 
 namespace Mcc
@@ -62,7 +63,7 @@ namespace Mcc
         const size_t baseLength = data.size();
 	    size_t length = compressBound(data.size());
 	    std::vector<uint8_t> buffer(length);
-	    if (compress(buffer.data(), &length, reinterpret_cast<uint8_t*>(data.data()), data.size()) != Z_OK)
+	    if (MCC_BENCH_TIME(Compression, compress)(buffer.data(), &length, reinterpret_cast<uint8_t*>(data.data()), data.size()) != Z_OK)
 	    {
 	        MCC_LOG_ERROR("Failed to compress data");
 	    }

@@ -2,8 +2,6 @@
 // Created by Alex Clorennec on 14/07/2025.
 //
 
-#include "Common/Utils/Logging.h"
-
 namespace Mcc::_
 {
 
