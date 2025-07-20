@@ -84,7 +84,7 @@ namespace Mcc
 
 
             const ChunkGenerator gen(mWorld, 12345u);
-            constexpr int size = 13;
+            constexpr int size = 32;
             for (int x = -size; x <= size; ++x)
             {
                 for (int z = -size; z <= size; ++z)
@@ -92,7 +92,7 @@ namespace Mcc
                     mWorld.entity()
                         .is_a<ChunkPrefab>()
                         .set<ChunkPosition>({ { x, 0, z } })
-                        .set<ChunkHolder>({ std::make_shared<Chunk>(gen.Generate({ x + size, 0, z + size })) });
+                        .set<ChunkHolder>({ std::make_shared<Chunk>(gen.Generate({ x, 0, z })) });
                 }
             }
 		}
