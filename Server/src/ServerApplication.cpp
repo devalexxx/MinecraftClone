@@ -35,7 +35,7 @@ namespace Mcc
 		if (CommandLineStore::OptParameter param; (param = mCmdLineStore.GetParameter("tick-rate").or_else([&]{ return mCmdLineStore.GetParameter("tr"); })).has_value())
 		{
 			unsigned long tickRate;
-			std::from_chars(param->cbegin(), param->cend(), tickRate);
+			std::from_chars(param->data(), param->data() + param->size(), tickRate);
 			if (tickRate < MinTickRate || tickRate > MaxTickRate) {
 				MCC_LOG_WARN("TickRate must be between {} and {}, it was set at {}", MinTickRate, MaxTickRate, DefaultTickRate);
 			}

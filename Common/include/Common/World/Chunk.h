@@ -15,6 +15,7 @@
 #include <flecs.h>
 
 #include <vector>
+#include <optional>
 
 namespace Mcc
 {

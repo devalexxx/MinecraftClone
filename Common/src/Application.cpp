@@ -8,14 +8,16 @@
 
 #include <charconv>
 #include <csignal>
+#include <tuple>
 #include <thread>
 
 namespace Mcc
 {
 
+#ifdef MCC_POSIX
 	static void* SigHandler(void* args)
 	{
-		auto [set, world] = *static_cast<std::tuple<sigset_t, flecs::world&>*>(args);
+		auto [set, world] = *static_cast<std::tuple<sigset_t, flecs::world>*>(args);
 		int sig;
 		sigwait(&set, &sig);
 		if (sig == SIGINT || sig == SIGABRT)
@@ -24,10 +26,13 @@ namespace Mcc
 		}
 		return nullptr;
 	}
+#endif
 
 	Application::Application(int argc, char** argv) :
-		mCmdLineStore(argc, argv),
-        mArgs        ({}, mWorld)
+		mCmdLineStore(argc, argv)
+#ifdef MCC_POSIX
+		,mArgs        ({}, mWorld)
+#endif
 	{
 #if MCC_DEBUG
 		mWorld.import<flecs::stats>();
@@ -43,6 +48,7 @@ namespace Mcc
 		}
 #endif
 
+#ifdef MCC_POSIX
 		sigset_t set;
 		pthread_t thread;
 
@@ -53,6 +59,7 @@ namespace Mcc
 
         std::get<sigset_t>(mArgs) = set;
 		pthread_create(&thread, nullptr, SigHandler, &mArgs);
+#endif
 	}
 
 }

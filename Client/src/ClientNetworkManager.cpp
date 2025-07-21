@@ -17,10 +17,10 @@ namespace Mcc
 	{
 		CommandLineStore::OptParameter param;
 		if ((param = cmdLineStore.GetParameter("host").or_else([&]{ return cmdLineStore.GetParameter("h"); })).has_value())
-			enet_address_set_host(&mAddr, param->cbegin());
+			enet_address_set_host(&mAddr, param->data());
 
 		if ((param = cmdLineStore.GetParameter("port").or_else([&]{ return cmdLineStore.GetParameter("p"); })).has_value())
-			std::from_chars(param->cbegin(), param->cend(), mAddr.port);
+			std::from_chars(param->data(), param->data() + param->size(), mAddr.port);
 	}
 
 	ClientNetworkManager::~ClientNetworkManager()

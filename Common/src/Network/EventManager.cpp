@@ -23,7 +23,7 @@ namespace Mcc
 	    std::memcpy(&length, packet->data, sizeof(length));
 
 	    std::vector<uint8_t> buffer(length);
-	    if (MCC_BENCH_TIME(Uncompression, uncompress)(buffer.data(), &length, packet->data + sizeof(length), packet->dataLength - sizeof(length)) != Z_OK)
+	    if (MCC_BENCH_TIME(Uncompression, uncompress)(buffer.data(),reinterpret_cast<uLongf*>(&length), packet->data + sizeof(length), packet->dataLength - sizeof(length)) != Z_OK)
 	    {
 	        MCC_LOG_ERROR("Failed to uncompress data");
 	    }

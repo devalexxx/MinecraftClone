@@ -27,7 +27,9 @@ namespace Mcc
 			flecs::world     mWorld;
 			CommandLineStore mCmdLineStore;
 
-	        std::tuple<sigset_t, flecs::world&> mArgs;
+#ifdef MCC_POSIX
+	        std::tuple<sigset_t, flecs::world> mArgs;
+#endif
 	};
 
 }

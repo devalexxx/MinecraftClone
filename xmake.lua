@@ -12,6 +12,14 @@ add_requires("glfw", "fmt >= 11", "glad", "glm", "enet", "flecs", "cereal", "per
 
 add_requires("flecs", { debug = is_mode("debug") })
 
+if is_os("macos") or is_os("linux") then
+    add_defines("MCC_POSIX")
+end
+
+if is_os("windows") then
+    add_cxxflags("cl::/Zc:preprocessor")
+end
+
 if is_mode("debug") then 
     add_defines("MCC_DEBUG")
     --set_warnings("allextra", "error")
@@ -32,7 +40,7 @@ target("MCCCommon")
 
     add_files("Common/**/*.cpp")
 
-    add_packages("glm", "fmt", "flecs", "enet", "cereal")
+    add_packages("glm", "fmt", "flecs", "enet", "cereal", "zlib")
     add_packages("hexis", { public = true })
 
 target("MCCClient")
