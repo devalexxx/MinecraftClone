@@ -244,7 +244,7 @@ namespace Mcc
             vec3 lightColor = vec3(1, 1, 1);
 
             float ambientStrength  = 0.1;
-            float specularStrength = 1;
+            float specularStrength = 0.5;
 
 			void main() {
                 vec3 normal = invModel * passNormal;
