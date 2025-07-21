@@ -6,13 +6,14 @@
 #include "Server/Module/EntityReplication/Component.h"
 
 #include "Common/Module/Entity/Component.h"
+#include "Server/WorldContext.h"
 
 namespace Mcc
 {
 
 	void ProcessPlayerInputs(const flecs::entity entity, UserInputQueue& queue)
 	{
-		const float speed = 5.f;
+	    const auto* ctx = ServerWorldContext::Get(entity.world());
 
 		if (queue.data.empty())
 		{
@@ -24,7 +25,7 @@ namespace Mcc
 			  {
 				  auto& input = queue.data.front();
 				  Helper::ApplyXAxis   (input, transform);
-				  Helper::ApplyMovement(input, transform, speed, input.meta.dt);
+				  Helper::ApplyMovement(input, transform, ctx->settings.userSpeed, input.meta.dt);
 
 				  if (queue.data.size() == 1)
 				  {

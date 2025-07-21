@@ -40,12 +40,9 @@ namespace Mcc
 	{
             static WorldContext* Get(const flecs::world& world);
 
-			ServerInfo serverInfo{};
-
 			NManager&      networkManager;
             NetworkMapping networkMapping;
-
-            ThreadPool& threadPool;
+            ThreadPool&    threadPool;
 	};
 
 }

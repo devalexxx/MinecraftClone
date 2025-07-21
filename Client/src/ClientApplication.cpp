@@ -30,6 +30,12 @@ namespace Mcc
 
 	ClientApplication::ClientApplication(int argc, char** argv) :
 		Application(argc, argv),
+        mSettings({
+            .sensitivity=SENSITIVITY_DEFAULT,
+            .fov=FOV_DEFAULT,
+            .renderDistance=RENDER_DISTANCE_DEFAULT,
+            .preloadDistance=PRELOAD_DISTANCE_DEFAULT
+        }),
 		mNetworkManager(mCmdLineStore),
 		mWindow("MachinaCubicaCatalyst")
 	{
@@ -53,7 +59,7 @@ namespace Mcc
 
 
 	    MCC_LOG_DEBUG("Setup modules...");
-		mWorld.set_ctx(new ClientWorldContext { { {}, mNetworkManager, {}, mThreadPool }, {}, mWindow, {} }, [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); });
+		mWorld.set_ctx(new ClientWorldContext { { mNetworkManager, {}, mThreadPool }, {}, {}, mSettings, mWindow, {} }, [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); });
 	    mWorld.import<NetworkModule>();
 		mWorld.import<ServerSessionModule>();
 	    mWorld.import<EntityModule>();
@@ -64,7 +70,6 @@ namespace Mcc
 	    mWorld.import<TerrainReplicationModule>();
 	    mWorld.import<RendererModule>();
 	    mWorld.import<EntityRendererModule>();
-	    mWorld.import<TerrainRendererModule>();
 
 	    MCC_LOG_DEBUG("Waiting for server information...");
 		while (mWorld.get<ServerConnectionState>() == ServerConnectionState::Pending)
@@ -78,14 +83,6 @@ namespace Mcc
 			return EXIT_FAILURE;
 		}
 
-		mWorld.import<EntityModule>();
-		mWorld.import<EntityReplicationModule>();
-		mWorld.import<CameraModule>();
-		mWorld.import<PlayerModule>();
-		mWorld.import<TerrainModule>();
-		mWorld.import<TerrainReplicationModule>();
-		mWorld.import<RendererModule>();
-		mWorld.import<EntityRendererModule>();
 		mWorld.import<TerrainRendererModule>();
 
 	    mWorld.add<ClientTag>();

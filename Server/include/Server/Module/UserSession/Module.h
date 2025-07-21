@@ -9,24 +9,39 @@
 #include "Common/Module/Network/Component.h"
 #include "Common/Module/Terrain/Component.h"
 #include "Common/Network/Event.h"
+#include "Common/Network/Packet.h"
+#include "Common/Network/Packet/Session.h"
 
 #include <flecs.h>
 
 namespace Mcc
 {
 
+    struct UserSession
+    {
+        static UserSession* Get(const ENetPeer* peer);
+
+        PlayerInfo pInfo;
+        ClientInfo cInfo;
+    };
+
 	class UserSessionModule
 	{
 		public:
+            using EntityQuery = flecs::query<const Transform, const NetworkProps>;
+	        using BlockQuery  = flecs::query<const BlockMeta, const BlockType, const BlockColor, const NetworkProps>;
+	        using ChunkQuery  = flecs::query<const ChunkPosition, const ChunkHolder, const NetworkProps>;
+
 			UserSessionModule(flecs::world& world);
 
 		private:
-			flecs::query<const Transform, const NetworkProps>                                    mLookupEntityQuery;
-			flecs::query<const BlockMeta, const BlockType, const BlockColor, const NetworkProps> mLookupBlockQuery;
-			flecs::query<const ChunkPosition, const ChunkHolder, const NetworkProps>             mLookupChunkQuery;
+			EntityQuery mLookupEntityQuery;
+			BlockQuery  mLookupBlockQuery;
+			ChunkQuery  mLookupChunkQuery;
 
-			void OnConnectEventHandler(const flecs::world& world, const ConnectEvent& event) const;
+	        void OnClientInfoHandler(const flecs::world& world, const From<OnClientInfo>& from) const;
 
+			static void OnConnectEventHandler   (const flecs::world& world, const ConnectEvent&    event);
 			static void OnDisconnectEventHandler(const flecs::world& world, const DisconnectEvent& event);
 	};
 

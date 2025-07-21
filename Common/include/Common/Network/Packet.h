@@ -9,7 +9,7 @@
 #include "Common/Module/Terrain/Component.h"
 #include "Common/Network/NetworkHandle.h"
 #include "Common/Network/PacketStream.h"
-#include "Common/World/Time.h"
+#include "Common/Network/Packet/Session.h"
 
 #include <Hexis/Core/TypeList.h>
 
@@ -23,12 +23,18 @@ namespace Mcc
 	template<typename T>
 	struct From
 	{
-			const ENetPeer* peer;
-			T packet;
+	        ENetPeer* peer;
+			T         packet;
 	};
 
 	using PacketList = Hx::TypeList<
-		struct OnConnection,
+	    // Session
+	    OnWaitingInfo,
+        OnClientInfo,
+        OnConnectionAccepted,
+        OnConnectionRefused,
+        OnClientInfoChanged,
+
 		struct OnPlayerInput,
 		struct OnEntitiesCreated,
 		struct OnEntitiesDestroyed,
@@ -65,32 +71,12 @@ namespace Mcc
 			CompressedChunkData compressed;
 	};
 
-	struct PlayerInfo
-	{
-			NetworkHandle handle;
-	};
-
-	struct ServerInfo
-	{
-			TickRate tickRate;
-	};
-
 	template<typename Archive>
 	void serialize(Archive& ar, EntityState& packet);
 	template<typename Archive>
 	void serialize(Archive& ar, BlockDesc& packet);
 	template<typename Archive>
 	void serialize(Archive& ar, ChunkDesc& packet);
-	template<typename Archive>
-	void serialize(Archive& ar, PlayerInfo& packet);
-	template<typename Archive>
-	void serialize(Archive& ar, ServerInfo& packet);
-
-	struct OnConnection
-	{
-			PlayerInfo   playerInfo;
-			ServerInfo   serverInfo;
-	};
 
 	struct OnPlayerInput
 	{
@@ -142,8 +128,6 @@ namespace Mcc
 			std::vector<ChunkDesc> chunks;
 	};
 
-	template<typename Archive>
-	void serialize(Archive& ar, OnConnection& packet);
 	template<typename Archive>
 	void serialize(Archive& ar, OnPlayerInput& packet);
 	template<typename Archive>

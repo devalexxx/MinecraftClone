@@ -28,24 +28,6 @@ namespace Mcc
 	}
 
 	template<typename Archive>
-	void serialize(Archive& ar, PlayerInfo& packet)
-	{
-		ar(packet.handle);
-	}
-
-	template<typename Archive>
-	void serialize(Archive& ar, ServerInfo& packet)
-	{
-		ar(packet.tickRate);
-	}
-
-	template<typename Archive>
-	void serialize(Archive& ar, OnConnection& packet)
-	{
-		ar(packet.playerInfo, packet.serverInfo);
-	}
-
-	template<typename Archive>
 	void serialize(Archive& ar, OnPlayerInput& packet)
 	{
 		ar(packet.input);

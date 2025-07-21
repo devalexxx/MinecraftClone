@@ -64,7 +64,11 @@ namespace Mcc
 
             const auto entity = world.entity(*handle).is_a<PlayerEntityPrefab>();
 			world.entity().is_a<CameraFollowPrefab>()
-			    .set<CameraSettings>	  ({ glm::radians(75.f), 0.1f, 1000.f })
+			    .set<CameraSettings>({
+			        glm::radians(ctx->settings.fov),
+			        0.1f,
+			        static_cast<float>(ctx->settings.renderDistance) * 256.f
+			    })
 			    .set<CameraFollowSettings>({ { 0, 2, 0 } })
 				.add<CameraFollowRelation>(entity)
 			    .add<ActiveCameraTag>();
@@ -107,15 +111,13 @@ namespace Mcc
 				while (!qData2.empty()) { qData2.pop_back(); }
 
 				// Set last received transform and reapply all inputs unprocessed by the server
-				entity.set(state->transform);
+                auto tr = state->transform;
 				for (auto& input: qData1)
 				{
-                    constexpr float speed = 5.f;
-					entity.get([&input](Transform& transform) {
-						Helper::ApplyXAxis	 (input, transform);
-						Helper::ApplyMovement(input, transform, speed, input.meta.dt);
-					});
+				    Helper::ApplyXAxis	 (input, tr);
+				    Helper::ApplyMovement(input, tr, ctx->serverInfo.userSpeed, input.meta.dt);
 				}
+				entity.set(tr);
 			}
 		}
 	}
@@ -164,7 +166,6 @@ namespace Mcc
 
 	void PlayerModule::OnCursorPosEventHandler(const flecs::world& world, const CursorPosEvent& event)
 	{
-		auto sensitivity = 0.001f;
 		auto [w, h] = event.window.GetWindowSize();
 
 		const auto* ctx    = ClientWorldContext::Get(world);
@@ -181,8 +182,8 @@ namespace Mcc
 		{
 			event.window.SetInputMode(GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
-			input.axis.x += sensitivity * ((static_cast<float>(w) / 2.f) - static_cast<float>(event.x));
-			input.axis.y += sensitivity * ((static_cast<float>(h) / 2.f) - static_cast<float>(event.y));
+			input.axis.x += ctx->settings.sensitivity * ((static_cast<float>(w) / 2.f) - static_cast<float>(event.x));
+			input.axis.y += ctx->settings.sensitivity * ((static_cast<float>(h) / 2.f) - static_cast<float>(event.y));
 
 			event.window.SetCursorPosition(w / 2, h / 2);
 		}

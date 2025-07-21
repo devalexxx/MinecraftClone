@@ -21,18 +21,18 @@ namespace Mcc
 			NetworkEventManager();
 
 		protected:
-			void DispatchPacket(const ENetPeer* peer, const ENetPacket* packet);
+			void DispatchPacket(ENetPeer* peer, const ENetPacket* packet);
 
 		private:
 			struct HandlerMapper
 			{
 					template<typename T>
-					void operator()();
+					void operator()() const;
 
 					NetworkEventManager& mEventManager;
 			};
 
-			using PacketHandle = std::function<void(const ENetPeer* peer, const ENetPacket* packet, NetworkEventManager&, cereal::BinaryInputArchive&&)>;
+			using PacketHandle = std::function<void(ENetPeer* peer, const ENetPacket* packet, NetworkEventManager&, cereal::BinaryInputArchive&&)>;
 			std::array<PacketHandle, PacketList::Count> mHandlers;
 
 	};

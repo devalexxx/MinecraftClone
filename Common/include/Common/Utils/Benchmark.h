@@ -17,18 +17,18 @@
             struct __Tag##__LINE__ { static constexpr const char* name() { return #NAME; } };                \
             static Mcc::_::TimeBenchmark<__Tag##__LINE__> __benchmark##__LINE__;                             \
             return [=](auto&&... args) -> decltype(auto) {                                                   \
-                const auto __start = _::BenchClock::now();                                                       \
+                const auto __start = _::BenchClock::now();                                                   \
                 if constexpr (std::is_void_v<std::invoke_result_t<decltype(CALLABLE), decltype(args)...>>)   \
                 {                                                                                            \
                     CALLABLE(std::forward<decltype(args)>(args)...);                                         \
-                    const auto __end = _::BenchClock::now();                                                     \
+                    const auto __end = _::BenchClock::now();                                                 \
                     float __duration = std::chrono::duration<float>(__end - __start).count();                \
                     __benchmark##__LINE__.AddCall(__duration);                                               \
                 }                                                                                            \
                 else                                                                                         \
                 {                                                                                            \
                     auto __result = CALLABLE(std::forward<decltype(args)>(args)...);                         \
-                    const auto __end = _::BenchClock::now();                                                     \
+                    const auto __end = _::BenchClock::now();                                                 \
                     float __duration = std::chrono::duration<float>(__end - __start).count();                \
                     __benchmark##__LINE__.AddCall(__duration);                                               \
                     return __result;                                                                         \

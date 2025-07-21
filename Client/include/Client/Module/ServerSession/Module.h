@@ -19,7 +19,10 @@ namespace Mcc
 			ServerSessionModule(flecs::world& world);
 
 		private:
-			static void OnConnectionHandler     (const flecs::world& world, const OnConnection&    packet);
+			static void OnWaitingInfoHandler       (const flecs::world& world, const OnWaitingInfo&);
+			static void OnConnectionAcceptedHandler(const flecs::world& world, const OnConnectionAccepted& packet);
+			static void OnConnectionRefusedHandler (const flecs::world& world, const OnConnectionRefused&  packet);
+
 			static void OnDisconnectEventHandler(const flecs::world& world, const DisconnectEvent& event);
 	};
 

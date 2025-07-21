@@ -6,17 +6,20 @@
 #define MCC_SERVER_SERVER_APPLICATION_H
 
 #include "Server/ServerNetworkManager.h"
+#include "ServerSettings.h"
 
 #include "Common/Application.h"
-#include "Common/Network/EventManager.h"
 #include "Common/Utils/ThreadPool.h"
 
-#include <enet/enet.h>
+#define TICK_RATE_DEFAULT 20
+#define TICK_RATE_MAX     60
+#define TICK_RATE_MIN     20
 
-namespace cereal
-{
-	class BinaryInputArchive;
-}
+#define RENDER_DISTANCE_DEFAULT 12
+#define RENDER_DISTANCE_MAX     32
+#define RENDER_DISTANCE_MIN     8
+
+#define USER_SPEED_DEFAULT 25
 
 namespace Mcc
 {
@@ -30,11 +33,9 @@ namespace Mcc
 			int Run() override;
 
 		private:
-			ServerInfo mInfo;
-
+			ServerSettings       mSettings;
 			ServerNetworkManager mNetworkManager;
-
-	        ThreadPool mThreadPool;
+	        ThreadPool           mThreadPool;
 	};
 
 }

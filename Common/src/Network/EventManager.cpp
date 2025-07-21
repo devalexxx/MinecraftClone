@@ -17,7 +17,7 @@ namespace Mcc
 		PacketList::Apply<HandlerMapper>({ *this });
 	}
 
-	void NetworkEventManager::DispatchPacket(const ENetPeer* peer, const ENetPacket* packet)
+	void NetworkEventManager::DispatchPacket(ENetPeer* peer, const ENetPacket* packet)
 	{
         size_t length;
 	    std::memcpy(&length, packet->data, sizeof(length));

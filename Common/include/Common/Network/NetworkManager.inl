@@ -1,3 +1,4 @@
+#include "Common/Utils/Benchmark.h"
 #include "Common/Utils/Logging.h"
 
 namespace Mcc
@@ -11,7 +12,9 @@ namespace Mcc
 
 		size_t type = PacketList::IndexOf<T>;
 		archive(type);
-		archive(data);
+
+	    auto f = [&] { archive(data); };
+		MCC_BENCH_TIME(Serialization, f)();
 
         if (const auto packet = CreatePacket(stream.GetBuffer(), flag))
         {

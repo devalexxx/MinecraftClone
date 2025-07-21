@@ -7,6 +7,7 @@
 
 #include "Client/Graphics/Window/Window.h"
 #include "Client/ClientNetworkManager.h"
+#include "Client/ClientSettings.h"
 
 #include "Common/WorldContext.h"
 #include "Common/Network/Packet.h"
@@ -26,9 +27,10 @@ namespace Mcc
 	{
 	        static ClientWorldContext* Get(const flecs::world& world);
 
-			PlayerInfo playerInfo{};
-			Window&    window;
-
+	        ServerInfo     serverInfo;
+	        PlayerInfo     playerInfo;
+            ClientSettings settings;
+			Window&        window;
 	        std::unordered_map<glm::ivec3, flecs::entity_t, IVec3Hasher> chunkMap;
 	};
 
