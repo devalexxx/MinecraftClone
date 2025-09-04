@@ -1,5 +1,7 @@
 # MachinaCubicaCatalyst
 
+![preview.png](.github/assets/preview.png)
+
 **MachinaCubicaCatalyst** is a modular **Minecraft-like clone** with a strong focus on **multiplayer networking, client prediction, and efficient world handling**.  
 The architecture is split into three layers:
 
