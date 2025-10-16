@@ -10,8 +10,6 @@
 namespace Mcc
 {
 
-	void RemoveChunkDirtySystem(flecs::entity entity);
-
 }
 
 #endif

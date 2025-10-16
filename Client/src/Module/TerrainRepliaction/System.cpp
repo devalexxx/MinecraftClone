@@ -3,15 +3,8 @@
 //
 
 #include "Client/Module/TerrainReplication/System.h"
-#include "Client/Module/TerrainReplication/Component.h"
 
 namespace Mcc
 {
-
-	void RemoveChunkDirtySystem(const flecs::entity entity)
-	{
-		entity.remove<ChunkDirtyTag>();
-	}
-
 
 }

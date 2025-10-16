@@ -157,6 +157,102 @@ namespace Mcc
 	        return mesh;
         }
 
+        std::pair<int, int> GetPlayerChunkPosition(const Transform& transform)
+        {
+            return {
+                static_cast<int>(transform.position.x) / (Chunk::Size * 2),
+                static_cast<int>(transform.position.z) / (Chunk::Size * 2)
+            };
+        }
+
+        bool IsInCircle(const glm::vec2 c, const glm::vec2 p, const long radius)
+        {
+            const auto fR = static_cast<float>(radius);
+            return (p.x - c.x) * (p.x - c.x) + (p.y - c.y) * (p.y - c.y) <= fR * fR;
+        }
+
+        void ForInCircle(const long x, const long y, const int radius, std::function<void(long x, long y)>&& fn)
+        {
+            for(long i = x - radius; i < x + radius; ++i) {
+                const auto ySpan = std::lround(radius * std::sin(std::acos((x - i) / radius)));
+                for(long j = y - ySpan; j < y + ySpan; ++j)
+                {
+                    fn(i, j);
+                }
+            }
+        }
+
+    }
+    
+    void OnPlayerMoveObserver(const flecs::iter& it, size_t, const Transform& transform)
+    {
+        static int cx = std::numeric_limits<int>::max();
+        static int cz = std::numeric_limits<int>::max();
+
+        const auto  world = it.world();
+        const auto* ctx   = ClientWorldContext::Get(world);
+
+        const int rRange = static_cast<int>(ctx->settings.renderDistance);
+        const int bRange = static_cast<int>(ctx->settings.preloadDistance);
+
+        auto [x, z] = _::GetPlayerChunkPosition(transform);
+
+        // MCC_LOG_DEBUG("{} {}", x, z);
+        if (std::abs(cx - x) > 0 || std::abs(cz - z) > 0)
+        {
+
+            _::ForInCircle(cx, cz, rRange + 1, [&](long i, long j) {
+                if (const auto cit = ctx->chunkMap.find({ i, 0, j }); cit != ctx->chunkMap.end())
+                {
+                    // MCC_LOG_DEBUG("found");
+                    world.entity(cit->second).remove<ShouldRenderChunkTag>();
+                }
+            });
+
+            _::ForInCircle(x, z, bRange, [&](long i, long j) {
+                if (const auto cit = ctx->chunkMap.find({ i, 0, j }); cit != ctx->chunkMap.end())
+                {
+                    world.entity(cit->second).add<CouldRenderChunkTag>();
+                    if (_::IsInCircle({ x, z }, { i, j }, rRange))
+                        world.entity(cit->second).add<ShouldRenderChunkTag>();
+                }
+            });
+
+            cx = x;
+            cz = z;
+        }
+    }
+
+    void OnChunkCreatedObserver(const flecs::entity entity, const ChunkPosition& p)
+    {
+        const auto  world = entity.world();
+        const auto* ctx   = ClientWorldContext::Get(world);
+
+        if (auto id = ctx->networkMapping.GetLHandle(ctx->playerInfo.handle); id.has_value())
+        {
+            world.entity(*id).get([&](const Transform& transform) {
+                auto [pX, pZ] = _::GetPlayerChunkPosition(transform);
+                const auto cX = p.position.x;
+                const auto cZ = p.position.z;
+                const auto rRange = static_cast<int>(ctx->settings.renderDistance);
+                const auto bRange = static_cast<int>(ctx->settings.preloadDistance);
+
+                if ( _::IsInCircle({ pX, pZ }, { cX, cZ }, rRange))
+                {
+                    entity.add<CouldRenderChunkTag>();
+                    entity.add<ShouldRenderChunkTag>();
+                }
+                else if ( _::IsInCircle({ pX, pZ }, { cX, cZ }, bRange))
+                {
+                    entity.add<CouldRenderChunkTag>();
+                }
+            });
+        }
+    }
+
+    void OnChunkChangedObserver(const flecs::entity entity, const ChunkHolder&)
+    {
+        entity.add<ShouldBuildMeshTag>();
     }
 
 	void BuildChunkMeshSystem(const flecs::entity entity, const ChunkHolder& holder, const ChunkPosition& pos)
@@ -165,6 +261,7 @@ namespace Mcc
         const auto* ctx   = ClientWorldContext::Get(world);
 
         auto meshFuture_ = ctx->threadPool.ExecuteTask([=] { return MCC_BENCH_TIME(MeshBuilding, _::BuildChunkMeshImpl)(world, pos.position, holder.chunk); });
+        entity.remove<ShouldBuildMeshTag>();
         entity.set<MeshHolder>({ (std::move(meshFuture_)) });
 	}
 

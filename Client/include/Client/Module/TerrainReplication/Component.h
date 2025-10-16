@@ -8,8 +8,6 @@
 namespace Mcc
 {
 
-	struct ChunkDirtyTag {};
-
 }
 
 #endif

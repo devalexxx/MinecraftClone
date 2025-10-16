@@ -5,8 +5,10 @@
 #include "Client/Module/Renderer/Module.h"
 #include "Client/Module/TerrainRenderer/Component.h"
 #include "Client/Module/TerrainRenderer/Module.h"
+
 #include "Client/Module/TerrainRenderer/System.h"
 #include "Client/Module/TerrainReplication/Component.h"
+#include "Client/WorldContext.h"
 
 
 #include "Common/Module/Terrain/Component.h"
@@ -22,11 +24,32 @@ namespace Mcc
 		MCC_LOG_DEBUG("Import TerrainRendererModule...");
 		world.module<TerrainRendererModule>();
 
+        world.component<ShouldBuildMeshTag>();
+        world.component<CouldRenderChunkTag>();
+        world.component<ShouldRenderChunkTag>();
+
 		world.component<ChunkMesh>();
+		world.component<MeshHolder>();
+
+	    const auto* ctx = ClientWorldContext::Get(world);
+
+	    world.observer<const Transform>("OnPlayerMove")
+	        .event(flecs::OnSet)
+	        .term_at(0).src(world.entity(*ctx->networkMapping.GetLHandle(ctx->playerInfo.handle)))
+	        .each(OnPlayerMoveObserver);
+
+        world.observer<const ChunkPosition>("OnChunkCreated")
+	        .event(flecs::OnSet)
+            .each(OnChunkCreatedObserver);
+
+	    world.observer<const ChunkHolder>("OnChunkChanged")
+	        .event(flecs::OnSet)
+	        .with<CouldRenderChunkTag>()
+	        .each(OnChunkChangedObserver);
 
 		world.system<const ChunkHolder, const ChunkPosition>("BuildChunkMesh")
 			.kind(flecs::PostUpdate)
-			.with<ChunkDirtyTag>()
+			.with<ShouldBuildMeshTag>()
 			.each(BuildChunkMeshSystem);
 
 	    world.system<MeshHolder>("SetupChunkRenderingMesh")
@@ -39,6 +62,7 @@ namespace Mcc
 
 		world.system<const ChunkPosition, const ChunkMesh>("RenderChunkMeshSystem")
 			.kind(flecs::PreStore)
+	        .with<ShouldRenderChunkTag>()
 			.run([this](auto&&... args) { RenderChunkMeshSystem(args...); });
 	}
 

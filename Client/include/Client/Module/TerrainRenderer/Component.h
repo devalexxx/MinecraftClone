@@ -14,6 +14,10 @@
 namespace Mcc
 {
 
+    struct ShouldBuildMeshTag   {};
+    struct CouldRenderChunkTag  {};
+    struct ShouldRenderChunkTag {};
+
 	struct ChunkMesh
 	{
 		    VertexArray	vertexArray;

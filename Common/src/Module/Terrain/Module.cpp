@@ -41,7 +41,7 @@ namespace Mcc
 	    world.prefab<ChunkPrefab>()
 	        .is_a<NetworkObjectPrefab>()
 	        .add<ChunkTag>()
-	        .set_auto_override<ChunkPosition>({})
+	        .add<ChunkPosition>()
 	        .set_auto_override<ChunkHolder>  ({});
 	}
 

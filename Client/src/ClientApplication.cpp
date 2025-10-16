@@ -31,8 +31,8 @@ namespace Mcc
 	ClientApplication::ClientApplication(int argc, char** argv) :
 		Application(argc, argv),
         mSettings({
-            .sensitivity=SENSITIVITY_DEFAULT,
             .fov=FOV_DEFAULT,
+            .sensitivity=SENSITIVITY_DEFAULT,
             .renderDistance=RENDER_DISTANCE_DEFAULT,
             .preloadDistance=PRELOAD_DISTANCE_DEFAULT
         }),

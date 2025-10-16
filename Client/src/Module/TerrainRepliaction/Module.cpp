@@ -5,8 +5,6 @@
 #include "Client/Module/TerrainReplication/Module.h"
 #include "Client/WorldContext.h"
 #include "Client/Module/ServerSession/Component.h"
-#include "Client/Module/TerrainReplication/Component.h"
-#include "Client/Module/TerrainReplication/System.h"
 
 #include "Common/Module/Terrain/Module.h"
 
@@ -25,13 +23,6 @@ namespace Mcc
 		MCC_ASSERT	 (world.has<TerrainModule>(), "TerrainReplicationModule require TerrainModule, you must import it before.");
 		MCC_LOG_DEBUG("Import TerrainReplication...");
 		world.module<TerrainReplicationModule>();
-
-		world.component<ChunkDirtyTag>();
-
-		world.system("RemoveChunkDirty")
-	        .kind(flecs::OnStore)
-			.with<ChunkDirtyTag>()
-			.each(RemoveChunkDirtySystem);
 
         const auto* ctx = ClientWorldContext::Get(world);
 
@@ -80,9 +71,8 @@ namespace Mcc
 
 	        if (auto from = MCC_BENCH_TIME(RLEDecompression, Helper::FromNetwork)(data, world); from.has_value())
 	        {
-	            auto e =world.entity()
+	            auto e = world.entity()
                     .is_a<ChunkPrefab>()
-                    .add<ChunkDirtyTag>()
 	                .set<NetworkProps>({ handle })
                     .set<ChunkPosition>(position)
                     .set<ChunkHolder>({ std::make_shared<Chunk>(std::move(*from)) });
@@ -107,6 +97,8 @@ namespace Mcc
 		        }
 
 		        // TODO
+		        // Modify
+		        // world.entity(id).modified<ChunkHolder>();
 		    }
 		}
 	}
