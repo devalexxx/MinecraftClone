@@ -12,11 +12,11 @@ add_requires("glfw", "fmt >= 11", "glad", "glm", "enet", "flecs", "cereal", "per
 
 add_requires("flecs", { debug = is_mode("debug") })
 
-if is_os("macos") or is_os("linux") then
+if is_host("macos") or is_host("linux") then
     add_defines("MCC_POSIX")
 end
 
-if is_os("windows") then
+if is_host("windows") then
     add_cxxflags("cl::/Zc:preprocessor")
 end
 
