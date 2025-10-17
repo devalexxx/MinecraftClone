@@ -128,7 +128,7 @@ namespace Mcc
 		MCC_LOG_DEBUG("Import PlayerSessionModule...");
 		world.module<UserSessionModule>();
 
-		mLookupEntityQuery = world.query_builder<const Transform, const NetworkProps>().with<NetworkEntityTag>().build();
+		mLookupEntityQuery = world.query_builder<const Transform, const NetworkProps>().with<NetworkEntityTag>().without<EntityCreatedTag>().build();
 		mLookupBlockQuery  = world.query_builder<const BlockMeta, const BlockType, const BlockColor, const NetworkProps>().with<BlockTag>().build();
 		mLookupChunkQuery  = world.query_builder<const ChunkPosition, const ChunkHolder, const NetworkProps>().with<ChunkTag>().build();
 
