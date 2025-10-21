@@ -10,7 +10,8 @@
 #include "ClientSettings.h"
 
 #include "Common/Application.h"
-#include "Common/Utils/ThreadPool.h"
+
+#include "Hexis/Core/ThreadPool.h"
 
 #define SENSITIVITY_DEFAULT      0.001
 #define FOV_DEFAULT              90
@@ -32,7 +33,7 @@ namespace Mcc
 	        ClientSettings       mSettings;
 			ClientNetworkManager mNetworkManager;
 			Window               mWindow;
-	        ThreadPool           mThreadPool;
+	        Hx::ThreadPool       mThreadPool;
 	};
 
 }

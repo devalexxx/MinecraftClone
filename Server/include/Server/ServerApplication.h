@@ -9,7 +9,8 @@
 #include "ServerSettings.h"
 
 #include "Common/Application.h"
-#include "Common/Utils/ThreadPool.h"
+
+#include "Hexis/Core/ThreadPool.h"
 
 #define TICK_RATE_DEFAULT 20
 #define TICK_RATE_MAX     60
@@ -35,7 +36,7 @@ namespace Mcc
 		private:
 			ServerSettings       mSettings;
 			ServerNetworkManager mNetworkManager;
-	        ThreadPool           mThreadPool;
+	        Hx::ThreadPool       mThreadPool;
 	};
 
 }

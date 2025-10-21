@@ -8,7 +8,8 @@
 #include "Common/Network/NetworkHandle.h"
 #include "Common/Network/NetworkManager.h"
 #include "Common/Network/Packet.h"
-#include "Utils/ThreadPool.h"
+
+#include "Hexis/Core/ThreadPool.h"
 
 #include <unordered_map>
 
@@ -40,9 +41,9 @@ namespace Mcc
 	{
             static WorldContext* Get(const flecs::world& world);
 
-			NManager&      networkManager;
-            NetworkMapping networkMapping;
-            ThreadPool&    threadPool;
+			NManager&       networkManager;
+            NetworkMapping  networkMapping;
+            Hx::ThreadPool& threadPool;
 	};
 
 }
