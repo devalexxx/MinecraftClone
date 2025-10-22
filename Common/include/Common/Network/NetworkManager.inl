@@ -5,8 +5,10 @@ namespace Mcc
 {
 
 	template<typename T>
-	int NetworkManager::Send(ENetPeer* peer, T data, enet_uint32 flag, enet_uint8 channel)
+	int NetworkManager::Send(ENetPeer* peer, T data, enet_uint32 flag, enet_uint8 channel) const
 	{
+	    std::lock_guard guard(mMutex);
+
 		PacketOutputStream stream;
 		cereal::BinaryOutputArchive archive(stream);
 
@@ -18,7 +20,8 @@ namespace Mcc
 
         if (const auto packet = CreatePacket(stream.GetBuffer(), flag))
         {
-            return enet_peer_send(peer, channel, packet);
+            mCommandQueue.push([=, this]() { enet_peer_send(peer, channel, packet); });
+            return EXIT_SUCCESS;
         }
 
         return EXIT_FAILURE;

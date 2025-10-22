@@ -9,7 +9,7 @@
 
 #include <enet/enet.h>
 
-#include <string>
+#include <mutex>
 
 #define DEFAULT_HOST "localhost"
 #define DEFAULT_PORT 50505
@@ -31,13 +31,17 @@ namespace Mcc
 			static ENetPacket* CreatePacket(ByteSpan&& data, enet_uint32 flag);
 
 			template<typename T>
-			static int Send(ENetPeer* peer, T data, enet_uint32 flag, enet_uint8 channel);
+	        int Send(ENetPeer* peer, T data, enet_uint32 flag, enet_uint8 channel) const;
 
-		protected:
 			int CreateHost(const ENetAddress* addr, size_t peers, size_t channels, enet_uint32 in, enet_uint32 out);
 
 			ENetAddress mAddr;
 			ENetHost*   mHost;
+
+	        mutable std::mutex mMutex;
+	        mutable std::queue<std::function<void()>> mCommandQueue;
+
+
 	};
 
 }

@@ -1,3 +1,5 @@
+#include <Hexis/Core/TypeName.h>
+
 namespace Mcc
 {
 
@@ -10,6 +12,8 @@ namespace Mcc
 	template<typename T>
 	void ServerNetworkManager::Broadcast(T data, enet_uint32 flag, enet_uint8 channel) const
 	{
+	    std::lock_guard guard(mMutex);
+
 		PacketOutputStream stream;
 		cereal::BinaryOutputArchive archive(stream);
 
@@ -20,8 +24,10 @@ namespace Mcc
 		auto packet = CreatePacket(stream.GetBuffer(), flag);
 		if (packet)
 		{
-			enet_host_broadcast(mHost, channel, packet);
+		    mCommandQueue.push([=, this]() { enet_host_broadcast(mHost, channel, packet); });
+		    return;
 		}
+	    MCC_LOG_WARN("Failed to create packet {}", Hx::TypeName<T>());
 	}
 
 }

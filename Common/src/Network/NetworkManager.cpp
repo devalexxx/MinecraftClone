@@ -5,8 +5,8 @@
 #include "Common/Utils/Logging.h"
 #include "Common/Network/Event.h"
 #include "Common/Network/NetworkManager.h"
-
 #include "Common/Utils/Benchmark.h"
+
 #include "zlib.h"
 
 namespace Mcc
@@ -34,6 +34,11 @@ namespace Mcc
 
 	void NetworkManager::Poll()
 	{
+        for (; !mCommandQueue.empty(); mCommandQueue.pop())
+        {
+            mCommandQueue.front()();
+        }
+
 		ENetEvent event;
 		while (enet_host_service(mHost, &event, 0) > 0)
 		{
@@ -53,6 +58,7 @@ namespace Mcc
 					break;
 				}
 				default:
+			        MCC_LOG_ERROR("Unhandled network event type");
 					break;
 			}
 		}
