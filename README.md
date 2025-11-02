@@ -69,7 +69,7 @@ The project is built with [xmake](https://xmake.io), using clang-format/clang-ti
 ## Build Instructions
 1. Clone the repo:
    ```bash
-   git clone https://github.com/yourusername/MachinaCubicaCatalyst.git
+   git clone https://github.com/devalexxx/MachinaCubicaCatalyst.git
    cd MachinaCubicaCatalyst
    ```
 2. Configure and build:
@@ -79,7 +79,7 @@ The project is built with [xmake](https://xmake.io), using clang-format/clang-ti
    ```
 3. Run targets:
    ```bash
-   xmake run Server
-   xmake run Client -p "port" -h "host"
+   xmake run MCCServer
+   xmake run MCCClient -p <port> -h <host>
    ```
 
