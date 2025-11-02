@@ -8,6 +8,7 @@
 #include "Server/Module/Player/Module.h"
 #include "Server/Module/UserSession/Module.h"
 #include "Server/Module/TerrainReplication/Module.h"
+#include "Server/Module/TerrainGeneration/Module.h"
 #include "Server/World/ChunkGenerator.h"
 
 #include "Common/Module/Entity/Module.h"
@@ -71,7 +72,22 @@ namespace Mcc
 		}
 
 		MCC_LOG_DEBUG("Setup world...");
-		mWorld.set_ctx(new ServerWorldContext { { mNetworkManager, {}, mThreadPool }, mSettings }, [](void* ptr) { delete static_cast<ServerWorldContext*>(ptr); });
+
+	    mWorld.add<ServerTag>();
+
+		mWorld.set_ctx(
+		    new ServerWorldContext {
+		        {
+		            .networkManager=mNetworkManager,
+		            .networkMapping={},
+		            .threadPool=mThreadPool,
+		            .chunkMap={}
+		        },
+		        mSettings,
+		    },
+		    [](void* ptr) { delete static_cast<ServerWorldContext*>(ptr); }
+		);
+
 	    mWorld.import<NetworkModule>          ();
 		mWorld.import<EntityModule>		 	  ();
 		mWorld.import<UserSessionModule>	  ();
@@ -79,41 +95,7 @@ namespace Mcc
 		mWorld.import<PlayerModule>			  ();
 		mWorld.import<TerrainModule>		  ();
 		mWorld.import<TerrainReplicationModule>();
-
-	    mWorld.add<ServerTag>();
-
-		{
-			mWorld.entity("mcc:block:air")
-		        .is_a<BlockPrefab>()
-				.set<BlockType>(BlockType::Gas)
-				.set<BlockMeta>({ "mcc:block:air" });
-
-			mWorld.entity("mcc:block:stone")
-                .is_a<BlockPrefab>()
-				.set<BlockType>(BlockType::Solid)
-		        .set<BlockColor>({ { .5f, .5f, .5f } })
-				.set<BlockMeta>({ "mcc:block:stone" });
-
-		    mWorld.entity("mcc:block:dirt")
-                .is_a<BlockPrefab>()
-                .set<BlockType>(BlockType::Solid)
-                .set<BlockColor>({ { .0f, .7f, .3f } })
-                .set<BlockMeta>({ "mcc:block:dirt" });
-
-
-            const ChunkGenerator gen(mWorld, 12345u);
-            constexpr int size = 32;
-            for (int x = -size; x <= size; ++x)
-            {
-                for (int z = -size; z <= size; ++z)
-                {
-                    mWorld.entity()
-                        .is_a<ChunkPrefab>()
-                        .set<ChunkPosition>({ { x, 0, z } })
-                        .set<ChunkHolder>({ std::make_shared<Chunk>(gen.Generate({ x, 0, z })) });
-                }
-            }
-		}
+		mWorld.import<TerrainGenerationModule>();
 
 		MCC_LOG_INFO("Application started and listening on port {}", mNetworkManager.mAddr.port);
 		mWorld.set_target_fps(mSettings.tickRate);

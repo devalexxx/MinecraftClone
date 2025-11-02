@@ -8,8 +8,8 @@
 #include "Common/Module/Entity/Component.h"
 #include "Common/Module/Terrain/Component.h"
 #include "Common/Network/NetworkHandle.h"
-#include "Common/Network/PacketStream.h"
 #include "Common/Network/Packet/Session.h"
+#include "Common/Network/PacketStream.h"
 
 #include <Hexis/Core/TypeList.h>
 
@@ -35,16 +35,16 @@ namespace Mcc
         OnConnectionRefused,
         OnClientInfoChanged,
 
+        struct OnChunk,
+        struct OnChunkBatch,
+
+        struct OnBlock,
+        struct OnBlockBatch,
+
 		struct OnPlayerInput,
 		struct OnEntitiesCreated,
 		struct OnEntitiesDestroyed,
-		struct OnEntitiesUpdated,
-		struct OnBlocksCreated,
-		struct OnBlocksDestroyed,
-		struct OnBlocksUpdated,
-		struct OnChunksCreated,
-		struct OnChunksDestroyed,
-		struct OnChunksUpdated
+		struct OnEntitiesUpdated
 	>;
 
 	struct EntityState
@@ -56,27 +56,8 @@ namespace Mcc
 			std::unordered_map<std::string, std::string> extra;
 	};
 
-	struct BlockDesc
-	{
-			NetworkHandle handle;
-			BlockMeta     meta;
-	        glm::vec3     color;
-			BlockType     type;
-	};
-
-	struct ChunkDesc
-	{
-			NetworkHandle  	    handle;
-			ChunkPosition       position;
-			CompressedChunkData compressed;
-	};
-
 	template<typename Archive>
 	void serialize(Archive& ar, EntityState& packet);
-	template<typename Archive>
-	void serialize(Archive& ar, BlockDesc& packet);
-	template<typename Archive>
-	void serialize(Archive& ar, ChunkDesc& packet);
 
 	struct OnPlayerInput
 	{
@@ -98,37 +79,33 @@ namespace Mcc
 			std::vector<EntityState> states;
 	};
 
-	struct OnBlocksCreated
-	{
-			std::vector<BlockDesc> blocks;
-	};
+    struct OnChunk
+    {
+        NetworkHandle handle{};
+        ChunkPosition position{};
+        RLEChunkData  data;
+    };
 
-	struct OnBlocksDestroyed
-	{
-			std::vector<NetworkHandle> handles;
-	};
+    struct OnChunkBatch : std::vector<OnChunk>
+    {};
 
-	struct OnBlocksUpdated
-	{
-			std::vector<BlockDesc> blocks;
-	};
+    struct OnBlock
+    {
+        NetworkHandle handle;
+        BlockMeta     meta;
+        glm::vec3     color;
+        BlockType     type;
+    };
 
-	struct OnChunksCreated
-	{
-			std::vector<ChunkDesc> chunks;
-	};
+    struct OnBlockBatch : std::vector<OnBlock>
+    {};
 
-	struct OnChunksDestroyed
-	{
-			std::vector<NetworkHandle> handles;
-	};
+    template<typename Archive>
+    void serialize(Archive& ar, OnChunk& packet);
+    template<typename Archive>
+    void serialize(Archive& ar, OnBlock& packet);
 
-	struct OnChunksUpdated
-	{
-			std::vector<ChunkDesc> chunks;
-	};
-
-	template<typename Archive>
+    template<typename Archive>
 	void serialize(Archive& ar, OnPlayerInput& packet);
 	template<typename Archive>
 	void serialize(Archive& ar, OnEntitiesCreated& packet);
@@ -136,18 +113,6 @@ namespace Mcc
 	void serialize(Archive& ar, OnEntitiesDestroyed& packet);
 	template<typename Archive>
 	void serialize(Archive& ar, OnEntitiesUpdated& packet);
-	template<typename Archive>
-	void serialize(Archive& ar, OnBlocksCreated& packet);
-	template<typename Archive>
-	void serialize(Archive& ar, OnBlocksDestroyed& packet);
-	template<typename Archive>
-	void serialize(Archive& ar, OnBlocksUpdated& packet);
-	template<typename Archive>
-	void serialize(Archive& ar, OnChunksCreated& packet);
-	template<typename Archive>
-	void serialize(Archive& ar, OnChunksDestroyed& packet);
-	template<typename Archive>
-	void serialize(Archive& ar, OnChunksUpdated& packet);
 
 }
 

@@ -59,7 +59,22 @@ namespace Mcc
 
 
 	    MCC_LOG_DEBUG("Setup modules...");
-		mWorld.set_ctx(new ClientWorldContext { { mNetworkManager, {}, mThreadPool }, {}, {}, mSettings, mWindow, {} }, [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); });
+		mWorld.set_ctx(
+		    new ClientWorldContext
+		    {
+		        {
+		            .networkManager=mNetworkManager,
+		            .networkMapping={},
+		            .threadPool=mThreadPool,
+		            .chunkMap={}
+		        },
+		        {},
+		        {},
+		        mSettings,
+		        mWindow
+		    },
+		    [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); }
+		);
 	    mWorld.import<NetworkModule>();
 		mWorld.import<ServerSessionModule>();
 	    mWorld.import<EntityModule>();

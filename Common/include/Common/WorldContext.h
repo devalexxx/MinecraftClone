@@ -33,6 +33,14 @@ namespace Mcc
         [[nodiscard]] std::optional<RHandle> GetRHandle(LHandle handle) const;
     };
 
+    struct IVec3Hasher
+    {
+        size_t operator()(const glm::ivec3& v) const
+        {
+            return std::hash<int>()(v.x) ^ std::hash<int>()(v.y) << 1 ^ std::hash<int>()(v.z) << 2;
+        }
+    };
+
     template<typename T>
     concept IsNetworkManager = std::is_base_of_v<NetworkManager, T> || std::is_same_v<NetworkManager, T>;
 
@@ -44,6 +52,8 @@ namespace Mcc
 			NManager&       networkManager;
             NetworkMapping  networkMapping;
             Hx::ThreadPool& threadPool;
+
+            std::unordered_map<glm::ivec3, flecs::entity_t, IVec3Hasher> chunkMap;
 	};
 
 }

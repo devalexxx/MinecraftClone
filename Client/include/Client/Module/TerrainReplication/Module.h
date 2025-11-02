@@ -14,17 +14,14 @@ namespace Mcc
 	class TerrainReplicationModule
 	{
 		public:
-			TerrainReplicationModule(const flecs::world& world);
+            explicit TerrainReplicationModule(const flecs::world& world);
 
 		private:
-			static void OnBlocksCreatedHandler(const flecs::world& world, const OnBlocksCreated& event);
-			static void OnChunksCreatedHandler(const flecs::world& world, const OnChunksCreated& event);
+            static void OnBlockHandler(const flecs::world& world, const OnBlock& packet);
+            static void OnChunkHandler(const flecs::world& world, const OnChunk& packet);
 
-			static void OnBlocksUpdatedHandler(const flecs::world& world, const OnBlocksUpdated& event);
-			static void OnChunksUpdatedHandler(const flecs::world& world, const OnChunksUpdated& event);
-
-			static void OnChunksDestroyedHandler(const flecs::world& world, const OnChunksDestroyed& event);
-			static void OnBlocksDestroyedHandler(const flecs::world& world, const OnBlocksDestroyed& event);
+            static void OnBlockBatchHandler(const flecs::world& world, const OnBlockBatch& packet);
+	        static void OnChunkBatchHandler(const flecs::world& world, const OnChunkBatch& packet);
 	};
 
 }

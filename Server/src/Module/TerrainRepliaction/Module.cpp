@@ -5,9 +5,12 @@
 #include "Server/Module/TerrainReplication/Module.h"
 #include "Server/Module/TerrainReplication/Component.h"
 #include "Server/Module/TerrainReplication/System.h"
+#include "Server/Module/Player/Component.h"
+#include "Server/Module/TerrainGeneration/Component.h"
+#include "Server/Module/UserSession/Module.h"
+#include "Server/WorldContext.h"
 
 #include "Common/Module/Terrain/Module.h"
-
 #include "Common/Module/Network/Component.h"
 #include "Common/Module/Terrain/Component.h"
 #include "Common/Utils/Assert.h"
@@ -30,35 +33,64 @@ namespace Mcc
 		world.component<ChunkDirtyTag>();
 		world.component<ChunkDestroyedTag>();
 
-		world.system<const BlockMeta, const BlockType, const BlockColor, const NetworkProps>("BroadcastCreatedBlocksSystem")
-			.kind(flecs::PreStore)
-			.with<BlockCreatedTag>()
-			.run(BroadcastCreatedBlocks);
+	    world.observer("OnPlayerMoveObserver")
+	        .with(flecs::Any)
+            .event<OnPlayerMoveEvent>()
+            .each(OnPlayerMoveObserver);
 
-		world.system<const ChunkPosition, const ChunkHolder, const NetworkProps>("BroadcastCreatedChunksSystem")
-			.kind(flecs::OnStore)
-			.with<ChunkCreatedTag>()
-			.run(BroadcastCreatedChunks);
-
-		world.system<const BlockMeta, const BlockType, const BlockColor, const NetworkProps>("BroadcastDirtyBlocksSystem")
-			.kind(flecs::OnStore)
-			.with<BlockDirtyTag>()
-			.run(BroadcastDirtyBlocks);
-
-		world.system<const ChunkPosition, const ChunkHolder, const NetworkProps>("BroadcastDirtyChunksSystem")
-			.kind(flecs::OnStore)
-			.with<ChunkDirtyTag>()
-			.run(BroadcastDirtyChunks);
-
-		world.system<const NetworkProps>("BroadcastDestroyedChunksSystem")
-			.kind(flecs::PreStore)
-			.with<ChunkDestroyedTag>()
-			.run(BroadcastDestroyedChunks);
-
-		world.system<const NetworkProps>("BroadcastDestroyedBlocksSystem")
-			.kind(flecs::OnStore)
-			.with<BlockDestroyedTag>()
-			.run(BroadcastDestroyedBlocks);
+	    world.observer<const Transform>("OnPlayerCreatedObserver")
+	        .event<OnPlayerCreatedEvent>()
+	        .each(OnPlayerCreatedObserver);
 	}
+
+    static int32_t GetThreadIndex() {
+	    static std::atomic<int32_t> counter = 0;
+	    static thread_local int32_t thread_id = counter++;
+	    return thread_id;
+	}
+
+    void TerrainReplicationModule::ReplicateChunk(UserSession* session, const flecs::world& world, flecs::entity_t chunk)
+    {
+	    // TODO: could data race
+	    const auto ctx   = ServerWorldContext::Get(world);
+	    const auto& stage = world;
+
+	    OnChunk      chunkPacket;
+	    OnBlockBatch blockPacket;
+
+	    const auto chunkEntity = stage.entity(chunk);
+        const auto props    = chunkEntity.get<const NetworkProps>();
+        const auto position = chunkEntity.get<const ChunkPosition>();
+        const auto holder   = chunkEntity.get<const ChunkHolder>();
+
+	    chunkPacket.handle   = props.handle;
+	    chunkPacket.position = position;
+	    if (auto rle = holder.chunk->ToNetwork(stage); rle.has_value())
+	    {
+	        chunkPacket.data = std::move(rle.value());
+	    }
+
+	    for (auto block: holder.chunk->GetPalette())
+	    {
+	        if (!session->replicatedBlocks.contains(block))
+	        {
+	            auto blockEntity = stage.entity(block);
+	            OnBlock packet;
+	            packet.handle = blockEntity.get<const NetworkProps>().handle;
+	            packet.color  = blockEntity.get<const BlockColor>().color;
+	            packet.meta   = blockEntity.get<const BlockMeta>();
+	            packet.type   = blockEntity.get<const BlockType>();
+	            blockPacket.push_back(std::move(packet));
+
+	            session->replicatedBlocks.insert(block);
+	        }
+	    }
+	    session->replicatedChunks.insert(chunk);
+
+	    if (!blockPacket.empty())
+	        ctx->networkManager.Send(session->peer, std::move(blockPacket), ENET_PACKET_FLAG_RELIABLE, 0);
+
+	    ctx->networkManager.Send(session->peer, std::move(chunkPacket), ENET_PACKET_FLAG_RELIABLE, 0);
+    }
 
 }

@@ -42,7 +42,7 @@ namespace Mcc
 	        .is_a<NetworkObjectPrefab>()
 	        .add<ChunkTag>()
 	        .add<ChunkPosition>()
-	        .set_auto_override<ChunkHolder>  ({});
+	        .set_auto_override<ChunkHolder>({});
 	}
 
 }

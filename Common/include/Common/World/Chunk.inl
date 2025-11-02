@@ -2,7 +2,6 @@
 // Created by Alex on 27/08/2024.
 //
 
-#include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/tuple.hpp>
 
@@ -16,7 +15,7 @@ namespace Mcc
 	}
 
     template<typename Archive>
-    void serialize(Archive& ar, CompressedChunkData& data)
+    void serialize(Archive& ar, RLEChunkData& data)
     {
         ar(data.data);
     }

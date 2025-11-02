@@ -6,13 +6,15 @@
 #define MCC_SERVER_MODULE_PLAYER_SYSTEM_H
 
 #include "Common/Module/Entity/Component.h"
+#include "Server/Module/EntityReplication/Component.h"
 
 #include <flecs.h>
 
 namespace Mcc
 {
 
-	void ProcessPlayerInputs(flecs::entity entity, UserInputQueue& queue);
+	void ProcessPlayerInputs (flecs::entity entity, UserInputQueue& queue);
+    void HandlePlayerCreation(flecs::entity entity);
 
 }
 

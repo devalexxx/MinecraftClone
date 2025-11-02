@@ -10,13 +10,10 @@
 namespace Mcc
 {
 
-	void BroadcastCreatedBlocks  (flecs::iter& it);
-	void BroadcastDirtyBlocks  	 (flecs::iter& it);
-	void BroadcastDestroyedBlocks(flecs::iter& it);
+    struct Transform;
 
-	void BroadcastCreatedChunks  (flecs::iter& it);
-	void BroadcastDirtyChunks  	 (flecs::iter& it);
-	void BroadcastDestroyedChunks(flecs::iter& it);
+    void OnPlayerCreatedObserver(flecs::entity entity, const Transform& transform);
+    void OnPlayerMoveObserver   (flecs::iter& it, size_t row);
 
 }
 

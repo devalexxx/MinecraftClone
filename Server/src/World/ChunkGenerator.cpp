@@ -11,7 +11,10 @@
 namespace Mcc
 {
 
-    ChunkGenerator::ChunkGenerator(const flecs::world& world, const siv::PerlinNoise::seed_type seed) : mPerlin(seed)
+    ChunkGenerator::ChunkGenerator(const siv::PerlinNoise::seed_type seed) : mPerlin(seed)
+    {}
+
+    void ChunkGenerator::Setup(const flecs::world& world)
     {
         mPalette.emplace("air",   world.lookup("mcc:block:air"));
         mPalette.emplace("stone", world.lookup("mcc:block:stone"));

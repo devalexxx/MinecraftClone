@@ -5,10 +5,9 @@
 #include "Client/Module/TerrainReplication/Module.h"
 #include "Client/WorldContext.h"
 #include "Client/Module/ServerSession/Component.h"
+#include "Client/Module/EntityReplication/Component.h"
 
 #include "Common/Module/Terrain/Module.h"
-
-#include "Client/Module/EntityReplication/Component.h"
 #include "Common/Module/Network/Component.h"
 #include "Common/Utils/Assert.h"
 #include "Common/Utils/Benchmark.h"
@@ -26,140 +25,66 @@ namespace Mcc
 
         const auto* ctx = ClientWorldContext::Get(world);
 
-		ctx->networkManager.Subscribe<OnBlocksCreated>([&world](const auto& event) { OnBlocksCreatedHandler(world, event); });
-		ctx->networkManager.Subscribe<OnChunksCreated>([&world](const auto& event) { OnChunksCreatedHandler(world, event); });
+		ctx->networkManager.Subscribe<OnBlock>([&world](const auto& event) { OnBlockHandler(world, event); });
+		ctx->networkManager.Subscribe<OnChunk>([&world](const auto& event) { OnChunkHandler(world, event); });
 
-		ctx->networkManager.Subscribe<OnBlocksUpdated>([&world](const auto& event) { OnBlocksUpdatedHandler(world, event); });
-		ctx->networkManager.Subscribe<OnChunksUpdated>([&world](const auto& event) { OnChunksUpdatedHandler(world, event); });
-
-		ctx->networkManager.Subscribe<OnChunksDestroyed>([&world](const auto& event) { OnChunksDestroyedHandler(world, event); });
-		ctx->networkManager.Subscribe<OnBlocksDestroyed>([&world](const auto& event) { OnBlocksDestroyedHandler(world, event); });
+	    ctx->networkManager.Subscribe<OnBlockBatch>([&world](const auto& event) { OnBlockBatchHandler(world, event); });
+	    ctx->networkManager.Subscribe<OnChunkBatch>([&world](const auto& event) { OnChunkBatchHandler(world, event); });
 	}
 
-	void TerrainReplicationModule::OnBlocksCreatedHandler(const flecs::world& world, const OnBlocksCreated& event)
-	{
-        const auto* ctx = ClientWorldContext::Get(world);
-
-		for (const auto& [handle, meta, color, type]: event.blocks)
-		{
-			if (ctx->networkMapping.GetLHandle(handle).has_value())
-			{
-				MCC_LOG_WARN("The network id {} is already associated to a local block", handle);
-				continue;
-			}
-
-			world.entity()
-                .is_a<BlockPrefab>()
-		        .set<NetworkProps>({ handle })
-                .set<BlockMeta>(meta)
-		        .set<BlockColor>({ color })
-		        .set<BlockType>(type);
-		}
-	}
-
-	void TerrainReplicationModule::OnChunksCreatedHandler(const flecs::world& world, const OnChunksCreated& event)
-	{
-	    auto* ctx = ClientWorldContext::Get(world);
-
-	    for (const auto& [handle, position, data]: event.chunks)
+    void TerrainReplicationModule::OnBlockHandler(const flecs::world& world, const Mcc::OnBlock& packet)
+    {
+        if (const auto* ctx = ClientWorldContext::Get(world); ctx->networkMapping.GetLHandle(packet.handle).has_value())
 	    {
-	        if (ctx->networkMapping.GetLHandle(handle).has_value())
-	        {
-	            MCC_LOG_WARN("The network id {} is already associated to a local chunk", handle);
-	            continue;
-	        }
-
-	        if (auto from = MCC_BENCH_TIME(RLEDecompression, Helper::FromNetwork)(data, world); from.has_value())
-	        {
-	            auto e = world.entity()
-                    .is_a<ChunkPrefab>()
-	                .set<NetworkProps>({ handle })
-                    .set<ChunkPosition>(position)
-                    .set<ChunkHolder>({ std::make_shared<Chunk>(std::move(*from)) });
-
-	            ctx->chunkMap.emplace(position.position, e.id());
-	        }
+	        MCC_LOG_WARN("The network id {} is already associated to a local block", packet.handle);
+	        return;
 	    }
-	}
 
-	void TerrainReplicationModule::OnBlocksUpdatedHandler(const flecs::world& world, const OnBlocksUpdated& event)
-	{
-		const auto* ctx = ClientWorldContext::Get(world);
+	    world.entity()
+            .is_a<BlockPrefab>()
+            .set<NetworkProps>({ packet.handle })
+            .set<BlockMeta>(packet.meta)
+            .set<BlockColor>({ packet.color })
+            .set<BlockType>(packet.type);
+    }
 
-		for (auto& desc: event.blocks)
-		{
-		    if (auto id = ctx->networkMapping.GetLHandle(desc.handle); id.has_value())
-		    {
-		        if (!world.is_alive(*id))
-		        {
-		            MCC_LOG_WARN("The local entity associated to the network id {} isn't alive", desc.handle);
-		            continue;
-		        }
-
-		        // TODO
-		        // Modify
-		        // world.entity(id).modified<ChunkHolder>();
-		    }
-		}
-	}
-
-	void TerrainReplicationModule::OnChunksUpdatedHandler(const flecs::world& world, const OnChunksUpdated& event)
-	{
-		const auto* ctx = ClientWorldContext::Get(world);
-
-		for (auto& desc: event.chunks)
-		{
-		    if (auto id = ctx->networkMapping.GetLHandle(desc.handle); id.has_value())
-		    {
-		        if (!world.is_alive(*id))
-		        {
-		            MCC_LOG_WARN("The network id {} isn't associated to a local chunk", desc.handle);
-		            continue;
-		        }
-
-		        // TODO
-		    }
-		}
-	}
-
-	void TerrainReplicationModule::OnChunksDestroyedHandler(const flecs::world& world, const OnChunksDestroyed& event)
-	{
+    void TerrainReplicationModule::OnChunkHandler(const flecs::world& world, const Mcc::OnChunk& packet)
+    {
 	    auto* ctx = ClientWorldContext::Get(world);
 
-		for (auto handle: event.handles)
-		{
-		    if (auto id = ctx->networkMapping.GetLHandle(handle); id.has_value())
-		    {
-		        if (!world.is_alive(*id))
-		        {
-		            MCC_LOG_WARN("The local chunk associated to the network id {} isn't alive", handle);
-		            continue;
-		        }
+	    if (ctx->networkMapping.GetLHandle(packet.handle).has_value())
+	    {
+	        MCC_LOG_WARN("The network id {} is already associated to a local chunk", packet.handle);
+	        return;
+	    }
 
-		        auto e = world.entity(*id);
-		        ctx->chunkMap.erase(e.get<ChunkPosition>().position);
-		        e.destruct();
-		    }
-		}
-	}
+	    if (auto from = MCC_BENCH_TIME(RLEDecompression, Helper::FromNetwork)(packet.data, world); from.has_value())
+	    {
+            const auto e = world.entity()
+                .is_a<ChunkPrefab>()
+                .set<NetworkProps>({ packet.handle })
+                .set<ChunkPosition>(packet.position)
+                .set<ChunkHolder>({ std::make_shared<Chunk>(std::move(*from)) });
 
-	void TerrainReplicationModule::OnBlocksDestroyedHandler(const flecs::world& world, const OnBlocksDestroyed& event)
-	{
-        const auto* ctx = ClientWorldContext::Get(world);
+	        ctx->chunkMap.emplace(packet.position.position, e.id());
+	    }
+    }
 
-		for (auto& handle: event.handles)
-		{
-		    if (auto id = ctx->networkMapping.GetLHandle(handle); id.has_value())
-		    {
-		        if (!world.is_alive(*id))
-		        {
-		            MCC_LOG_WARN("The local block associated to the network id {} isn't alive", handle);
-		            continue;
-		        }
+    void TerrainReplicationModule::OnBlockBatchHandler(const flecs::world& world, const OnBlockBatch& packet)
+    {
+	    for (auto& block: packet)
+	    {
+	        OnBlockHandler(world, block);
+	    }
+    }
 
-		        world.entity(*id).destruct();
-		    }
-		}
-	}
+    void TerrainReplicationModule::OnChunkBatchHandler(const flecs::world& world, const OnChunkBatch& packet)
+    {
+	    for (auto& chunk: packet)
+	    {
+	        OnChunkHandler(world, chunk);
+	    }
+    }
+
 
 }

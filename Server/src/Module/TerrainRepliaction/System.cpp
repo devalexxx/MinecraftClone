@@ -3,204 +3,86 @@
 //
 
 #include "Server/Module/TerrainReplication/System.h"
+#include "Server/Module/TerrainReplication/Module.h"
+#include "Server/Module/Player/Component.h"
+#include "Server/Module/UserSession/Component.h"
+#include "Server/Module/UserSession/Module.h"
 #include "Server/WorldContext.h"
-#include "Common/Module/Network/Component.h"
-#include "Server/Module/TerrainReplication/Component.h"
-#include "Server/ServerNetworkManager.h"
+#include "Server/Module/TerrainGeneration/Component.h"
+#include "Server/Module/TerrainGeneration/Module.h"
 
-#include "Common/Module/Terrain/Component.h"
-#include "Common/Utils/Benchmark.h"
-#include "Common/Utils/Logging.h"
+#include "Common/Utils/ChunkHelper.h"
+
+#include <ranges>
 
 namespace Mcc
 {
 
-	void BroadcastCreatedBlocks(flecs::iter& it)
-	{
-		const auto* ctx = ServerWorldContext::Get(it.world());
+    static void ReplicateChunksAroundPlayer(const flecs::entity entity, const long x, const long z)
+    {
+        const auto world   = entity.world();
+            const auto session = entity.get<UserSessionHolder>().session;
+            const auto ctx     = ServerWorldContext::Get(world);
 
-		while (it.next())
-		{
-			auto m = it.field<const BlockMeta>   (0);
-			auto t = it.field<const BlockType>   (1);
-			auto c = it.field<const BlockColor>  (2);
-			auto n = it.field<const NetworkProps>(3);
+            std::vector<std::pair<flecs::entity, ChunkPosition>> chunks;
+            Helper::ForInCircle(x, z, ctx->settings.renderDistance, [&](long x, long z) {
+                const glm::ivec3 position(x, 0, z);
+                if (const auto it = ctx->chunkMap.find(position); it != ctx->chunkMap.end())
+                {
+                    if (!session->replicatedChunks.contains(it->second))
+                    {
+                        auto chunk = world.entity(it->second);
+                        if (chunk.has<GenerationPlannedTag>() || chunk.has<GenerationProgressTag>())
+                        {
+                            if (chunk.has<PendingReplication>())
+                                chunk.get_mut<PendingReplication>().sessions.push_back(session);
+                            else
+                                chunk.set<PendingReplication>({{ session }});
+                        }
+                        else
+                        {
+                            chunks.emplace_back(chunk, chunk.get<ChunkPosition>());
+                        }
+                        session->replicatedChunks.insert(it->second);
+                    }
 
-			OnBlocksCreated packet;
-			for (const auto i: it)
-			{
-			    const auto entity = it.entity(i);
-			    const auto handle = n[i].handle;
+                    return;
+                }
 
-			    if (!IsValid(handle))
-			    {
-			        MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
-			        continue;
-			    }
+                const auto chunk = world.get<TerrainGenerationModule>().LaunchGenerationTask(world, position);
+;               chunk.set<PendingReplication>({{ session }});
+                session->replicatedChunks.insert(chunk);
+            });
 
-			    packet.blocks.push_back({ handle, m[i], c[i].color, t[i] });
-			    entity.remove<BlockCreatedTag>();
-			    MCC_LOG_INFO("Block({}) has been created and replicated", handle);
-			}
-			ctx->networkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
-		}
-	}
+            std::ranges::sort(chunks, [&](auto& lhs, auto& rhs) {
+                auto lp = lhs.second.position;
+                auto rp = rhs.second.position;
+                const int dl = (lp.x - x) * (lp.x - x) + (lp.z - z) * (lp.z - z);
+                const int dr = (rp.x - x) * (rp.x - x) + (rp.z - z) * (rp.z - z);
+                return dl < dr;
+            });
 
-	void BroadcastDirtyBlocks(flecs::iter& it)
-	{
-	    const auto* ctx = ServerWorldContext::Get(it.world());
+            for (const auto& id: chunks | std::views::keys)
+            {
+                ctx->threadPool.ExecuteTask(TerrainReplicationModule::ReplicateChunk, session, world, id);
+            }
+    }
 
-		while (it.next())
-		{
-		    auto m = it.field<const BlockMeta>   (0);
-		    auto t = it.field<const BlockType>   (1);
-		    auto c = it.field<const BlockColor>  (2);
-		    auto n = it.field<const NetworkProps>(3);
+    void OnPlayerCreatedObserver(const flecs::entity entity, const Transform& transform)
+    {
+        auto [x, z] = Helper::GetPlayerChunkPosition(transform.position);
+        ReplicateChunksAroundPlayer(entity, x, z);
+    }
 
-			OnBlocksUpdated packet;
-			for (const auto i: it)
-			{
-			    const auto entity = it.entity(i);
-                const auto handle = n[i].handle;
-
-			    if (!IsValid(handle))
-			    {
-			        MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
-			        continue;
-			    }
-
-				packet.blocks.push_back({ handle, m[i], c[i].color, t[i] });
-				entity.remove<BlockDirtyTag>();
-			}
-			ctx->networkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
-		}
-	}
-
-	void BroadcastDestroyedBlocks(flecs::iter& it)
-	{
-        const auto* ctx = ServerWorldContext::Get(it.world());
-
-		while (it.next())
-		{
-		    auto n = it.field<const NetworkProps>(0);
-
-			OnBlocksDestroyed packet;
-			for (const auto i: it)
-			{
-			    const auto entity = it.entity(i);
-			    const auto handle = n[i].handle;
-
-			    if (!IsValid(handle))
-			    {
-			        MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
-			        entity.destruct();
-			        continue;
-			    }
-
-				packet.handles.push_back(handle);
-				entity.destruct();
-			    MCC_LOG_INFO("Block({}) has been destroyed and replicated", handle);
-			}
-			ctx->networkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
-		}
-	}
-
-	void BroadcastCreatedChunks(flecs::iter& it)
-	{
-		const auto* ctx   = ServerWorldContext::Get(it.world());
-	    const auto& world = it.world();
-
-		while (it.next())
-		{
-			auto t = it.field<const ChunkPosition>(0);
-			auto h = it.field<const ChunkHolder>  (1);
-		    auto n = it.field<const NetworkProps> (2);
-
-			OnChunksCreated packet;
-			for (const auto i: it)
-			{
-			    const auto entity = it.entity(i);
-			    const auto handle = n[i].handle;
-
-			    if (!IsValid(handle))
-			    {
-			        MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
-			        continue;
-			    }
-
-				if (auto data = MCC_BENCH_TIME(RLECompression, [&] { return h[i].chunk->ToNetwork(world); })(); data.has_value())
-				{
-					packet.chunks.push_back({ handle, t[i], std::move(*data) });
-					MCC_LOG_INFO("Chunk({}) has been created and replicated", handle);
-				}
-
-			    entity.remove<ChunkCreatedTag>();
-			}
-			ctx->networkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
-		}
-	}
-
-	void BroadcastDirtyChunks(flecs::iter& it)
-	{
-		const auto* ctx   = ServerWorldContext::Get(it.world());
-	    const auto& world = it.world();
-
-		while (it.next())
-		{
-			auto t = it.field<const ChunkPosition>(0);
-			auto h = it.field<const ChunkHolder>  (1);
-		    auto n = it.field<const NetworkProps> (2);
-
-			OnChunksUpdated packet;
-			for (const auto i: it)
-			{
-			    const auto entity = it.entity(i);
-			    const auto handle = n[i].handle;
-
-			    if (!IsValid(handle))
-			    {
-			        MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
-			        continue;
-			    }
-
-				if (auto data = h[i].chunk->ToNetwork(world); data.has_value())
-				{
-					packet.chunks.push_back({ handle, t[i], std::move(*data) });
-				}
-
-			    entity.remove<ChunkDirtyTag>();
-			}
-			ctx->networkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
-		}
-	}
-
-	void BroadcastDestroyedChunks(flecs::iter& it)
-	{
-        const auto* ctx = ServerWorldContext::Get(it.world());
-
-		while (it.next())
-		{
-		    auto n = it.field<const NetworkProps>(0);
-
-			OnChunksDestroyed packet;
-			for (const auto i: it)
-			{
-			    const auto entity = it.entity(i);
-			    const auto handle = n[i].handle;
-
-			    if (!IsValid(handle))
-			    {
-			        MCC_LOG_WARN("The network id attached to #{} is invalid", entity.id());
-			        entity.destruct();
-			        continue;
-			    }
-
-			    packet.handles.push_back(handle);
-				entity.destruct();
-			    MCC_LOG_INFO("Chunk({}) has been destroyed and replicated", handle);
-			}
-			ctx->networkManager.Broadcast(std::move(packet), ENET_PACKET_FLAG_RELIABLE, 0);
-		}
-	}
+    void OnPlayerMoveObserver(flecs::iter& it, size_t row)
+    {
+        const auto evt = it.param<OnPlayerMoveEvent>();
+        auto [px, pz] = Helper::GetPlayerChunkPosition(evt->prev);
+        auto [cx, cz] = Helper::GetPlayerChunkPosition(evt->curr);
+        if (std::abs(px - cx) > 0 || std::abs(pz - cz) > 0)
+        {
+            ReplicateChunksAroundPlayer(it.entity(row), cx, cz);
+        }
+    }
 
 }

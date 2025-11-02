@@ -23,6 +23,10 @@ namespace Mcc
 
         PlayerInfo pInfo;
         ClientInfo cInfo;
+
+        ENetPeer*  peer;
+        std::unordered_set<flecs::entity_t> replicatedChunks;
+        std::unordered_set<flecs::entity_t> replicatedBlocks;
     };
 
 	class UserSessionModule
@@ -35,13 +39,8 @@ namespace Mcc
 			UserSessionModule(flecs::world& world);
 
 		private:
-			EntityQuery mLookupEntityQuery;
-			BlockQuery  mLookupBlockQuery;
-			ChunkQuery  mLookupChunkQuery;
-
-	        void OnClientInfoHandler(const flecs::world& world, const From<OnClientInfo>& from) const;
-
 			static void OnConnectEventHandler   (const flecs::world& world, const ConnectEvent&    event);
+	        static void OnClientInfoHandler     (const flecs::world& world, const From<OnClientInfo>& from);
 			static void OnDisconnectEventHandler(const flecs::world& world, const DisconnectEvent& event);
 	};
 

@@ -17,8 +17,9 @@ namespace Mcc
     class ChunkGenerator
     {
         public:
-            ChunkGenerator(const flecs::world& world, siv::PerlinNoise::seed_type seed);
+            explicit ChunkGenerator(siv::PerlinNoise::seed_type seed);
 
+            void Setup(const flecs::world& world);
             [[nodiscard]] Chunk Generate(glm::ivec3 position) const;
 
         private:

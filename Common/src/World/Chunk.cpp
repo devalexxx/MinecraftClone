@@ -90,7 +90,7 @@ namespace Mcc
         return mData.mapping;
     }
 
-    std::optional<CompressedChunkData> Chunk::ToNetwork(const flecs::world& world) const
+    std::optional<RLEChunkData> Chunk::ToNetwork(const flecs::world& world) const
     {
 	    return Helper::ToNetwork(mData, world);
     }
@@ -103,9 +103,9 @@ namespace Mcc
     namespace Helper
 	{
 
-	    std::optional<CompressedChunkData> ToNetwork(const ChunkData<flecs::entity_t>& data, const flecs::world& world)
+	    std::optional<RLEChunkData> ToNetwork(const ChunkData<flecs::entity_t>& data, const flecs::world& world)
 	    {
-            CompressedChunkData compressed;
+            RLEChunkData compressed;
 
 	        size_t currentIndex = 0;
 	        size_t count        = 0;
@@ -146,7 +146,7 @@ namespace Mcc
 	        return compressed;
 	    }
 
-	    std::optional<ChunkData<flecs::entity_t>> FromNetwork(const CompressedChunkData& compressed, const flecs::world& world)
+	    std::optional<ChunkData<flecs::entity_t>> FromNetwork(const RLEChunkData& compressed, const flecs::world& world)
 	    {
             const auto* ctx = WorldContext<>::Get(world);
 
