@@ -1,6 +1,6 @@
-//
-// Created by Alex Clorennec on 10/07/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #include "Server/WorldContext.h"
 

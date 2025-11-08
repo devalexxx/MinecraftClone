@@ -1,11 +1,10 @@
-//
-// Created by Alex on 28/08/2024.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_CLIENT_GRAPHICS_WINDOW_WINDOW_H
 #define MCC_CLIENT_GRAPHICS_WINDOW_WINDOW_H
 
-#include "Client/Graphics/Window/Event.h"
 #include "Client/Graphics/Window/EventManager.h"
 
 #include <GLFW/glfw3.h>
@@ -13,48 +12,47 @@
 namespace Mcc
 {
 
-	class Window : public WindowEventManager
-	{
-		public:
-			static void PollEvents();
+    class Window : public WindowEventManager
+    {
+      public:
+        static void PollEvents();
 
-		public:
-			Window(const char* title);
-			Window(const char* title, int width, int height);
+        explicit Window(const char* title);
+        Window(const char* title, int width, int height);
 
-			~Window();
+        ~Window();
 
-			[[nodiscard]] std::pair<int, int> GetWindowSize    () const;
-			[[nodiscard]] std::pair<int, int> GetWindowPosition() const;
-			[[nodiscard]] float               GetAspectRatio   () const;
+        [[nodiscard]] std::pair<int, int> GetWindowSize() const;
+        [[nodiscard]] std::pair<int, int> GetWindowPosition() const;
+        [[nodiscard]] float               GetAspectRatio() const;
 
-			void               SetShouldClose() const;
-			[[nodiscard]] bool ShouldClose() const;
+        void               SetShouldClose() const;
+        [[nodiscard]] bool ShouldClose() const;
 
-			bool IsFocused() const;
+        bool IsFocused() const;
 
-			void MakeContextCurrent() const;
-			void SwapBuffer() const;
-			void SetInputMode(int mode, int value) const;
+        void MakeContextCurrent() const;
+        void SwapBuffer() const;
+        void SetInputMode(int mode, int value) const;
 
-			void SetCursorPosition(int x, int y);
+        void SetCursorPosition(int x, int y);
 
-			[[nodiscard]] GLFWwindow* Get() const;
+        [[nodiscard]] GLFWwindow* Get() const;
 
-		private:
-			GLFWwindow* mWindow;
+      private:
+        GLFWwindow* mWindow;
 
-			static char sWindowCount;
-			static bool sIsGlfwInitialize;
-			static void InitializeGlfw();
+        static char sWindowCount;
+        static bool sIsGlfwInitialize;
+        static void InitializeGlfw();
 
-			static bool sIsExtensionLoaded;
-			static void LoadExtension();
+        static bool sIsExtensionLoaded;
+        static void LoadExtension();
 
-			static void GlfwErrorHandler(int error_code, const char* description);
+        static void GlfwErrorHandler(int error_code, const char* description);
 
-			friend class WindowEventManager;
-	};
+        friend class WindowEventManager;
+    };
 
 }
 

@@ -1,6 +1,6 @@
-//
-// Created by Alex on 11/09/2024.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_CLIENT_CLIENT_NETWORK_MANAGER_H
 #define MCC_CLIENT_CLIENT_NETWORK_MANAGER_H
@@ -10,26 +10,25 @@
 namespace Mcc
 {
 
-	class CommandLineStore;
+    class CommandLineStore;
 
-	class ClientNetworkManager : public NetworkManager
-	{
-		public:
-			ClientNetworkManager(const CommandLineStore& cmdLineStore);
-			~ClientNetworkManager();
+    class ClientNetworkManager : public NetworkManager
+    {
+      public:
+        explicit ClientNetworkManager(const CommandLineStore& cmdLineStore);
+        ~ClientNetworkManager() override;
 
-			int Setup() override;
+        int Setup() override;
 
-			int Connect();
-			int Disconnect();
+        int Connect();
+        int Disconnect() const;
 
-			template<typename T>
-			int Send(T data, enet_uint32 flag, enet_uint8 channel) const;
+        template<typename T>
+        int Send(T data, enet_uint32 flag, enet_uint8 channel) const;
 
-		private:
-			ENetPeer* mPeer;
-
-	};
+      private:
+        ENetPeer* mPeer;
+    };
 
 }
 

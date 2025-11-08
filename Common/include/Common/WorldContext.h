@@ -1,6 +1,6 @@
-//
-// Created by Alex on 18/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_COMMON_WORLD_CONTEXT_H
 #define MCC_COMMON_WORLD_CONTEXT_H
@@ -21,8 +21,8 @@ namespace Mcc
         using LHandle = flecs::entity_t;
         using RHandle = NetworkHandle;
 
-        std::unordered_map<LHandle, RHandle> localToRemote{};
-        std::unordered_map<RHandle, LHandle> remoteToLocal{};
+        std::unordered_map<LHandle, RHandle> localToRemote {};
+        std::unordered_map<RHandle, LHandle> remoteToLocal {};
 
         void Set(RHandle rHandle, LHandle lHandle);
 
@@ -45,16 +45,16 @@ namespace Mcc
     concept IsNetworkManager = std::is_base_of_v<NetworkManager, T> || std::is_same_v<NetworkManager, T>;
 
     template<IsNetworkManager NManager = NetworkManager>
-	struct WorldContext
-	{
-            static WorldContext* Get(const flecs::world& world);
+    struct WorldContext
+    {
+        static WorldContext* Get(const flecs::world& world);
 
-			NManager&       networkManager;
-            NetworkMapping  networkMapping;
-            Hx::ThreadPool& threadPool;
+        NManager&       networkManager;
+        NetworkMapping  networkMapping;
+        Hx::ThreadPool& threadPool;
 
-            std::unordered_map<glm::ivec3, flecs::entity_t, IVec3Hasher> chunkMap;
-	};
+        std::unordered_map<glm::ivec3, flecs::entity_t, IVec3Hasher> chunkMap;
+    };
 
 }
 

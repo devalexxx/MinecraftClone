@@ -1,115 +1,119 @@
-//
-// Created by Alex on 28/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_COMMON_MODULE_ENTITY_COMPONENT_H
 #define MCC_COMMON_MODULE_ENTITY_COMPONENT_H
 
-#include "Common/Network/NetworkHandle.h"
-
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include <unordered_map>
 #include <deque>
 #include <string>
+#include <unordered_map>
 
 namespace glm
 {
 
-	template<class Archive>
-	void serialize(Archive& ar, glm::vec3& vec);
+    template<class Archive>
+    void serialize(Archive& ar, glm::vec3& vec);
 
-	template<class Archive>
-	void serialize(Archive& ar, glm::uvec3& vec);
+    template<class Archive>
+    void serialize(Archive& ar, glm::uvec3& vec);
 
     template<class Archive>
     void serialize(Archive& ar, glm::ivec3& vec);
 
-	template<class Archive>
-	void serialize(Archive& ar, glm::quat& quat);
+    template<class Archive>
+    void serialize(Archive& ar, glm::quat& quat);
 
-	static constexpr glm::vec3 forward {  0,  0, -1 };
-	static constexpr glm::vec3 back    {  0,  0,  1 };
-	static constexpr glm::vec3 right   {  1,  0,  0 };
-	static constexpr glm::vec3 left    { -1,  0,  0 };
-	static constexpr glm::vec3 up 	   {  0,  1,  0 };
-	static constexpr glm::vec3 down    {  0, -1,  0 };
+    static constexpr glm::vec3 forward { 0, 0, -1 };
+    static constexpr glm::vec3 back { 0, 0, 1 };
+    static constexpr glm::vec3 right { 1, 0, 0 };
+    static constexpr glm::vec3 left { -1, 0, 0 };
+    static constexpr glm::vec3 up { 0, 1, 0 };
+    static constexpr glm::vec3 down { 0, -1, 0 };
 
 }
 
 namespace Mcc
 {
 
-	struct EntityTag {};
-	struct NetworkEntityTag {};
-	struct UserEntityTag {};
+    struct EntityTag
+    {};
+    struct NetworkEntityTag
+    {};
+    struct UserEntityTag
+    {};
 
-	struct EntityPrefab {};
-	struct NetworkEntityPrefab {};
-	struct UserEntityPrefab {};
+    struct EntityPrefab
+    {};
+    struct NetworkEntityPrefab
+    {};
+    struct UserEntityPrefab
+    {};
 
-	struct Transform
-	{
-			glm::vec3 position;
-			glm::quat rotation;
-			glm::vec3 scale;
-	};
+    struct Transform
+    {
+        glm::vec3 position;
+        glm::quat rotation;
+        glm::vec3 scale;
+    };
 
-	struct Extra
-	{
-			std::unordered_map<std::string, std::string> data;
-	};
+    struct Extra
+    {
+        std::unordered_map<std::string, std::string> data;
+    };
 
-	struct UserInput
-	{
-			struct Meta
-			{
-					unsigned short id;
-					float 		   dt;
+    struct UserInput
+    {
+        struct Meta
+        {
+            unsigned short id;
+            float          dt;
 
-					static unsigned short GetNextID();
-			};
+            static unsigned short GetNextID();
+        };
 
-			struct
-			{
-					bool forward;
-					bool backward;
-					bool left;
-					bool right;
-					bool up;
-					bool down;
-			} movement;
+        struct
+        {
+            bool forward;
+            bool backward;
+            bool left;
+            bool right;
+            bool up;
+            bool down;
+        } movement;
 
-			struct
-			{
-					float x;
-					float y;
-			} axis;
+        struct
+        {
+            float x;
+            float y;
+        } axis;
 
-			Meta meta;
-	};
+        Meta meta;
+    };
 
-	struct UserInputQueue
-	{
-			std::deque<UserInput> data;
-	};
+    struct UserInputQueue
+    {
+        std::deque<UserInput> data;
+    };
 
-	template<class Archive>
-	void serialize(Archive& ar, Transform& transform);
-	template<typename Archive>
-	void serialize(Archive& ar, UserInput& input);
+    template<class Archive>
+    void serialize(Archive& ar, Transform& transform);
+    template<typename Archive>
+    void serialize(Archive& ar, UserInput& input);
 
-	namespace Helper
-	{
+    namespace Helper
+    {
 
-		bool IsNull(const UserInput& input);
-		void ApplyMovement(const UserInput& input, Transform& transform, float speed, float dt);
-		void ApplyXAxis	  (const UserInput& input, Transform& transform);
-		void ApplyYAxis	  (const UserInput& input, Transform& transform);
-		void ApplyBothAxis(const UserInput& input, Transform& transform);
+        bool IsNull(const UserInput& input);
+        void ApplyMovement(const UserInput& input, Transform& transform, float speed, float dt);
+        void ApplyXAxis(const UserInput& input, Transform& transform);
+        void ApplyYAxis(const UserInput& input, Transform& transform);
+        void ApplyBothAxis(const UserInput& input, Transform& transform);
 
-	}
+    }
 
 }
 

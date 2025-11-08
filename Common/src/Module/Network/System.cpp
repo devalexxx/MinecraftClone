@@ -1,15 +1,15 @@
-//
-// Created by Alex Clorennec on 11/07/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #include "Common/Module/Network/System.h"
-#include "Common/Utils/Logging.h"
+
 #include "Common/WorldContext.h"
 
 namespace Mcc
 {
 
-    void GenerateNetworkHandleObserver(flecs::entity entity, NetworkProps& props)
+    void GenerateNetworkHandleObserver(flecs::entity, NetworkProps& props)
     {
         props.handle = GenerateNetworkHandle();
     }

@@ -1,6 +1,6 @@
-//
-// Created by Alex on 23/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_SERVER_MODULE_USER_SESSION_MODULE_H
 #define MCC_SERVER_MODULE_USER_SESSION_MODULE_H
@@ -24,25 +24,25 @@ namespace Mcc
         PlayerInfo pInfo;
         ClientInfo cInfo;
 
-        ENetPeer*  peer;
+        ENetPeer*                           peer;
         std::unordered_set<flecs::entity_t> replicatedChunks;
         std::unordered_set<flecs::entity_t> replicatedBlocks;
     };
 
-	class UserSessionModule
-	{
-		public:
-            using EntityQuery = flecs::query<const Transform, const NetworkProps>;
-	        using BlockQuery  = flecs::query<const BlockMeta, const BlockType, const BlockColor, const NetworkProps>;
-	        using ChunkQuery  = flecs::query<const ChunkPosition, const ChunkHolder, const NetworkProps>;
+    class UserSessionModule
+    {
+      public:
+        using EntityQuery = flecs::query<const Transform, const NetworkProps>;
+        using BlockQuery  = flecs::query<const BlockMeta, const BlockType, const BlockColor, const NetworkProps>;
+        using ChunkQuery  = flecs::query<const ChunkPosition, const ChunkHolder, const NetworkProps>;
 
-			UserSessionModule(flecs::world& world);
+        UserSessionModule(flecs::world& world);
 
-		private:
-			static void OnConnectEventHandler   (const flecs::world& world, const ConnectEvent&    event);
-	        static void OnClientInfoHandler     (const flecs::world& world, const From<OnClientInfo>& from);
-			static void OnDisconnectEventHandler(const flecs::world& world, const DisconnectEvent& event);
-	};
+      private:
+        static void OnConnectEventHandler(const flecs::world& world, const ConnectEvent& event);
+        static void OnClientInfoHandler(const flecs::world& world, const From<OnClientInfo>& from);
+        static void OnDisconnectEventHandler(const flecs::world& world, const DisconnectEvent& event);
+    };
 
 }
 

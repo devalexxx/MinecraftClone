@@ -1,6 +1,6 @@
-//
-// Created by Alex on 26/08/2024.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_CLIENT_GRAPHICS_SHADER_H
 #define MCC_CLIENT_GRAPHICS_SHADER_H
@@ -10,20 +10,19 @@
 namespace Mcc
 {
 
-	class Shader
-	{
-		public:
-			Shader(GLenum kind, const char* code);
-			~Shader();
+    class Shader
+    {
+      public:
+        Shader(GLenum kind, const char* code);
+        ~Shader();
 
-		private:
-			void HandleError() const;
+      private:
+        void HandleError() const;
 
-		private:
-			GLuint mId;
+        GLuint mId;
 
-			friend class Program;
-	};
+        friend class Program;
+    };
 
 }
 

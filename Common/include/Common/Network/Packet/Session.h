@@ -1,12 +1,11 @@
-//
-// Created by Alex Clorennec on 17/07/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_COMMON_PACKET_SESSION_H
 #define MCC_COMMON_PACKET_SESSION_H
 
 #include "Common/Network/NetworkHandle.h"
-
 
 #include <string>
 
@@ -22,7 +21,7 @@ namespace Mcc
      *
      * If client info changed
      * - Client -> Server => OnClientInfoChanged
-    **/
+     **/
 
 
     struct ClientInfo

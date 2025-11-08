@@ -1,6 +1,6 @@
-//
-// Created by Alex on 29/08/2024.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_CLIENT_GRAPHICS_VERTEXARRAY_H
 #define MCC_CLIENT_GRAPHICS_VERTEXARRAY_H
@@ -10,30 +10,30 @@
 namespace Mcc
 {
 
-	class VertexArray
-	{
-		public:
-			static bool IsThereAnyBound();
+    class VertexArray
+    {
+      public:
+        static bool IsThereAnyBound();
 
-		private:
-			static GLuint sBoundVertexArray;
+      private:
+        static GLuint sBoundVertexArray;
 
-		public:
-			VertexArray();
-			~VertexArray();
-			VertexArray(const VertexArray &)  = delete;
-			VertexArray &operator=(const VertexArray &)  = delete;
-			VertexArray(VertexArray &&) noexcept;
-			VertexArray &operator=(VertexArray &&) noexcept;
+      public:
+        VertexArray();
+        ~VertexArray();
+        VertexArray(const VertexArray&)            = delete;
+        VertexArray& operator=(const VertexArray&) = delete;
+        VertexArray(VertexArray&&) noexcept;
+        VertexArray& operator=(VertexArray&&) noexcept;
 
-			[[nodiscard]] bool IsValid() const;
+        [[nodiscard]] bool IsValid() const;
 
-			void Create();
-			void Bind() const;
+        void Create();
+        void Bind() const;
 
-		private:
-			GLuint mId;
-	};
+      private:
+        GLuint mId;
+    };
 
 }
 

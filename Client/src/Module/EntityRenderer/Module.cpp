@@ -1,8 +1,9 @@
-//
-// Created by Alex Clorennec on 08/07/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #include "Client/Module/EntityRenderer/Module.h"
+
 #include "Client/Module/Renderer/Module.h"
 
 #include "Common/Module/Entity/Component.h"
@@ -11,22 +12,24 @@
 namespace Mcc
 {
 
-	EntityRendererModule::EntityRendererModule(const flecs::world& world) :
-		mVertexBuffer(GL_ARRAY_BUFFER),
-		mIndexBuffer(GL_ELEMENT_ARRAY_BUFFER),
+    EntityRendererModule::EntityRendererModule(const flecs::world& world) :
+        mVertexBuffer(GL_ARRAY_BUFFER),
+        mIndexBuffer(GL_ELEMENT_ARRAY_BUFFER),
         mIndexCount(0)
-	{
-		MCC_ASSERT(world.has<RendererModule>(), "EntityRendererModule require RendererModule, you must import it before.");
-		MCC_LOG_DEBUG("Import EntityRendererModule...");
-		world.module<EntityRendererModule>();
+    {
+        MCC_ASSERT(
+            world.has<RendererModule>(), "EntityRendererModule require RendererModule, you must import it before."
+        );
+        MCC_LOG_DEBUG("Import EntityRendererModule...");
+        world.module<EntityRendererModule>();
 
-		world.system("SetupEntityMesh")
-			.kind(flecs::OnStart)
-			.run([this](auto&&... args) { SetupEntityMeshSystem(args...); });
+        world.system("SetupEntityMesh").kind(flecs::OnStart).run([this](auto&&... args) {
+            SetupEntityMeshSystem(args...);
+        });
 
-		world.system<const Transform>("RenderUserEntity")
-			.kind(flecs::PreStore)
-			.with<NetworkEntityTag>()
-			.run([this](auto&&... args) { RenderUserEntitySystem(args...); });
-	}
+        world.system<const Transform>("RenderUserEntity")
+            .kind(flecs::PreStore)
+            .with<NetworkEntityTag>()
+            .run([this](auto&&... args) { RenderUserEntitySystem(args...); });
+    }
 }

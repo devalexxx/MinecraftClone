@@ -1,6 +1,6 @@
-//
-// Created by Alex on 11/09/2024.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_COMMON_NETWORK_NETWORK_MANAGER_H
 #define MCC_COMMON_NETWORK_NETWORK_MANAGER_H
@@ -17,32 +17,30 @@
 namespace Mcc
 {
 
-	class NetworkManager : public NetworkEventManager
-	{
-		public:
-			NetworkManager(const char* host, unsigned short port);
-			~NetworkManager();
+    class NetworkManager : public NetworkEventManager
+    {
+      public:
+        NetworkManager(const char* host, unsigned short port);
+        virtual ~NetworkManager();
 
-			void Poll();
+        void Poll();
 
-			virtual int Setup() = 0;
+        virtual int Setup() = 0;
 
-		protected:
-			static ENetPacket* CreatePacket(ByteSpan&& data, enet_uint32 flag);
+      protected:
+        static ENetPacket* CreatePacket(ByteSpan&& data, enet_uint32 flag);
 
-			template<typename T>
-	        int Send(ENetPeer* peer, T data, enet_uint32 flag, enet_uint8 channel) const;
+        template<typename T>
+        int Send(ENetPeer* peer, T data, enet_uint32 flag, enet_uint8 channel) const;
 
-			int CreateHost(const ENetAddress* addr, size_t peers, size_t channels, enet_uint32 in, enet_uint32 out);
+        int CreateHost(const ENetAddress* addr, size_t peers, size_t channels, enet_uint32 in, enet_uint32 out);
 
-			ENetAddress mAddr;
-			ENetHost*   mHost;
+        ENetAddress mAddr;
+        ENetHost*   mHost;
 
-	        mutable std::mutex mMutex;
-	        mutable std::queue<std::function<void()>> mCommandQueue;
-
-
-	};
+        mutable std::mutex                        mMutex;
+        mutable std::queue<std::function<void()>> mCommandQueue;
+    };
 
 }
 

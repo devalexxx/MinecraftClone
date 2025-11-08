@@ -1,6 +1,6 @@
-//
-// Created by Alex on 26/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_CLIENT_MODULE_CAMERA_COMPONENT_H
 #define MCC_CLIENT_MODULE_CAMERA_COMPONENT_H
@@ -10,26 +10,32 @@
 namespace Mcc
 {
 
-	struct CameraTag {};
-	struct CameraFollowTag {};
-	struct ActiveCameraTag {};
+    struct CameraTag
+    {};
+    struct CameraFollowTag
+    {};
+    struct ActiveCameraTag
+    {};
 
-	struct CameraFollowRelation {};
+    struct CameraFollowRelation
+    {};
 
-	struct CameraPrefab {};
-	struct CameraFollowPrefab {};
+    struct CameraPrefab
+    {};
+    struct CameraFollowPrefab
+    {};
 
-	struct CameraSettings
-	{
-			float fov;
-			float zNear;
-			float zFar;
-	};
+    struct CameraSettings
+    {
+        float fov;
+        float zNear;
+        float zFar;
+    };
 
-	struct CameraFollowSettings
-	{
-			glm::vec3 offset;
-	};
+    struct CameraFollowSettings
+    {
+        glm::vec3 offset;
+    };
 
 }
 

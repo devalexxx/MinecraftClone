@@ -1,6 +1,6 @@
-//
-// Created by Alex on 18/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 namespace Mcc
 {

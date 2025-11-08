@@ -1,6 +1,6 @@
-//
-// Created by Alex on 30/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_COMMON_UTILS_BIT_ARRAY_H
 #define MCC_COMMON_UTILS_BIT_ARRAY_H
@@ -10,30 +10,30 @@
 namespace Mcc
 {
 
-	class BitArray
-	{
-		public:
-			BitArray(size_t size, unsigned char stride);
+    class BitArray
+    {
+      public:
+        BitArray(size_t size, unsigned char stride);
 
-			[[nodiscard]] size_t GetSize  () const;
-			[[nodiscard]] size_t GetStride() const;
+        [[nodiscard]] size_t GetSize() const;
+        [[nodiscard]] size_t GetStride() const;
 
-			void SetStride(unsigned char stride);
+        void SetStride(unsigned char stride);
 
-			[[nodiscard]] size_t Get(size_t index) const;
-			void Set(size_t index, size_t value);
+        [[nodiscard]] size_t Get(size_t index) const;
+        void                 Set(size_t index, size_t value);
 
-			template<typename Archive>
-			void serialize(Archive& ar);
+        template<typename Archive>
+        void serialize(Archive& ar);
 
-		private:
-			std::vector<size_t> mData;
+      private:
+        std::vector<size_t> mData;
 
-			size_t mSize;
-			size_t mStride;
-			size_t mValuesPer64;
-			size_t mMask;
-	};
+        size_t mSize;
+        size_t mStride;
+        size_t mValuesPer64;
+        size_t mMask;
+    };
 
 }
 

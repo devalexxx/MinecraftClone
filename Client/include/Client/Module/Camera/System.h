@@ -1,6 +1,6 @@
-//
-// Created by Alex on 28/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_CLIENT_MODULE_CAMERA_SYSTEM_H
 #define MCC_CLIENT_MODULE_CAMERA_SYSTEM_H
@@ -14,7 +14,7 @@
 namespace Mcc
 {
 
-	void CameraFollowSystem(const flecs::iter& it, size_t, Transform& transform, const CameraFollowSettings& settings);
+    void CameraFollowSystem(const flecs::iter& it, size_t, Transform& transform, const CameraFollowSettings& settings);
 
 }
 

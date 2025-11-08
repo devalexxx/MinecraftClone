@@ -1,6 +1,6 @@
-//
-// Created by Alex on 27/08/2024.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_COMMON_WORLD_CHUNK_H
 #define MCC_COMMON_WORLD_CHUNK_H
@@ -9,25 +9,24 @@
 #include "Common/Utils/BitArray.h"
 
 #include <Hexis/Core/EnumArray.h>
-
 #include <glm/glm.hpp>
 
 #include <flecs.h>
 
-#include <vector>
 #include <optional>
+#include <vector>
 
 namespace Mcc
 {
-	enum class BlockFace;
+    enum class BlockFace;
 
     template<typename T>
     struct ChunkData
     {
         using Palette = std::vector<T>;
 
-        Palette  palette{};
-        BitArray mapping{0, 1};
+        Palette  palette {};
+        BitArray mapping { 0, 1 };
     };
 
     struct RLEChunkData
@@ -40,39 +39,39 @@ namespace Mcc
     template<typename Archive>
     void serialize(Archive& ar, RLEChunkData& data);
 
-	class Chunk
-	{
-		public:
-			using Palette = ChunkData<flecs::entity_t>::Palette;
+    class Chunk
+    {
+      public:
+        using Palette = ChunkData<flecs::entity_t>::Palette;
 
-			static constexpr unsigned char Size   = 31;
-			static constexpr unsigned char Height = 127;
+        static constexpr unsigned char Size   = 31;
+        static constexpr unsigned char Height = 127;
 
-			Chunk();
-			Chunk(flecs::entity_t filler);
-			Chunk(ChunkData<flecs::entity_t> data);
+        Chunk();
+        Chunk(flecs::entity_t filler);
+        Chunk(ChunkData<flecs::entity_t> data);
 
-			[[nodiscard]] flecs::entity_t Get(glm::ivec3 position) const;
-			[[nodiscard]] Hx::EnumArray<BlockFace, flecs::entity_t> GetNeighbors(glm::ivec3 position) const;
+        [[nodiscard]] flecs::entity_t                           Get(glm::ivec3 position) const;
+        [[nodiscard]] Hx::EnumArray<BlockFace, flecs::entity_t> GetNeighbors(glm::ivec3 position) const;
 
-			void Set(glm::uvec3 position, flecs::entity_t entity);
+        void Set(glm::uvec3 position, flecs::entity_t entity);
 
-			[[nodiscard]] const Palette&  GetPalette() const;
-			[[nodiscard]] const BitArray& GetMapping() const;
+        [[nodiscard]] const Palette&  GetPalette() const;
+        [[nodiscard]] const BitArray& GetMapping() const;
 
-	        [[nodiscard]] std::optional<RLEChunkData> ToNetwork(const flecs::world& world) const;
+        [[nodiscard]] std::optional<RLEChunkData> ToNetwork(const flecs::world& world) const;
 
-		private:
-	        ChunkData<flecs::entity_t> mData;
+      private:
+        ChunkData<flecs::entity_t> mData;
 
-			static size_t IndexFromPosition(glm::uvec3 position) ;
-	};
+        static size_t IndexFromPosition(glm::uvec3 position);
+    };
 
     namespace Helper
     {
 
-        std::optional<RLEChunkData>        ToNetwork  (const ChunkData<flecs::entity_t>& data, const flecs::world& world);
-        std::optional<ChunkData<flecs::entity_t>> FromNetwork(const RLEChunkData&        data, const flecs::world& world);
+        std::optional<RLEChunkData> ToNetwork(const ChunkData<flecs::entity_t>& data, const flecs::world& world);
+        std::optional<ChunkData<flecs::entity_t>> FromNetwork(const RLEChunkData& data, const flecs::world& world);
 
     }
 

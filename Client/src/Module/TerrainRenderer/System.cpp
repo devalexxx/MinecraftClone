@@ -1,6 +1,8 @@
-//
-// Created by Alex Clorennec on 04/07/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
+
+#include "Client/Module/TerrainRenderer/System.h"
 
 #include "Client/Graphics/Mesh.h"
 #include "Client/Graphics/Program.h"
@@ -8,7 +10,6 @@
 #include "Client/Module/EntityReplication/Component.h"
 #include "Client/Module/Renderer/Module.h"
 #include "Client/Module/TerrainRenderer/Component.h"
-#include "Client/Module/TerrainRenderer/System.h"
 #include "Client/Module/TerrainRenderer/Module.h"
 #include "Client/WorldContext.h"
 
@@ -19,10 +20,9 @@
 #include "Common/WorldContext.h"
 
 #include <Hexis/Core/EnumArray.h>
+#include <glm/ext/matrix_transform.hpp>
 
 #include <numeric>
-
-#include <glm/ext/matrix_transform.hpp>
 #include <utility>
 
 namespace Mcc
@@ -31,32 +31,68 @@ namespace Mcc
     namespace _
     {
 
-        static Hx::EnumArray<BlockFace, std::array<glm::vec3, 6>> sQuadVertices {{
-            { BlockFace::Front,  {{ { -1.f,  1.f,  1.f }, {  1.f, -1.f,  1.f }, {  1.f,  1.f,  1.f }, { -1.f,  1.f,  1.f }, { -1.f, -1.f,  1.f }, {  1.f, -1.f,  1.f } }} },
-            { BlockFace::Back,   {{ {  1.f,  1.f, -1.f }, { -1.f, -1.f, -1.f }, { -1.f,  1.f, -1.f }, {  1.f,  1.f, -1.f }, {  1.f, -1.f, -1.f }, { -1.f, -1.f, -1.f } }} },
-            { BlockFace::Left,   {{ { -1.f, -1.f,  1.f }, { -1.f,  1.f, -1.f }, { -1.f, -1.f, -1.f }, { -1.f, -1.f,  1.f }, { -1.f,  1.f,  1.f }, { -1.f,  1.f, -1.f } }} },
-            { BlockFace::Right,  {{ {  1.f,  1.f,  1.f }, {  1.f, -1.f, -1.f }, {  1.f,  1.f, -1.f }, {  1.f,  1.f,  1.f }, {  1.f, -1.f,  1.f }, {  1.f, -1.f, -1.f } }} },
-            { BlockFace::Bottom, {{ {  1.f, -1.f,  1.f }, { -1.f, -1.f, -1.f }, {  1.f, -1.f, -1.f }, {  1.f, -1.f,  1.f }, { -1.f, -1.f,  1.f }, { -1.f, -1.f, -1.f } }} },
-            { BlockFace::Top,    {{ { -1.f,  1.f,  1.f }, {  1.f,  1.f, -1.f }, { -1.f,  1.f, -1.f }, { -1.f,  1.f,  1.f }, {  1.f,  1.f,  1.f }, {  1.f,  1.f, -1.f } }} }
-        }};
+        static Hx::EnumArray<BlockFace, std::array<glm::vec3, 6>> sQuadVertices {
+            { { BlockFace::Front,
+                { { { -1.f, 1.f, 1.f },
+                    { 1.f, -1.f, 1.f },
+                    { 1.f, 1.f, 1.f },
+                    { -1.f, 1.f, 1.f },
+                    { -1.f, -1.f, 1.f },
+                    { 1.f, -1.f, 1.f } } } },
+             { BlockFace::Back,
+                { { { 1.f, 1.f, -1.f },
+                    { -1.f, -1.f, -1.f },
+                    { -1.f, 1.f, -1.f },
+                    { 1.f, 1.f, -1.f },
+                    { 1.f, -1.f, -1.f },
+                    { -1.f, -1.f, -1.f } } } },
+             { BlockFace::Left,
+                { { { -1.f, -1.f, 1.f },
+                    { -1.f, 1.f, -1.f },
+                    { -1.f, -1.f, -1.f },
+                    { -1.f, -1.f, 1.f },
+                    { -1.f, 1.f, 1.f },
+                    { -1.f, 1.f, -1.f } } } },
+             { BlockFace::Right,
+                { { { 1.f, 1.f, 1.f },
+                    { 1.f, -1.f, -1.f },
+                    { 1.f, 1.f, -1.f },
+                    { 1.f, 1.f, 1.f },
+                    { 1.f, -1.f, 1.f },
+                    { 1.f, -1.f, -1.f } } } },
+             { BlockFace::Bottom,
+                { { { 1.f, -1.f, 1.f },
+                    { -1.f, -1.f, -1.f },
+                    { 1.f, -1.f, -1.f },
+                    { 1.f, -1.f, 1.f },
+                    { -1.f, -1.f, 1.f },
+                    { -1.f, -1.f, -1.f } } } },
+             { BlockFace::Top,
+                { { { -1.f, 1.f, 1.f },
+                    { 1.f, 1.f, -1.f },
+                    { -1.f, 1.f, -1.f },
+                    { -1.f, 1.f, 1.f },
+                    { 1.f, 1.f, 1.f },
+                    { 1.f, 1.f, -1.f } } } } }
+        };
 
-        static Hx::EnumArray<BlockFace, glm::vec3> sQuadNormals {{
-            { BlockFace::Front,  glm::forward },
-            { BlockFace::Back,   glm::back    },
-            { BlockFace::Left,   glm::left    },
-            { BlockFace::Right,  glm::right   },
-            { BlockFace::Bottom, glm::down    },
-            { BlockFace::Top,    glm::up      }
-        }};
+        static Hx::EnumArray<BlockFace, glm::vec3> sQuadNormals {
+            { { BlockFace::Front, glm::forward },
+             { BlockFace::Back, glm::back },
+             { BlockFace::Left, glm::left },
+             { BlockFace::Right, glm::right },
+             { BlockFace::Bottom, glm::down },
+             { BlockFace::Top, glm::up } }
+        };
 
-        static Hx::EnumArray<BlockFace, glm::ivec3> sNeighbours {{
-            { BlockFace::Front,  glm::back    },
-            { BlockFace::Back,   glm::forward },
-            { BlockFace::Left,   glm::left    },
-            { BlockFace::Right,  glm::right   },
-            { BlockFace::Bottom, glm::down    },
-            { BlockFace::Top,    glm::up      }
-        }};
+        static Hx::EnumArray<BlockFace, glm::ivec3> sNeighbours {
+            { { BlockFace::Front, glm::back },
+             { BlockFace::Back, glm::forward },
+             { BlockFace::Left, glm::left },
+             { BlockFace::Right, glm::right },
+             { BlockFace::Bottom, glm::down },
+             { BlockFace::Top, glm::up } }
+        };
 
         static auto sEmptyChunk = std::make_shared<Chunk>();
 
@@ -80,86 +116,91 @@ namespace Mcc
 
 
             std::array array { sEmptyChunk, sEmptyChunk, sEmptyChunk, sEmptyChunk };
-            for (auto [i, side]: { std::pair{0, glm::ivec3(glm::left)}, std::pair{1, glm::ivec3(glm::right)}, std::pair{2, glm::ivec3(glm::forward)}, std::pair{3, glm::ivec3(glm::back)} })
+            for (auto [i, side]: {
+                     std::pair { 0, glm::ivec3(glm::left)    },
+                      std::pair { 1, glm::ivec3(glm::right)   },
+                     std::pair { 2, glm::ivec3(glm::forward) },
+                      std::pair { 3, glm::ivec3(glm::back)    }
+            })
             {
                 if (const auto it = ctx->chunkMap.find(position + side); it != ctx->chunkMap.end())
                 {
                     array[i] = world.entity(it->second).get<ChunkHolder>().chunk;
-            }
+                }
             }
             auto&& [left, right, front, back] = array;
 
-            Mesh mesh;
-	        std::unordered_map<PackedVertex, size_t, PackedVertexHasher> indexMap;
+            Mesh                                                         mesh;
+            std::unordered_map<PackedVertex, size_t, PackedVertexHasher> indexMap;
 
-	        std::vector mask((Chunk::Size + 2) * (Chunk::Size + 2) * (Chunk::Height + 2), true);
+            std::vector mask((Chunk::Size + 2) * (Chunk::Size + 2) * (Chunk::Height + 2), true);
 
-	        // Compute border
-            for (int xz = 0; std::cmp_less(xz , Chunk::Size); ++xz)
+            // Compute border
+            for (int xz = 0; std::cmp_less(xz, Chunk::Size); ++xz)
             {
-                for (int y = 0; std::cmp_less(y , Chunk::Height); ++y)
+                for (int y = 0; std::cmp_less(y, Chunk::Height); ++y)
                 {
-                    mask[Index(-1, y, xz)]          = Solid(world, left ->Get({ Chunk::Size - 1, y, xz }));
+                    mask[Index(-1, y, xz)]          = Solid(world, left->Get({ Chunk::Size - 1, y, xz }));
                     mask[Index(Chunk::Size, y, xz)] = Solid(world, right->Get({ 0, y, xz }));
 
                     mask[Index(xz, y, -1)]          = Solid(world, front->Get({ xz, y, Chunk::Size - 1 }));
-                    mask[Index(xz, y, Chunk::Size)] = Solid(world, back ->Get({ xz, y, 0 }));
+                    mask[Index(xz, y, Chunk::Size)] = Solid(world, back->Get({ xz, y, 0 }));
                 }
             }
 
-	        // Compute chunk mask
-	        for (size_t x = 0; x < Chunk::Size; ++x)
-	        {
-	            for (size_t z = 0; z < Chunk::Size; ++z)
-	            {
+            // Compute chunk mask
+            for (size_t x = 0; x < Chunk::Size; ++x)
+            {
+                for (size_t z = 0; z < Chunk::Size; ++z)
+                {
                     for (size_t y = 0; y < Chunk::Height; ++y)
                     {
                         mask[Index(x, y, z)] = Solid(world, chunk->Get({ x, y, z }));
                     }
                 }
-	        }
+            }
 
-	        constexpr auto chunkSize = glm::vec3(Chunk::Size, Chunk::Height, Chunk::Size);
-	        for (int x = 0; std::cmp_less(x ,Chunk::Size); ++x)
-	        {
-                for (int z = 0; std::cmp_less(z ,Chunk::Size); ++z)
+            constexpr auto chunkSize = glm::vec3(Chunk::Size, Chunk::Height, Chunk::Size);
+            for (int x = 0; std::cmp_less(x, Chunk::Size); ++x)
+            {
+                for (int z = 0; std::cmp_less(z, Chunk::Size); ++z)
                 {
-                    for (int y = 0; std::cmp_less(y ,Chunk::Height); ++y)
+                    for (int y = 0; std::cmp_less(y, Chunk::Height); ++y)
                     {
-                        if (mask[Index(x, y, z)])
-                        {
-                            for (auto [face, n]: sNeighbours)
-                            {
-                                if (!mask[Index(x + n.x, y + n.y, z + n.z)])
-                                {
-                                    const auto color = world.entity(chunk->Get({ x, y, z })).get<BlockColor>().color;
-                                    for (const auto& vertex: sQuadVertices[face])
-                                    {
-                                        const auto offset = glm::vec3(x, y, z) + ((vertex + 1.f) / 2.f);
-                                        const auto scaled = offset / chunkSize;
-                                        const auto final  = scaled * 2.f - 1.f;
+                        if (!mask[Index(x, y, z)])
+                            continue;
 
-                                        // Add tris to the mesh
-                                        const PackedVertex pv = { final, color, {}, sQuadNormals[face] };
-                                        auto [it, inserted]   = indexMap.try_emplace(pv, mesh.vertex.size());
-                                        if (inserted)
-                                        {
-                                            mesh.vertex.push_back(pv);
-                                        }
-                                        mesh.index.push_back(it->second);
-                                    }
+                        for (auto [face, n]: sNeighbours)
+                        {
+                            if (mask[Index(x + n.x, y + n.y, z + n.z)])
+                                continue;
+
+                            const auto color = world.entity(chunk->Get({ x, y, z })).get<BlockColor>().color;
+                            for (const auto& vertex: sQuadVertices[face])
+                            {
+                                const auto offset = glm::vec3(x, y, z) + ((vertex + 1.f) / 2.f);
+                                const auto scaled = offset / chunkSize;
+                                const auto final  = scaled * 2.f - 1.f;
+
+                                // Add tris to the mesh
+                                const PackedVertex pv = { final, color, {}, sQuadNormals[face] };
+                                auto [it, inserted]   = indexMap.try_emplace(pv, mesh.vertex.size());
+                                if (inserted)
+                                {
+                                    mesh.vertex.push_back(pv);
                                 }
+                                mesh.index.push_back(it->second);
                             }
                         }
                     }
                 }
             }
 
-	        return mesh;
+            return mesh;
         }
 
     }
-    
+
     void OnPlayerMoveObserver(const flecs::iter& it, size_t, const Transform& transform)
     {
         static int cx = std::numeric_limits<int>::max();
@@ -176,7 +217,6 @@ namespace Mcc
         // MCC_LOG_DEBUG("{} {}", x, z);
         if (std::abs(cx - x) > 0 || std::abs(cz - z) > 0)
         {
-
             Helper::ForInCircle(cx, cz, rRange + 1, [&](long i, long j) {
                 if (const auto cit = ctx->chunkMap.find({ i, 0, j }); cit != ctx->chunkMap.end())
                 {
@@ -207,9 +247,9 @@ namespace Mcc
         if (auto id = ctx->networkMapping.GetLHandle(ctx->playerInfo.handle); id.has_value())
         {
             world.entity(*id).get([&](const Transform& transform) {
-                auto [pX, pZ] = Helper::GetPlayerChunkPosition(transform.position);
-                const auto cX = p.position.x;
-                const auto cZ = p.position.z;
+                auto [pX, pZ]     = Helper::GetPlayerChunkPosition(transform.position);
+                const auto cX     = p.position.x;
+                const auto cZ     = p.position.z;
                 const auto rRange = static_cast<int>(ctx->settings.renderDistance);
                 const auto bRange = static_cast<int>(ctx->settings.preloadDistance);
 
@@ -231,55 +271,57 @@ namespace Mcc
         entity.add<ShouldBuildMeshTag>();
     }
 
-	void BuildChunkMeshSystem(const flecs::entity entity, const ChunkHolder& holder, const ChunkPosition& pos)
-	{
+    void BuildChunkMeshSystem(const flecs::entity entity, const ChunkHolder& holder, const ChunkPosition& pos)
+    {
         const auto  world = entity.world();
         const auto* ctx   = ClientWorldContext::Get(world);
 
-        auto meshFuture_ = ctx->threadPool.ExecuteTask([=] { return MCC_BENCH_TIME(MeshBuilding, _::BuildChunkMeshImpl)(world, pos.position, holder.chunk); });
+        auto meshFuture_ = ctx->threadPool.ExecuteTask([=] {
+            return MCC_BENCH_TIME(MeshBuilding, _::BuildChunkMeshImpl)(world, pos.position, holder.chunk);
+        });
         entity.remove<ShouldBuildMeshTag>();
         entity.set<MeshHolder>({ (std::move(meshFuture_)) });
-	}
+    }
 
     void TerrainRendererModule::SetupChunkRenderingMeshSystem(const flecs::entity entity, MeshHolder& holder) const
-	{
-	    if (holder.pendingMesh.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
-	    {
-	        if ([[maybe_unused]] auto mesh = entity.try_get<ChunkMesh>())
-	        {
-	            // TODO
-	        }
-	        else
-	        {
-	            auto [vertex, index] = holder.pendingMesh.get();
-	            VertexArray vArray{};
-	            Buffer		vBuffer{GL_ARRAY_BUFFER};
-	            Buffer		iBuffer{GL_ELEMENT_ARRAY_BUFFER};
+    {
+        if (holder.pendingMesh.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+        {
+            if ([[maybe_unused]] auto mesh = entity.try_get<ChunkMesh>())
+            {
+                // TODO
+            }
+            else
+            {
+                auto [vertex, index] = holder.pendingMesh.get();
+                VertexArray vArray {};
+                Buffer      vBuffer { GL_ARRAY_BUFFER };
+                Buffer      iBuffer { GL_ELEMENT_ARRAY_BUFFER };
 
-	            mProgram.Use();
-	            vArray.Create();
-	            vArray.Bind();
+                mProgram.Use();
+                vArray.Create();
+                vArray.Bind();
 
-	            vBuffer.Create();
-	            vBuffer.SetData(std::span(vertex), GL_STATIC_DRAW);
-	            mProgram.SetVertexAttribPointer("inVertex", 3, GL_FLOAT, sizeof (PackedVertex), 0);
-	            mProgram.SetVertexAttribPointer("inColor" , 3, GL_FLOAT, sizeof (PackedVertex), 3 * sizeof (float));
-	            mProgram.SetVertexAttribPointer("inNormal", 3, GL_FLOAT, sizeof (PackedVertex), 8 * sizeof (float));
+                vBuffer.Create();
+                vBuffer.SetData(std::span(vertex), GL_STATIC_DRAW);
+                mProgram.SetVertexAttribPointer("inVertex", 3, GL_FLOAT, sizeof(PackedVertex), 0);
+                mProgram.SetVertexAttribPointer("inColor", 3, GL_FLOAT, sizeof(PackedVertex), 3 * sizeof(float));
+                mProgram.SetVertexAttribPointer("inNormal", 3, GL_FLOAT, sizeof(PackedVertex), 8 * sizeof(float));
 
-	            iBuffer.Create();
-	            iBuffer.SetData(std::span(index), GL_STATIC_DRAW);
+                iBuffer.Create();
+                iBuffer.SetData(std::span(index), GL_STATIC_DRAW);
 
-	            entity.set<ChunkMesh>({ std::move(vArray), std::move(vBuffer),std::move(iBuffer), index.size() });
-	            entity.remove<MeshHolder>();
-	        }
-	    }
-	}
+                entity.set<ChunkMesh>({ std::move(vArray), std::move(vBuffer), std::move(iBuffer), index.size() });
+                entity.remove<MeshHolder>();
+            }
+        }
+    }
 
-	void TerrainRendererModule::SetupChunkProgramSystem(flecs::iter& it) const
-	{
-		while (it.next()) {}
+    void TerrainRendererModule::SetupChunkProgramSystem(flecs::iter& it) const
+    {
+        while (it.next()) {}
 
-		const Shader vertexShader  (GL_VERTEX_SHADER, R"""(
+        const Shader vertexShader(GL_VERTEX_SHADER, R"""(
 			#version 330
 
 			in vec3 inVertex;
@@ -301,7 +343,7 @@ namespace Mcc
                 passNormal = inNormal;
 			}
 		)""");
-		const Shader fragmentShader(GL_FRAGMENT_SHADER, R"""(
+        const Shader fragmentShader(GL_FRAGMENT_SHADER, R"""(
 			#version 330
 
 			in vec3 passColor;
@@ -341,51 +383,53 @@ namespace Mcc
 			}
 		)""");
 
-		mProgram.Attach(vertexShader);
-		mProgram.Attach(fragmentShader);
+        mProgram.Attach(vertexShader);
+        mProgram.Attach(fragmentShader);
 
-		mProgram.Link();
+        mProgram.Link();
 
-		mProgram.Detach(vertexShader);
-		mProgram.Detach(fragmentShader);
-	}
+        mProgram.Detach(vertexShader);
+        mProgram.Detach(fragmentShader);
+    }
 
-	void TerrainRendererModule::RenderChunkMeshSystem(flecs::iter& it)
-	{
-		const auto modelLocation    = mProgram.GetUniformLocation("model");
-		const auto invModelLocation = mProgram.GetUniformLocation("invModel");
+    void TerrainRendererModule::RenderChunkMeshSystem(flecs::iter& it)
+    {
+        const auto modelLocation    = mProgram.GetUniformLocation("model");
+        const auto invModelLocation = mProgram.GetUniformLocation("invModel");
 
-		mProgram.Use();
+        mProgram.Use();
 
-		const auto&& [p, view, proj] = RendererModule::GetView(it.world());
-		mProgram.SetUniformMatrix(mProgram.GetUniformLocation("view"), view);
-		mProgram.SetUniformMatrix(mProgram.GetUniformLocation("proj"), proj);
+        const auto&& [p, view, proj] = RendererModule::GetView(it.world());
+        mProgram.SetUniformMatrix(mProgram.GetUniformLocation("view"), view);
+        mProgram.SetUniformMatrix(mProgram.GetUniformLocation("proj"), proj);
 
-	    mProgram.SetUniformVector(mProgram.GetUniformLocation("viewPos"), p);
+        mProgram.SetUniformVector(mProgram.GetUniformLocation("viewPos"), p);
 
-		while (it.next())
-		{
-			auto pos  = it.field<const ChunkPosition>(0);
-			auto mesh = it.field<const ChunkMesh>	 (1);
+        while (it.next())
+        {
+            auto pos  = it.field<const ChunkPosition>(0);
+            auto mesh = it.field<const ChunkMesh>(1);
 
-			for (const auto i: it)
-			{
-			    glm::mat4 model = glm::scale(
-                    glm::translate(glm::mat4(1.f), glm::vec3(pos[i].position * glm::ivec3(2 * Chunk::Size, 0, 2 * Chunk::Size))),
+            for (const auto i: it)
+            {
+                glm::mat4 model = glm::scale(
+                    glm::translate(
+                        glm::mat4(1.f), glm::vec3(pos[i].position * glm::ivec3(2 * Chunk::Size, 0, 2 * Chunk::Size))
+                    ),
                     glm::vec3(Chunk::Size, Chunk::Height, Chunk::Size)
                 );
 
                 mProgram.SetUniformMatrix(invModelLocation, glm::transpose(glm::inverse(glm::mat3(model))));
-				mProgram.SetUniformMatrix(modelLocation   , model);
+                mProgram.SetUniformMatrix(modelLocation, model);
 
-				mesh[i].vertexArray.Bind();
-				mesh[i].indexBuffer.Bind();
-				// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				// glDisable(GL_CULL_FACE);
-				glCheck(glDrawElements(GL_TRIANGLES, mesh[i].indexCount, GL_UNSIGNED_INT, nullptr));
-				// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			}
-		}
-	}
+                mesh[i].vertexArray.Bind();
+                mesh[i].indexBuffer.Bind();
+                // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+                // glDisable(GL_CULL_FACE);
+                glCheck(glDrawElements(GL_TRIANGLES, mesh[i].indexCount, GL_UNSIGNED_INT, nullptr));
+                // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            }
+        }
+    }
 
 }

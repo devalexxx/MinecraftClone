@@ -1,6 +1,6 @@
-//
-// Created by Alex Clorennec on 17/07/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_SERVER_SERVER_SETTINGS_H
 #define MCC_SERVER_SERVER_SETTINGS_H
@@ -11,9 +11,7 @@ namespace Mcc
 {
 
     struct ServerSettings : ServerInfo
-    {
-
-    };
+    {};
 
 }
 

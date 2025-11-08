@@ -1,6 +1,6 @@
-//
-// Created by Alex on 14/09/2024.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_CLIENT_GRAPHICS_MESH_H
 #define MCC_CLIENT_GRAPHICS_MESH_H
@@ -29,7 +29,7 @@ namespace Mcc
     };
 
     using PackedVertexArray = std::vector<PackedVertex>;
-    using IndexArray		= std::vector<unsigned int>;
+    using IndexArray        = std::vector<unsigned int>;
 
     struct Mesh
     {
@@ -37,14 +37,14 @@ namespace Mcc
         IndexArray        index;
     };
 
-    Mesh Index   (const PackedVertexArray& vertices);
+    Mesh Index(const PackedVertexArray& vertices);
     Mesh Optimize(const Mesh& mesh, float epsilonScale = 1.f);
 
     namespace Helper
     {
-        Mesh GenerateSphereMesh    (float radius, unsigned int segments, unsigned int rings);
+        Mesh GenerateSphereMesh(float radius, unsigned int segments, unsigned int rings);
         Mesh GenerateHalfSphereMesh(float radius, unsigned int segments, unsigned int rings);
-        Mesh GenerateCapsuleMesh   (float radius, unsigned int segments, unsigned int rings);
+        Mesh GenerateCapsuleMesh(float radius, unsigned int segments, unsigned int rings);
     }
 
 }

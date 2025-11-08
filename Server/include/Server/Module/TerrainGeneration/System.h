@@ -1,6 +1,6 @@
-//
-// Created by Alex Clorennec on 19/10/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_SERVER_MODULE_TERRAIN_GENERATION_SYSTEM_H
 #define MCC_SERVER_MODULE_TERRAIN_GENERATION_SYSTEM_H
@@ -11,7 +11,7 @@ namespace Mcc
 {
 
     void HandleGenerationEndingSystem(flecs::entity entity, PendingChunk& pending, ChunkHolder& holder);
-    void DispatchPendingReplication  (flecs::entity entity, GenerationDoneTag);
+    void DispatchPendingReplication(flecs::entity entity, GenerationDoneTag);
 
 }
 

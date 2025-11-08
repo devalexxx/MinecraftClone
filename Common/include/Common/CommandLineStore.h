@@ -1,6 +1,6 @@
-//
-// Created by Alex on 02/09/2024.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_COMMON_COMMAND_LINE_STORE_H
 #define MCC_COMMON_COMMAND_LINE_STORE_H
@@ -13,21 +13,21 @@
 namespace Mcc
 {
 
-	class CommandLineStore
-	{
-		public:
-			using OptParameter = std::optional<std::string_view>;
+    class CommandLineStore
+    {
+      public:
+        using OptParameter = std::optional<std::string_view>;
 
-		public:
-			CommandLineStore(int argc, char** argv);
+      public:
+        CommandLineStore(int argc, char** argv);
 
-			[[nodiscard]] OptParameter GetParameter(const std::string& parameter) const;
-			[[nodiscard]] bool         HasFlag(const std::string& flag) const;
+        [[nodiscard]] OptParameter GetParameter(const std::string& parameter) const;
+        [[nodiscard]] bool         HasFlag(const std::string& flag) const;
 
-		private:
-			std::unordered_map<std::string, std::string> mParameters;
-			std::unordered_set<std::string>              mFlags;
-	};
+      private:
+        std::unordered_map<std::string, std::string> mParameters;
+        std::unordered_set<std::string>              mFlags;
+    };
 
 }
 

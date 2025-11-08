@@ -1,6 +1,6 @@
-//
-// Created by Alex on 26/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_CLIENT_MODULE_CAMERA_MODULE_H
 #define MCC_CLIENT_MODULE_CAMERA_MODULE_H
@@ -10,10 +10,10 @@
 namespace Mcc
 {
 
-	struct CameraModule
-	{
-			CameraModule(const flecs::world& world);
-	};
+    struct CameraModule
+    {
+        explicit CameraModule(const flecs::world& world);
+    };
 
 }
 

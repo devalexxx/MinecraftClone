@@ -1,19 +1,18 @@
-//
-// Created by Alex on 23/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_SERVER_MODULE_PLAYER_SYSTEM_H
 #define MCC_SERVER_MODULE_PLAYER_SYSTEM_H
 
 #include "Common/Module/Entity/Component.h"
-#include "Server/Module/EntityReplication/Component.h"
 
 #include <flecs.h>
 
 namespace Mcc
 {
 
-	void ProcessPlayerInputs (flecs::entity entity, UserInputQueue& queue);
+    void ProcessPlayerInputs(flecs::entity entity, UserInputQueue& queue);
     void HandlePlayerCreation(flecs::entity entity);
 
 }

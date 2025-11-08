@@ -1,8 +1,9 @@
-//
-// Created by Alex Clorennec on 19/10/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #include "Server/Module/TerrainGeneration/Module.h"
+
 #include "Server/Module/TerrainGeneration/Component.h"
 #include "Server/Module/TerrainGeneration/System.h"
 #include "Server/WorldContext.h"
@@ -12,8 +13,7 @@
 namespace Mcc
 {
 
-    TerrainGenerationModule::TerrainGenerationModule(const flecs::world& world) :
-        mGenerator(123456789u)
+    TerrainGenerationModule::TerrainGenerationModule(const flecs::world& world) : mGenerator(123456789u)
     {
         MCC_LOG_DEBUG("Import TerrainGenerationModule...");
         world.module<TerrainGenerationModule>();
@@ -42,29 +42,30 @@ namespace Mcc
         world.entity("mcc:block:stone")
             .is_a<BlockPrefab>()
             .set<BlockType>(BlockType::Solid)
-            .set<BlockColor>({ { .5f, .5f, .5f } })
+            .set<BlockColor>({
+                { .5f, .5f, .5f }
+        })
             .set<BlockMeta>({ "mcc:block:stone" });
 
         world.entity("mcc:block:dirt")
             .is_a<BlockPrefab>()
             .set<BlockType>(BlockType::Solid)
-            .set<BlockColor>({ { .0f, .7f, .3f } })
+            .set<BlockColor>({
+                { .0f, .7f, .3f }
+        })
             .set<BlockMeta>({ "mcc:block:dirt" });
 
         mGenerator.Setup(world);
     }
 
-    flecs::entity TerrainGenerationModule::LaunchGenerationTask(const flecs::world& world, const glm::ivec3& position) const
+    flecs::entity
+    TerrainGenerationModule::LaunchGenerationTask(const flecs::world& world, const glm::ivec3& position) const
     {
-        const auto ctx    = ServerWorldContext::Get(world);
-        const auto entity = world.entity()
-            .is_a<ChunkPrefab>()
-            .set<ChunkPosition>({ position })
-            .add<GenerationProgressTag>();
+        const auto ctx = ServerWorldContext::Get(world);
+        const auto entity =
+            world.entity().is_a<ChunkPrefab>().set<ChunkPosition>({ position }).add<GenerationProgressTag>();
 
-        auto future = ctx->threadPool.ExecuteTask([=, this] {
-            return mGenerator.Generate(position);
-        });
+        auto future = ctx->threadPool.ExecuteTask([=, this] { return mGenerator.Generate(position); });
 
         entity.set<PendingChunk>({ std::move(future) });
         ctx->chunkMap[position] = entity.id();

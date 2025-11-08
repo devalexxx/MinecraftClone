@@ -1,10 +1,11 @@
-//
-// Created by Alex on 22/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #include "Server/Module/EntityReplication/Module.h"
-#include "Server/Module/EntityReplication/System.h"
+
 #include "Server/Module/EntityReplication/Component.h"
+#include "Server/Module/EntityReplication/System.h"
 
 #include "Common/Module/Entity/Component.h"
 #include "Common/Module/Entity/Module.h"
@@ -15,25 +16,27 @@
 namespace Mcc
 {
 
-	EntityReplicationModule::EntityReplicationModule(const flecs::world& world)
-	{
-		MCC_ASSERT	 (world.has<EntityModule>(), "EntityReplicationModule require EntityModule, you must import it before.");
-		MCC_LOG_DEBUG("Import EntityReplicationModule...");
-		world.module<EntityReplicationModule>();
+    EntityReplicationModule::EntityReplicationModule(const flecs::world& world)
+    {
+        MCC_ASSERT(
+            world.has<EntityModule>(), "EntityReplicationModule require EntityModule, you must import it before."
+        );
+        MCC_LOG_DEBUG("Import EntityReplicationModule...");
+        world.module<EntityReplicationModule>();
 
-		world.component<EntityDirtyTag>();
+        world.component<EntityDirtyTag>();
 
-		world.system<const Transform, const Extra, const NetworkProps>()
-			.with<EntityCreatedTag>()
-			.run(BroadcastEntitiesCreated);
+        world.system<const Transform, const Extra, const NetworkProps>("BroadcastEntitiesCreated")
+            .with<EntityCreatedTag>()
+            .run(BroadcastEntitiesCreated);
 
-		world.system<const Transform, const Extra, const NetworkProps>()
-		    .with<EntityDirtyTag>()
-			.run(BroadcastEntitiesUpdated);
+        world.system<const Transform, const Extra, const NetworkProps>("BroadcastEntitiesUpdated")
+            .with<EntityDirtyTag>()
+            .run(BroadcastEntitiesUpdated);
 
-		world.system<const NetworkProps>()
-			.with<EntityDestroyedTag>()
-			.run(BroadcastEntitiesDestroyed);
-	}
+        world.system<const NetworkProps>("BroadcastEntitiesDestroyed")
+            .with<EntityDestroyedTag>()
+            .run(BroadcastEntitiesDestroyed);
+    }
 
 }

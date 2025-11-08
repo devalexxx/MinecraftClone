@@ -1,6 +1,6 @@
-//
-// Created by Alex Clorennec on 10/07/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_COMMON_MODULE_NETWORK_COMPONENT_H
 #define MCC_COMMON_MODULE_NETWORK_COMPONENT_H
@@ -10,15 +10,19 @@
 namespace Mcc
 {
 
-    struct ServerTag {};
-    struct ClientTag {};
-    struct NetworkObjectTag {};
+    struct ServerTag
+    {};
+    struct ClientTag
+    {};
+    struct NetworkObjectTag
+    {};
 
-    struct NetworkObjectPrefab {};
+    struct NetworkObjectPrefab
+    {};
 
     struct NetworkProps
     {
-            NetworkHandle handle;
+        NetworkHandle handle;
     };
 
 }

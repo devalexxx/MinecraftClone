@@ -1,6 +1,6 @@
-//
-// Created by Alex on 05/09/2024.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_COMMON_NETWORK_PACKET_H
 #define MCC_COMMON_NETWORK_PACKET_H
@@ -13,76 +13,66 @@
 
 #include <Hexis/Core/TypeList.h>
 
-#include <vector>
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace Mcc
 {
 
-	template<typename T>
-	struct From
-	{
-	        ENetPeer* peer;
-			T         packet;
-	};
+    template<typename T>
+    struct From
+    {
+        ENetPeer* peer;
+        T         packet;
+    };
 
-	using PacketList = Hx::TypeList<
-	    // Session
-	    OnWaitingInfo,
-        OnClientInfo,
-        OnConnectionAccepted,
-        OnConnectionRefused,
-        OnClientInfoChanged,
+    using PacketList = Hx::TypeList<
+        // Session
+        OnWaitingInfo, OnClientInfo, OnConnectionAccepted, OnConnectionRefused, OnClientInfoChanged,
 
-        struct OnChunk,
-        struct OnChunkBatch,
+        struct OnChunk, struct OnChunkBatch,
 
-        struct OnBlock,
-        struct OnBlockBatch,
+        struct OnBlock, struct OnBlockBatch,
 
-		struct OnPlayerInput,
-		struct OnEntitiesCreated,
-		struct OnEntitiesDestroyed,
-		struct OnEntitiesUpdated
-	>;
+        struct OnPlayerInput, struct OnEntitiesCreated, struct OnEntitiesDestroyed, struct OnEntitiesUpdated>;
 
-	struct EntityState
-	{
-			NetworkHandle handle;
+    struct EntityState
+    {
+        NetworkHandle handle;
 
-			Transform transform;
+        Transform transform;
 
-			std::unordered_map<std::string, std::string> extra;
-	};
+        std::unordered_map<std::string, std::string> extra;
+    };
 
-	template<typename Archive>
-	void serialize(Archive& ar, EntityState& packet);
+    template<typename Archive>
+    void serialize(Archive& ar, EntityState& packet);
 
-	struct OnPlayerInput
-	{
-			UserInput input;
-	};
+    struct OnPlayerInput
+    {
+        UserInput input;
+    };
 
-	struct OnEntitiesCreated
-	{
-			std::vector<EntityState> states;
-	};
+    struct OnEntitiesCreated
+    {
+        std::vector<EntityState> states;
+    };
 
-	struct OnEntitiesDestroyed
-	{
-			std::vector<NetworkHandle> handles;
-	};
+    struct OnEntitiesDestroyed
+    {
+        std::vector<NetworkHandle> handles;
+    };
 
-	struct OnEntitiesUpdated
-	{
-			std::vector<EntityState> states;
-	};
+    struct OnEntitiesUpdated
+    {
+        std::vector<EntityState> states;
+    };
 
     struct OnChunk
     {
-        NetworkHandle handle{};
-        ChunkPosition position{};
+        NetworkHandle handle {};
+        ChunkPosition position {};
         RLEChunkData  data;
     };
 
@@ -106,13 +96,13 @@ namespace Mcc
     void serialize(Archive& ar, OnBlock& packet);
 
     template<typename Archive>
-	void serialize(Archive& ar, OnPlayerInput& packet);
-	template<typename Archive>
-	void serialize(Archive& ar, OnEntitiesCreated& packet);
-	template<typename Archive>
-	void serialize(Archive& ar, OnEntitiesDestroyed& packet);
-	template<typename Archive>
-	void serialize(Archive& ar, OnEntitiesUpdated& packet);
+    void serialize(Archive& ar, OnPlayerInput& packet);
+    template<typename Archive>
+    void serialize(Archive& ar, OnEntitiesCreated& packet);
+    template<typename Archive>
+    void serialize(Archive& ar, OnEntitiesDestroyed& packet);
+    template<typename Archive>
+    void serialize(Archive& ar, OnEntitiesUpdated& packet);
 
 }
 

@@ -1,6 +1,6 @@
-//
-// Created by Alex on 22/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_SERVER_MODULE_ENTITY_REPLICATION_MODULE_H
 #define MCC_SERVER_MODULE_ENTITY_REPLICATION_MODULE_H
@@ -10,11 +10,10 @@
 namespace Mcc
 {
 
-	class EntityReplicationModule
-	{
-		public:
-			EntityReplicationModule(const flecs::world& world);
-	};
+    struct EntityReplicationModule
+    {
+        explicit EntityReplicationModule(const flecs::world& world);
+    };
 
 }
 

@@ -1,6 +1,6 @@
-//
-// Created by Alex on 28/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_CLIENT_MODULE_ENTITY_REPLICATION_SYSTEM_H
 #define MCC_CLIENT_MODULE_ENTITY_REPLICATION_SYSTEM_H
@@ -9,12 +9,10 @@
 
 #include "Common/Module/Entity/Component.h"
 
-#include <flecs.h>
-
 namespace Mcc
 {
 
-	void EntityInterpolationSystem       (Transform& transform, SnapshotQueue& queue);
+    void EntityInterpolationSystem(Transform& transform, SnapshotQueue& queue);
 
 }
 

@@ -1,6 +1,6 @@
-//
-// Created by Alex on 30/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_SERVER_MODULE_TERRAIN_SYSTEM_H
 #define MCC_SERVER_MODULE_TERRAIN_SYSTEM_H
@@ -13,7 +13,7 @@ namespace Mcc
     struct Transform;
 
     void OnPlayerCreatedObserver(flecs::entity entity, const Transform& transform);
-    void OnPlayerMoveObserver   (flecs::iter& it, size_t row);
+    void OnPlayerMoveObserver(flecs::iter& it, size_t row);
 
 }
 

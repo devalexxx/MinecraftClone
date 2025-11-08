@@ -1,6 +1,6 @@
-//
-// Created by Alex on 28/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_CLIENT_MODULE_PLAYER_COMPONENT_H
 #define MCC_CLIENT_MODULE_PLAYER_COMPONENT_H
@@ -10,14 +10,16 @@
 namespace Mcc
 {
 
-	struct PlayerEntityTag {};
+    struct PlayerEntityTag
+    {};
 
-	struct PlayerEntityPrefab {};
+    struct PlayerEntityPrefab
+    {};
 
-	struct CurrentPlayerInput
-	{
-			UserInput input;
-	};
+    struct CurrentPlayerInput
+    {
+        UserInput input;
+    };
 
 }
 

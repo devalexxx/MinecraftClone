@@ -1,6 +1,6 @@
-//
-// Created by Alex on 22/06/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_SERVER_WORLD_CONTEXT_H
 #define MCC_SERVER_WORLD_CONTEXT_H
@@ -13,12 +13,12 @@
 namespace Mcc
 {
 
-	struct ServerWorldContext : WorldContext<ServerNetworkManager>
-	{
-	    static ServerWorldContext* Get(const flecs::world& world);
+    struct ServerWorldContext : WorldContext<ServerNetworkManager>
+    {
+        static ServerWorldContext* Get(const flecs::world& world);
 
-	    ServerSettings settings{};
-	};
+        ServerSettings settings {};
+    };
 
 }
 

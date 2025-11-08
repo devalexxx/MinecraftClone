@@ -1,6 +1,6 @@
-//
-// Created by Alex Clorennec on 11/07/2025.
-//
+// Copyright (c) 2025 devalexxx
+// Distributed under the MIT License.
+// https://opensource.org/licenses/MIT
 
 #ifndef MCC_SERVER_WORLD_CHUNK_GENERATOR_H
 #define MCC_SERVER_WORLD_CHUNK_GENERATOR_H
@@ -16,15 +16,15 @@ namespace Mcc
 
     class ChunkGenerator
     {
-        public:
-            explicit ChunkGenerator(siv::PerlinNoise::seed_type seed);
+      public:
+        explicit ChunkGenerator(siv::PerlinNoise::seed_type seed);
 
-            void Setup(const flecs::world& world);
-            [[nodiscard]] Chunk Generate(glm::ivec3 position) const;
+        void                Setup(const flecs::world& world);
+        [[nodiscard]] Chunk Generate(glm::ivec3 position) const;
 
-        private:
-            std::unordered_map<std::string, flecs::entity> mPalette;
-            siv::PerlinNoise mPerlin;
+      private:
+        std::unordered_map<std::string, flecs::entity> mPalette;
+        siv::PerlinNoise                               mPerlin;
     };
 
 }
