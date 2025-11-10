@@ -34,9 +34,10 @@ namespace Mcc
 
     void TerrainReplicationModule::OnBlockHandler(const flecs::world& world, const Mcc::OnBlock& packet)
     {
-        if (const auto* ctx = ClientWorldContext::Get(world); ctx->networkMapping.GetLHandle(packet.handle).has_value())
+        const auto* ctx = ClientWorldContext::Get(world);
+        if (const auto lid = ctx->networkMapping.GetLHandle(packet.handle); lid.has_value())
         {
-            MCC_LOG_WARN("The network id {} is already associated to a local block", packet.handle);
+            MCC_LOG_WARN("The network id {} is already associated to a local entity(#{})", packet.handle, *lid);
             return;
         }
 
@@ -51,10 +52,9 @@ namespace Mcc
     void TerrainReplicationModule::OnChunkHandler(const flecs::world& world, const Mcc::OnChunk& packet)
     {
         auto* ctx = ClientWorldContext::Get(world);
-
-        if (ctx->networkMapping.GetLHandle(packet.handle).has_value())
+        if (const auto lid = ctx->networkMapping.GetLHandle(packet.handle); lid.has_value())
         {
-            MCC_LOG_WARN("The network id {} is already associated to a local chunk", packet.handle);
+            MCC_LOG_WARN("The network id {} is already associated to a local entity(#{})", packet.handle, *lid);
             return;
         }
 

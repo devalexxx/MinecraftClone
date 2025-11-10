@@ -39,13 +39,13 @@ namespace Mcc
         mNetworkManager(mCmdLineStore),
         mWindow("MachinaCubicaCatalyst")
     {
-        mNetworkManager.Subscribe<MalformedPacketEvent>([](const auto&) { MCC_LOG_WARN("Handle malformed packet"); });
+        mNetworkManager.Subscribe<MalformedPacketEvent>([]([[maybe_unused]] const auto& packet) {
+            MCC_LOG_WARN("Malformed packet caught", packet.packet == nullptr);
+        });
     }
 
     int ClientApplication::Run()
     {
-        mNetworkManager.Subscribe<MalformedPacketEvent>([](const auto&) { MCC_LOG_WARN("Malformed packet caught"); });
-
         if (const int error = mNetworkManager.Setup())
         {
             MCC_LOG_ERROR("Failed to setup network host");

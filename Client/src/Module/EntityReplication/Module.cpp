@@ -50,9 +50,9 @@ namespace Mcc
 
         for (auto& state: event.states)
         {
-            if (ctx->networkMapping.GetLHandle(state.handle).has_value())
+            if (const auto lid = ctx->networkMapping.GetLHandle(state.handle); lid.has_value())
             {
-                MCC_LOG_WARN("The network id {} is already associated to a local entity", state.handle);
+                MCC_LOG_WARN("The network id {} is already associated to a local entity(#{})", state.handle, *lid);
                 continue;
             }
 

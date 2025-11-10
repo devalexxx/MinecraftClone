@@ -12,7 +12,7 @@ namespace Mcc
 
     class CommandLineStore;
 
-    class ClientNetworkManager : public NetworkManager
+    class ClientNetworkManager final : public NetworkManager
     {
       public:
         explicit ClientNetworkManager(const CommandLineStore& cmdLineStore);
