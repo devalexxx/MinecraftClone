@@ -11,11 +11,14 @@
 #include "Common/Network/Event.h"
 #include "Common/Network/Packet.h"
 #include "Common/Network/Packet/Session.h"
+#include "Common/Utils/SafeAccess.h"
 
 #include <flecs.h>
 
 namespace Mcc
 {
+
+    using EntitySet = std::unordered_set<flecs::entity_t>;
 
     struct UserSession
     {
@@ -24,9 +27,10 @@ namespace Mcc
         PlayerInfo pInfo;
         ClientInfo cInfo;
 
-        ENetPeer*                           peer;
-        std::unordered_set<flecs::entity_t> replicatedChunks;
-        std::unordered_set<flecs::entity_t> replicatedBlocks;
+        ENetPeer*             peer;
+        SafeAccess<EntitySet> replicatedChunks;
+        SafeAccess<EntitySet> replicatedChunksPending;
+        SafeAccess<EntitySet> replicatedBlocks;
     };
 
     class UserSessionModule

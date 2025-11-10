@@ -61,20 +61,20 @@ namespace Mcc
         OnBlockBatch blockPacket;
 
         const auto chunkEntity = stage.entity(chunk);
-        const auto props       = chunkEntity.get<const NetworkProps>();
-        const auto position    = chunkEntity.get<const ChunkPosition>();
-        const auto holder      = chunkEntity.get<const ChunkHolder>();
+        const auto& [handle]   = chunkEntity.get<const NetworkProps>();
+        const auto& position   = chunkEntity.get<const ChunkPosition>();
+        const auto  chunkPtr   = chunkEntity.get<const ChunkHolder>().chunk;
 
-        chunkPacket.handle   = props.handle;
+        chunkPacket.handle   = handle;
         chunkPacket.position = position;
-        if (auto rle = holder.chunk->ToNetwork(stage); rle.has_value())
+        if (auto rle = chunkPtr->ToNetwork(stage); rle.has_value())
         {
             chunkPacket.data = std::move(rle.value());
         }
 
-        for (auto block: holder.chunk->GetPalette())
+        for (auto block: chunkPtr->GetPalette())
         {
-            if (!session->replicatedBlocks.contains(block))
+            if (!session->replicatedBlocks->contains(block))
             {
                 auto    blockEntity = stage.entity(block);
                 OnBlock packet;
@@ -84,10 +84,11 @@ namespace Mcc
                 packet.type   = blockEntity.get<const BlockType>();
                 blockPacket.push_back(std::move(packet));
 
-                session->replicatedBlocks.insert(block);
+                session->replicatedBlocks->insert(block);
             }
         }
-        session->replicatedChunks.insert(chunk);
+        session->replicatedChunksPending->erase(chunk);
+        session->replicatedChunks->insert(chunk);
 
         if (!blockPacket.empty())
             ctx->networkManager.Send(session->peer, std::move(blockPacket), ENET_PACKET_FLAG_RELIABLE, 0);

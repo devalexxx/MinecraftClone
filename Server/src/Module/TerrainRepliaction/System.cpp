@@ -26,34 +26,40 @@ namespace Mcc
         const auto ctx     = ServerWorldContext::Get(world);
 
         std::vector<std::pair<flecs::entity, ChunkPosition>> chunks;
-        Helper::ForInCircle(x, z, ctx->settings.renderDistance, [&](long x, long z) {
-            const glm::ivec3 position(x, 0, z);
+        Helper::ForInCircle(x, z, ctx->settings.renderDistance, [&](const long cx, const long cz) {
+            const glm::ivec3 position(cx, 0, cz);
             if (const auto it = ctx->chunkMap.find(position); it != ctx->chunkMap.end())
             {
-                if (!session->replicatedChunks.contains(it->second))
+                if (session->replicatedChunks->contains(it->second) ||
+                    session->replicatedChunksPending->contains(it->second))
                 {
-                    auto chunk = world.entity(it->second);
-                    if (chunk.has<GenerationPlannedTag>() || chunk.has<GenerationProgressTag>())
-                    {
-                        if (chunk.has<PendingReplication>())
-                            chunk.get_mut<PendingReplication>().sessions.push_back(session);
-                        else
-                            chunk.set<PendingReplication>({ { session } });
-                    }
-                    else
-                    {
-                        chunks.emplace_back(chunk, chunk.get<ChunkPosition>());
-                    }
-                    session->replicatedChunks.insert(it->second);
+                    return;
                 }
+
+                auto chunk = world.entity(it->second);
+                if (chunk.has<GenerationDoneTag>())
+                {
+                    chunks.emplace_back(chunk, chunk.get<ChunkPosition>());
+                    session->replicatedChunksPending->insert(it->second);
+                    return;
+                }
+
+                if (chunk.has<PendingReplication>())
+                {
+                    chunk.get_mut<PendingReplication>().sessions.push_back(session);
+                }
+                else
+                {
+                    chunk.set<PendingReplication>({ { session } });
+                }
+                session->replicatedChunksPending->insert(it->second);
 
                 return;
             }
 
             const auto chunk = world.get<TerrainGenerationModule>().LaunchGenerationTask(world, position);
-            ;
             chunk.set<PendingReplication>({ { session } });
-            session->replicatedChunks.insert(chunk);
+            session->replicatedChunksPending->insert(chunk);
         });
 
         std::ranges::sort(chunks, [&](auto& lhs, auto& rhs) {

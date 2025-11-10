@@ -15,7 +15,6 @@ namespace Mcc
         if (pending.pendingChunk.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
         {
             holder.chunk = std::make_shared<Chunk>(pending.pendingChunk.get());
-            entity.modified<ChunkHolder>();
             entity.remove<PendingChunk>();
             entity.remove<GenerationProgressTag>();
             entity.add<GenerationDoneTag>();
