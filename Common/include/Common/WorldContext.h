@@ -16,7 +16,7 @@
 namespace Mcc
 {
 
-    struct NetworkMapping
+    struct MCC_LIB_API NetworkMapping
     {
         using LHandle = flecs::entity_t;
         using RHandle = NetworkHandle;
@@ -33,7 +33,8 @@ namespace Mcc
         [[nodiscard]] std::optional<RHandle> GetRHandle(LHandle handle) const;
     };
 
-    struct IVec3Hasher
+    // clang-format off
+    struct MCC_LIB_API IVec3Hasher
     {
         size_t operator()(const glm::ivec3& v) const
         {
@@ -56,6 +57,7 @@ namespace Mcc
         std::unordered_map<glm::ivec3, flecs::entity_t, IVec3Hasher> chunkMap;
     };
 
+// clang-format on
 }
 
 #include "Common/WorldContext.inl"

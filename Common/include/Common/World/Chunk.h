@@ -39,7 +39,7 @@ namespace Mcc
     template<typename Archive>
     void serialize(Archive& ar, RLEChunkData& data);
 
-    class Chunk
+    class MCC_LIB_API Chunk
     {
       public:
         using Palette = ChunkData<flecs::entity_t>::Palette;
@@ -70,8 +70,10 @@ namespace Mcc
     namespace Helper
     {
 
-        std::optional<RLEChunkData> ToNetwork(const ChunkData<flecs::entity_t>& data, const flecs::world& world);
-        std::optional<ChunkData<flecs::entity_t>> FromNetwork(const RLEChunkData& data, const flecs::world& world);
+        MCC_LIB_API std::optional<RLEChunkData>
+                    ToNetwork(const ChunkData<flecs::entity_t>& data, const flecs::world& world);
+        MCC_LIB_API std::optional<ChunkData<flecs::entity_t>>
+                    FromNetwork(const RLEChunkData& data, const flecs::world& world);
 
     }
 

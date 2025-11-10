@@ -5,6 +5,8 @@
 #ifndef MCC_COMMON_NETWORK_PACKET_STREAM_H
 #define MCC_COMMON_NETWORK_PACKET_STREAM_H
 
+#include "Common/Export.h"
+
 #include <enet/enet.h>
 
 #include <iostream>
@@ -18,20 +20,20 @@ namespace Mcc
     using ByteSpan  = std::span<Byte>;
     using ByteArray = std::vector<Byte>;
 
-    class PacketInputStream : public std::istream
+    class MCC_LIB_API PacketInputStream final : public std::istream
     {
       public:
+        explicit PacketInputStream(const ENetPacket* packet);
         PacketInputStream(char* begin, size_t size);
-        PacketInputStream(const ENetPacket* packet);
 
       private:
-        struct NonOwnedStreamBuf : std::streambuf
+        struct NonOwnedStreamBuf final : std::streambuf
         {
             NonOwnedStreamBuf(char* begin, size_t size);
         } mBuffer;
     };
 
-    class PacketOutputStream : public std::ostream
+    class MCC_LIB_API PacketOutputStream final : public std::ostream
     {
       public:
         PacketOutputStream();
@@ -39,7 +41,7 @@ namespace Mcc
         ByteSpan GetBuffer();
 
       private:
-        struct OwnedStreamBuf : std::streambuf
+        struct OwnedStreamBuf final : std::streambuf
         {
             OwnedStreamBuf();
 

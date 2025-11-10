@@ -5,12 +5,14 @@
 #ifndef MCC_COMMON_MODULE_NETWORK_MODULE_H
 #define MCC_COMMON_MODULE_NETWORK_MODULE_H
 
+#include "Common/Export.h"
+
 #include <flecs.h>
 
 namespace Mcc
 {
 
-    struct NetworkModule
+    struct MCC_LIB_API NetworkModule
     {
         explicit NetworkModule(const flecs::world& world);
     };

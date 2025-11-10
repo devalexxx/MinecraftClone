@@ -52,7 +52,7 @@ namespace Mcc
     }
 
     template<typename Tag>
-    void EventManager<Tag>::Withdraw(EventManager::HandlerId id)
+    void EventManager<Tag>::Withdraw(const HandlerId id)
     {
         auto typeId    = id >> 16 & 0xf;
         auto handlerId = id & 0x0f;

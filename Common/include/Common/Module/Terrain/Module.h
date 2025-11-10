@@ -5,12 +5,14 @@
 #ifndef MCC_COMMON_MODULE_TERRAIN_MODULE_H
 #define MCC_COMMON_MODULE_TERRAIN_MODULE_H
 
+#include "Common/Export.h"
+
 #include <flecs.h>
 
 namespace Mcc
 {
 
-    struct TerrainModule
+    struct MCC_LIB_API TerrainModule
     {
         explicit TerrainModule(const flecs::world& world);
     };

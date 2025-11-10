@@ -6,6 +6,7 @@
 #define MCC_COMMON_APPLICATION_H
 
 #include "Common/CommandLineStore.h"
+#include "Common/Export.h"
 
 #include <enet/enet.h>
 
@@ -16,7 +17,7 @@
 namespace Mcc
 {
 
-    class Application
+    class MCC_LIB_API Application
     {
       public:
         Application(int argc, char** argv);

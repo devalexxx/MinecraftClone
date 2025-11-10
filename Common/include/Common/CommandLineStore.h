@@ -5,6 +5,8 @@
 #ifndef MCC_COMMON_COMMAND_LINE_STORE_H
 #define MCC_COMMON_COMMAND_LINE_STORE_H
 
+#include "Common/Export.h"
+
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -13,7 +15,7 @@
 namespace Mcc
 {
 
-    class CommandLineStore
+    class MCC_LIB_API CommandLineStore
     {
       public:
         using OptParameter = std::optional<std::string_view>;

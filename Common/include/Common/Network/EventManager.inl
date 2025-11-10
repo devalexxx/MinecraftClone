@@ -22,6 +22,7 @@ namespace Mcc
             catch (std::exception& exc)
             {
                 eventManager.Dispatch<MalformedPacketEvent>({ packet });
+                return;
             }
 
             eventManager.Dispatch<T>(data);

@@ -17,7 +17,7 @@
 namespace Mcc
 {
 
-    class NetworkManager : public NetworkEventManager
+    class MCC_LIB_API NetworkManager : public NetworkEventManager
     {
       public:
         NetworkManager(const char* host, unsigned short port);

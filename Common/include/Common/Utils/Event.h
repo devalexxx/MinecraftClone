@@ -5,25 +5,32 @@
 #ifndef MCC_COMMON_UTILS_EVENT_H
 #define MCC_COMMON_UTILS_EVENT_H
 
+#include "Common/Export.h"
+
+#include <string>
+
 namespace Mcc
 {
 
+    using EventTypeID = unsigned short;
+
     template<typename Tag>
-    struct BaseEvent
-    {
-        using TypeId = unsigned short;
-        static TypeId sTypeCount;
-        static TypeId GetNextType();
-    };
+    struct BaseEvent {};
 
     template<typename Tag, typename T>
     struct Event : BaseEvent<Tag>
     {
-        using typename BaseEvent<Tag>::TypeId;
-        static TypeId GetType();
+        static EventTypeID GetType();
 
         T event;
     };
+
+    namespace _
+    {
+
+        MCC_LIB_API EventTypeID GetTypeID(const std::string& tag, const std::string& type);
+
+    }
 
 }
 

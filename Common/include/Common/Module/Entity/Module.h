@@ -5,14 +5,16 @@
 #ifndef MCC_COMMON_MODULE_ENTITY_MODULE_H
 #define MCC_COMMON_MODULE_ENTITY_MODULE_H
 
+#include "Common/Export.h"
+
 #include <flecs.h>
 
 namespace Mcc
 {
 
-    struct EntityModule
+    struct MCC_LIB_API EntityModule
     {
-        EntityModule(flecs::world& world);
+        explicit EntityModule(flecs::world& world);
     };
 
 }

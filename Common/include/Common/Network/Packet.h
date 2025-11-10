@@ -27,15 +27,27 @@ namespace Mcc
         T         packet;
     };
 
+    // clang-format off
     using PacketList = Hx::TypeList<
         // Session
-        OnWaitingInfo, OnClientInfo, OnConnectionAccepted, OnConnectionRefused, OnClientInfoChanged,
+        OnWaitingInfo,
+        OnClientInfo,
+        OnConnectionAccepted,
+        OnConnectionRefused,
+        OnClientInfoChanged,
 
-        struct OnChunk, struct OnChunkBatch,
+        struct OnChunk,
+        struct OnChunkBatch,
 
-        struct OnBlock, struct OnBlockBatch,
+        struct OnBlock,
+        struct OnBlockBatch,
 
-        struct OnPlayerInput, struct OnEntitiesCreated, struct OnEntitiesDestroyed, struct OnEntitiesUpdated>;
+        struct OnPlayerInput,
+        struct OnEntitiesCreated,
+        struct OnEntitiesDestroyed,
+        struct OnEntitiesUpdated
+    >;
+    // clang-format on
 
     struct EntityState
     {

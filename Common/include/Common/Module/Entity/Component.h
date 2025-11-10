@@ -5,6 +5,8 @@
 #ifndef MCC_COMMON_MODULE_ENTITY_COMPONENT_H
 #define MCC_COMMON_MODULE_ENTITY_COMPONENT_H
 
+#include "Common/Export.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -16,42 +18,36 @@ namespace glm
 {
 
     template<class Archive>
-    void serialize(Archive& ar, glm::vec3& vec);
+    void serialize(Archive& ar, vec3& vec);
 
     template<class Archive>
-    void serialize(Archive& ar, glm::uvec3& vec);
+    void serialize(Archive& ar, uvec3& vec);
 
     template<class Archive>
-    void serialize(Archive& ar, glm::ivec3& vec);
+    void serialize(Archive& ar, ivec3& vec);
 
     template<class Archive>
-    void serialize(Archive& ar, glm::quat& quat);
+    void serialize(Archive& ar, quat& quat);
 
-    static constexpr glm::vec3 forward { 0, 0, -1 };
-    static constexpr glm::vec3 back { 0, 0, 1 };
-    static constexpr glm::vec3 right { 1, 0, 0 };
-    static constexpr glm::vec3 left { -1, 0, 0 };
-    static constexpr glm::vec3 up { 0, 1, 0 };
-    static constexpr glm::vec3 down { 0, -1, 0 };
+    static constexpr vec3 forward { 0, 0, -1 };
+    static constexpr vec3 back { 0, 0, 1 };
+    static constexpr vec3 right { 1, 0, 0 };
+    static constexpr vec3 left { -1, 0, 0 };
+    static constexpr vec3 up { 0, 1, 0 };
+    static constexpr vec3 down { 0, -1, 0 };
 
 }
 
 namespace Mcc
 {
 
-    struct EntityTag
-    {};
-    struct NetworkEntityTag
-    {};
-    struct UserEntityTag
-    {};
+    struct EntityTag {};
+    struct NetworkEntityTag {};
+    struct UserEntityTag {};
 
-    struct EntityPrefab
-    {};
-    struct NetworkEntityPrefab
-    {};
-    struct UserEntityPrefab
-    {};
+    struct EntityPrefab {};
+    struct NetworkEntityPrefab {};
+    struct UserEntityPrefab {};
 
     struct Transform
     {
@@ -65,7 +61,7 @@ namespace Mcc
         std::unordered_map<std::string, std::string> data;
     };
 
-    struct UserInput
+    struct MCC_LIB_API UserInput
     {
         struct Meta
         {
@@ -107,11 +103,11 @@ namespace Mcc
     namespace Helper
     {
 
-        bool IsNull(const UserInput& input);
-        void ApplyMovement(const UserInput& input, Transform& transform, float speed, float dt);
-        void ApplyXAxis(const UserInput& input, Transform& transform);
-        void ApplyYAxis(const UserInput& input, Transform& transform);
-        void ApplyBothAxis(const UserInput& input, Transform& transform);
+        MCC_LIB_API bool IsNull(const UserInput& input);
+        MCC_LIB_API void ApplyMovement(const UserInput& input, Transform& transform, float speed, float dt);
+        MCC_LIB_API void ApplyXAxis(const UserInput& input, Transform& transform);
+        MCC_LIB_API void ApplyYAxis(const UserInput& input, Transform& transform);
+        MCC_LIB_API void ApplyBothAxis(const UserInput& input, Transform& transform);
 
     }
 

@@ -35,7 +35,7 @@ namespace Mcc
         mArgs({}, mWorld)
 #endif
     {
-#if MCC_DEBUG
+#if defined(MCC_DEBUG) or defined(MCC_RELEASE_DEBUG)
         mWorld.import <flecs::stats>();
         if (const auto param =
                 mCmdLineStore.GetParameter("fport").or_else([&] { return mCmdLineStore.GetParameter("fp"); });

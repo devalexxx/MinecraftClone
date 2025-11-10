@@ -5,12 +5,14 @@
 #ifndef MCC_COMMON_UTILS_BIT_ARRAY_H
 #define MCC_COMMON_UTILS_BIT_ARRAY_H
 
+#include "Common/Export.h"
+
 #include <vector>
 
 namespace Mcc
 {
 
-    class BitArray
+    class MCC_LIB_API BitArray
     {
       public:
         BitArray(size_t size, unsigned char stride);
