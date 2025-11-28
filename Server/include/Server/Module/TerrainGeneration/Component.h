@@ -7,7 +7,8 @@
 
 #include "Server/Module/UserSession/Module.h"
 
-#include <future>
+#include <Hexis/Core/Task.h>
+
 #include <vector>
 
 namespace Mcc
@@ -22,7 +23,7 @@ namespace Mcc
 
     struct PendingChunk
     {
-        std::future<Chunk> pendingChunk;
+        Hx::UniqueTaskRef<Chunk> pendingChunk;
     };
 
     struct PendingReplication

@@ -11,11 +11,15 @@
 namespace Mcc
 {
 
-    struct ServerTag {};
-    struct ClientTag {};
-    struct NetworkObjectTag {};
+    struct ServerTag
+    {};
+    struct ClientTag
+    {};
+    struct NetworkObjectTag
+    {};
 
-    struct NetworkObjectPrefab {};
+    struct NetworkObjectPrefab
+    {};
 
     struct NetworkProps
     {

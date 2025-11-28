@@ -13,14 +13,20 @@
 namespace Mcc
 {
 
-    struct BlockTag {};
-    struct BlockStateTag {};
-    struct ChunkTag {};
+    struct BlockTag
+    {};
+    struct BlockStateTag
+    {};
+    struct ChunkTag
+    {};
 
-    struct BlockPrefab {};
-    struct ChunkPrefab {};
+    struct BlockPrefab
+    {};
+    struct ChunkPrefab
+    {};
 
-    struct BlockStateRelation {};
+    struct BlockStateRelation
+    {};
 
     enum class BlockType
     {

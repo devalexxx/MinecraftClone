@@ -6,15 +6,20 @@
 #define MCC_COMMON_MODULE_ENTITY_MODULE_H
 
 #include "Common/Export.h"
+#include "Common/Module/Base/Module.h"
 
 #include <flecs.h>
 
 namespace Mcc
 {
 
-    struct MCC_LIB_API EntityModule
+    struct MCC_LIB_API EntityModule final : BaseModule<EntityModule>
     {
         explicit EntityModule(flecs::world& world);
+
+        void RegisterComponent(flecs::world& world) override;
+        void RegisterSystem(flecs::world& world) override;
+        void RegisterHandler(flecs::world& world) override;
     };
 
 }

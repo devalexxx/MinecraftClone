@@ -12,19 +12,25 @@
 namespace Mcc
 {
 
-    NetworkModule::NetworkModule(const flecs::world& world)
+    NetworkModule::NetworkModule(flecs::world& world) : BaseModule(world)
     {
-        MCC_LOG_DEBUG("Import NetworkModule...");
-        world.module<NetworkModule>();
+        world.prefab<NetworkObjectPrefab>().add<NetworkObjectTag>().set_auto_override<NetworkProps>({ Null() });
+    }
 
+    void NetworkModule::RegisterComponent(flecs::world& world)
+    {
         world.component<ServerTag>();
         world.component<ClientTag>();
         world.component<NetworkObjectTag>();
 
         world.component<NetworkProps>();
+    }
 
-        world.prefab<NetworkObjectPrefab>().add<NetworkObjectTag>().set_auto_override<NetworkProps>({ Null() });
+    void NetworkModule::RegisterSystem(flecs::world& /* world */)
+    {}
 
+    void NetworkModule::RegisterHandler(flecs::world& world)
+    {
         world.observer<NetworkProps>()
             .event(flecs::OnAdd)
             .with<ServerTag>()

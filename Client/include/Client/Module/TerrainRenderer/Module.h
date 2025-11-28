@@ -13,10 +13,14 @@
 namespace Mcc
 {
 
-    class TerrainRendererModule
+    class TerrainRendererModule final : public BaseModule<TerrainRendererModule, RendererModule>
     {
       public:
-        explicit TerrainRendererModule(const flecs::world& world);
+        explicit TerrainRendererModule(flecs::world& world);
+
+        void RegisterComponent(flecs::world& world) override;
+        void RegisterSystem(flecs::world& world) override;
+        void RegisterHandler(flecs::world& world) override;
 
         void SetupChunkRenderingMeshSystem(flecs::entity entity, MeshHolder& holder) const;
         void SetupChunkProgramSystem(flecs::iter& it) const;

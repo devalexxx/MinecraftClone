@@ -86,5 +86,10 @@ namespace Mcc
         return EXIT_SUCCESS;
     }
 
+    const ENetPeer* ClientNetworkManager::GetPeer() const
+    {
+        return mPeer;
+    }
+
 
 }

@@ -13,7 +13,8 @@
 namespace Mcc
 {
 
-    struct NetworkEventTag {};
+    struct NetworkEventTag
+    {};
 
     class MCC_LIB_API NetworkEventManager : public EventManager<NetworkEventTag>
     {

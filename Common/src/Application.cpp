@@ -43,7 +43,6 @@ namespace Mcc
         {
             flecs::Rest config;
             std::from_chars(param->cbegin(), param->cend(), config.port);
-            ;
             mWorld.set<flecs::Rest>(config);
         }
         else

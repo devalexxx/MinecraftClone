@@ -8,16 +8,23 @@
 #include "Client/Graphics/Buffer.h"
 #include "Client/Graphics/Program.h"
 #include "Client/Graphics/VertexArray.h"
+#include "Client/Module/Renderer/Module.h"
+
+#include "Common/Module/Base/Module.h"
 
 #include <flecs.h>
 
 namespace Mcc
 {
 
-    class EntityRendererModule
+    class EntityRendererModule final : public BaseModule<EntityRendererModule, RendererModule>
     {
       public:
-        explicit EntityRendererModule(const flecs::world& world);
+        explicit EntityRendererModule(flecs::world& world);
+
+        void RegisterComponent(flecs::world& world) override;
+        void RegisterSystem(flecs::world& world) override;
+        void RegisterHandler(flecs::world& world) override;
 
         void SetupEntityMeshSystem(flecs::iter& it);
         void RenderUserEntitySystem(flecs::iter& it);

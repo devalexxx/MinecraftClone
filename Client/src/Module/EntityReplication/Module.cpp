@@ -12,26 +12,32 @@
 #include "Common/Module/Entity/Module.h"
 #include "Common/Module/Network/Component.h"
 #include "Common/Network/Packet.h"
+#include "Common/Phase.h"
+#include "Common/SceneImporter.h"
 #include "Common/Utils/Assert.h"
 #include "Common/Utils/Logging.h"
 
 namespace Mcc
 {
 
-    EntityReplicationModule::EntityReplicationModule(const flecs::world& world)
+    EntityReplicationModule::EntityReplicationModule(flecs::world& world) : BaseModule(world)
+    {}
+
+    void EntityReplicationModule::RegisterComponent(flecs::world& world)
     {
-        MCC_ASSERT(
-            world.has<EntityModule>(), "EntityReplicationModule require WorldEntityModule, you must import it before."
-        );
-        MCC_LOG_DEBUG("Import EntityReplicationModule...");
-        world.module<EntityReplicationModule>();
-
         world.component<InterpolationExcludedTag>();
+    }
 
+    void EntityReplicationModule::RegisterSystem(flecs::world& world)
+    {
         world.system<Transform, SnapshotQueue>("EntityInterpolation")
+            .kind<Phase::OnUpdate>()
             .without<InterpolationExcludedTag>()
             .each(EntityInterpolationSystem);
+    }
 
+    void EntityReplicationModule::RegisterHandler(flecs::world& world)
+    {
         const auto* ctx = ClientWorldContext::Get(world);
         ctx->networkManager.Subscribe<OnEntitiesCreated>([&world](const auto& event) {
             OnEntitiesCreatedHandler(world, event);
@@ -60,7 +66,8 @@ namespace Mcc
                 .is_a<NetworkEntityPrefab>()
                 .set<NetworkProps>({ state.handle })
                 .set(state.transform)
-                .set<SnapshotQueue>({});
+                .set<SnapshotQueue>({})
+                .child_of<SceneRoot>();
         }
     }
 

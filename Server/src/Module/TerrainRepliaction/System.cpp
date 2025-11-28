@@ -72,7 +72,7 @@ namespace Mcc
 
         for (const auto& id: chunks | std::views::keys)
         {
-            ctx->threadPool.ExecuteTask(TerrainReplicationModule::ReplicateChunk, session, world, id);
+            ctx->scheduler.Insert(TerrainReplicationModule::ReplicateChunk, session, world, id).Enqueue();
         }
     }
 

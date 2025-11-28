@@ -9,7 +9,7 @@
 #include "Client/Graphics/Mesh.h"
 #include "Client/Graphics/VertexArray.h"
 
-#include <future>
+#include "Hexis/Core/Task.h"
 
 namespace Mcc
 {
@@ -32,7 +32,7 @@ namespace Mcc
 
     struct MeshHolder
     {
-        std::future<Mesh> pendingMesh;
+        Hx::UniqueTaskRef<Mesh> pendingMesh;
     };
 
 }

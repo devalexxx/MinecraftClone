@@ -32,6 +32,7 @@ namespace Mcc
             enet_host_destroy(mHost);
     }
 
+
     void NetworkManager::Poll()
     {
         for (; !mCommandQueue.empty(); mCommandQueue.pop()) { mCommandQueue.front()(); }

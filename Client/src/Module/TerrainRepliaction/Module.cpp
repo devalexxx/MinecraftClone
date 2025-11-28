@@ -8,6 +8,7 @@
 
 #include "Common/Module/Network/Component.h"
 #include "Common/Module/Terrain/Module.h"
+#include "Common/SceneImporter.h"
 #include "Common/Utils/Assert.h"
 #include "Common/Utils/Benchmark.h"
 #include "Common/Utils/Logging.h"
@@ -15,14 +16,17 @@
 namespace Mcc
 {
 
-    TerrainReplicationModule::TerrainReplicationModule(const flecs::world& world)
-    {
-        MCC_ASSERT(
-            world.has<TerrainModule>(), "TerrainReplicationModule require TerrainModule, you must import it before."
-        );
-        MCC_LOG_DEBUG("Import TerrainReplication...");
-        world.module<TerrainReplicationModule>();
+    TerrainReplicationModule::TerrainReplicationModule(flecs::world& world) : BaseModule(world)
+    {}
 
+    void TerrainReplicationModule::RegisterComponent(flecs::world& /* world */)
+    {}
+
+    void TerrainReplicationModule::RegisterSystem(flecs::world& /* world */)
+    {}
+
+    void TerrainReplicationModule::RegisterHandler(flecs::world& world)
+    {
         const auto* ctx = ClientWorldContext::Get(world);
 
         ctx->networkManager.Subscribe<OnBlock>([&world](const auto& event) { OnBlockHandler(world, event); });
@@ -32,7 +36,7 @@ namespace Mcc
         ctx->networkManager.Subscribe<OnChunkBatch>([&world](const auto& event) { OnChunkBatchHandler(world, event); });
     }
 
-    void TerrainReplicationModule::OnBlockHandler(const flecs::world& world, const Mcc::OnBlock& packet)
+    void TerrainReplicationModule::OnBlockHandler(const flecs::world& world, const OnBlock& packet)
     {
         const auto* ctx = ClientWorldContext::Get(world);
         if (const auto lid = ctx->networkMapping.GetLHandle(packet.handle); lid.has_value())
@@ -46,10 +50,11 @@ namespace Mcc
             .set<NetworkProps>({ packet.handle })
             .set<BlockMeta>(packet.meta)
             .set<BlockColor>({ packet.color })
-            .set<BlockType>(packet.type);
+            .set<BlockType>(packet.type)
+            .child_of<SceneRoot>();
     }
 
-    void TerrainReplicationModule::OnChunkHandler(const flecs::world& world, const Mcc::OnChunk& packet)
+    void TerrainReplicationModule::OnChunkHandler(const flecs::world& world, const OnChunk& packet)
     {
         auto* ctx = ClientWorldContext::Get(world);
         if (const auto lid = ctx->networkMapping.GetLHandle(packet.handle); lid.has_value())
@@ -64,7 +69,8 @@ namespace Mcc
                                .is_a<ChunkPrefab>()
                                .set<NetworkProps>({ packet.handle })
                                .set<ChunkPosition>(packet.position)
-                               .set<ChunkHolder>({ std::make_shared<Chunk>(std::move(*from)) });
+                               .set<ChunkHolder>({ std::make_shared<Chunk>(std::move(*from)) })
+                               .child_of<SceneRoot>();
 
             ctx->chunkMap.emplace(packet.position.position, e.id());
         }

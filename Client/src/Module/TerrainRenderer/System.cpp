@@ -11,10 +11,12 @@
 #include "Client/Module/Renderer/Module.h"
 #include "Client/Module/TerrainRenderer/Component.h"
 #include "Client/Module/TerrainRenderer/Module.h"
+#include "Client/Scene/Scene.h"
 #include "Client/WorldContext.h"
 
 #include "Common/Module/Entity/Component.h"
 #include "Common/Module/Terrain/Component.h"
+#include "Common/SceneImporter.h"
 #include "Common/Utils/Benchmark.h"
 #include "Common/Utils/ChunkHelper.h"
 #include "Common/WorldContext.h"
@@ -112,8 +114,10 @@ namespace Mcc
 
         Mesh BuildChunkMeshImpl(const flecs::world& world, glm::ivec3 position, const std::shared_ptr<Chunk>& chunk)
         {
-            const auto* ctx = ClientWorldContext::Get(world);
+            if (!world.has<ActiveScene, GameScene>())
+                return {};
 
+            const auto* ctx = ClientWorldContext::Get(world);
 
             std::array array { sEmptyChunk, sEmptyChunk, sEmptyChunk, sEmptyChunk };
             for (auto [i, side]: {
@@ -276,16 +280,32 @@ namespace Mcc
         const auto  world = entity.world();
         const auto* ctx   = ClientWorldContext::Get(world);
 
-        auto meshFuture_ = ctx->threadPool.ExecuteTask([=] {
-            return MCC_BENCH_TIME(MeshBuilding, _::BuildChunkMeshImpl)(world, pos.position, holder.chunk);
-        });
+        // auto task = ctx->scheduler.EnqueueTask(
+        //     Hx::AsShared, std::string("game_group"),
+        //     [=] {
+        //         return MCC_BENCH_TIME(MeshBuilding, _::BuildChunkMeshImpl)(world, pos.position, holder.chunk);
+        //     }
+        // );
+
+        auto task = ctx->scheduler
+                        .Insert(MCC_BENCH_TIME(MeshBuilding, _::BuildChunkMeshImpl), world, pos.position, holder.chunk)
+                        .AsUnique()
+                        .SetGroup("game_group")
+                        .Enqueue();
         entity.remove<ShouldBuildMeshTag>();
-        entity.set<MeshHolder>({ (std::move(meshFuture_)) });
+        entity.emplace<MeshHolder>(std::move(task));
     }
 
     void TerrainRendererModule::SetupChunkRenderingMeshSystem(const flecs::entity entity, MeshHolder& holder) const
     {
-        if (holder.pendingMesh.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+        if (holder.pendingMesh.GetState() == Hx::TaskState::Cancelled)
+        {
+            // TODO
+            entity.remove<MeshHolder>();
+            return;
+        }
+
+        if (holder.pendingMesh.GetState() == Hx::TaskState::Done)
         {
             if ([[maybe_unused]] auto mesh = entity.try_get<ChunkMesh>())
             {
@@ -293,7 +313,9 @@ namespace Mcc
             }
             else
             {
-                auto [vertex, index] = holder.pendingMesh.get();
+                const auto result = holder.pendingMesh.GetResult();
+                MCC_ASSERT(result, "Mesh task data has already been retrieve");
+                auto [vertex, index] = result->get();
                 VertexArray vArray {};
                 Buffer      vBuffer { GL_ARRAY_BUFFER };
                 Buffer      iBuffer { GL_ELEMENT_ARRAY_BUFFER };

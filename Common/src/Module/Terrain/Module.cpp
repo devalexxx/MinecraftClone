@@ -14,23 +14,8 @@
 namespace Mcc
 {
 
-    TerrainModule::TerrainModule(const flecs::world& world)
+    TerrainModule::TerrainModule(flecs::world& world) : BaseModule(world)
     {
-        MCC_LOG_DEBUG("Import TerrainModule...");
-        world.module<TerrainModule>();
-
-        world.component<BlockTag>();
-        world.component<BlockStateTag>();
-        world.component<ChunkTag>();
-
-        world.component<BlockStateRelation>();
-
-        world.component<BlockMeta>();
-        world.component<BlockType>();
-
-        world.component<ChunkPosition>();
-        world.component<ChunkHolder>();
-
         world.prefab<BlockPrefab>()
             .is_a<NetworkObjectPrefab>()
             .add<BlockTag>()
@@ -44,5 +29,26 @@ namespace Mcc
             .add<ChunkPosition>()
             .set_auto_override<ChunkHolder>({});
     }
+
+    void TerrainModule::RegisterComponent(flecs::world& world)
+    {
+        world.component<BlockTag>();
+        world.component<BlockStateTag>();
+        world.component<ChunkTag>();
+
+        world.component<BlockStateRelation>();
+
+        world.component<BlockMeta>();
+        world.component<BlockType>();
+
+        world.component<ChunkPosition>();
+        world.component<ChunkHolder>();
+    }
+
+    void TerrainModule::RegisterSystem(flecs::world& /* world */)
+    {}
+
+    void TerrainModule::RegisterHandler(flecs::world& /* world */)
+    {}
 
 }

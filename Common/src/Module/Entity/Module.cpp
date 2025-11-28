@@ -11,19 +11,8 @@
 namespace Mcc
 {
 
-    EntityModule::EntityModule(flecs::world& world)
+    EntityModule::EntityModule(flecs::world& world) : BaseModule(world)
     {
-        MCC_LOG_DEBUG("Import EntityModule...");
-        world.import <EntityModule>();
-
-        world.component<EntityTag>();
-        world.component<NetworkEntityTag>();
-        world.component<UserEntityTag>();
-
-        world.component<EntityPrefab>();
-        world.component<NetworkEntityPrefab>();
-        world.component<UserEntityPrefab>();
-
         world.prefab<EntityPrefab>().add<EntityTag>().set_auto_override<Transform>({
             { 0.f, 0.f, 0.f },
             {},
@@ -41,5 +30,22 @@ namespace Mcc
             .add<UserEntityTag>()
             .set_auto_override<UserInputQueue>({});
     }
+
+    void EntityModule::RegisterComponent(flecs::world& world)
+    {
+        world.component<EntityTag>();
+        world.component<NetworkEntityTag>();
+        world.component<UserEntityTag>();
+
+        world.component<EntityPrefab>();
+        world.component<NetworkEntityPrefab>();
+        world.component<UserEntityPrefab>();
+    }
+
+    void EntityModule::RegisterSystem(flecs::world& /* world */)
+    {}
+
+    void EntityModule::RegisterHandler(flecs::world& /* world */)
+    {}
 
 }

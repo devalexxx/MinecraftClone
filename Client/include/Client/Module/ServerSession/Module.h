@@ -5,6 +5,7 @@
 #ifndef MCC_CLIENT_MODULE_SERVER_SESSION_MODULE_H
 #define MCC_CLIENT_MODULE_SERVER_SESSION_MODULE_H
 
+#include "Common/Module/Base/Module.h"
 #include "Common/Network/Event.h"
 #include "Common/Network/Packet.h"
 
@@ -13,10 +14,14 @@
 namespace Mcc
 {
 
-    class ServerSessionModule
+    class ServerSessionModule final : public BaseModule<ServerSessionModule>
     {
       public:
         explicit ServerSessionModule(flecs::world& world);
+
+        void RegisterComponent(flecs::world& world) override;
+        void RegisterSystem(flecs::world& world) override;
+        void RegisterHandler(flecs::world& world) override;
 
       private:
         static void OnWaitingInfoHandler(const flecs::world& world, const OnWaitingInfo&);

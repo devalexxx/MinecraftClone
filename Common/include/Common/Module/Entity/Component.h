@@ -41,13 +41,19 @@ namespace glm
 namespace Mcc
 {
 
-    struct EntityTag {};
-    struct NetworkEntityTag {};
-    struct UserEntityTag {};
+    struct EntityTag
+    {};
+    struct NetworkEntityTag
+    {};
+    struct UserEntityTag
+    {};
 
-    struct EntityPrefab {};
-    struct NetworkEntityPrefab {};
-    struct UserEntityPrefab {};
+    struct EntityPrefab
+    {};
+    struct NetworkEntityPrefab
+    {};
+    struct UserEntityPrefab
+    {};
 
     struct Transform
     {

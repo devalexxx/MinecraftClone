@@ -7,29 +7,33 @@
 #include "Client/Module/Renderer/Module.h"
 
 #include "Common/Module/Entity/Component.h"
-#include "Common/Utils/Assert.h"
+#include "Common/Phase.h"
 
 namespace Mcc
 {
 
-    EntityRendererModule::EntityRendererModule(const flecs::world& world) :
+    EntityRendererModule::EntityRendererModule(flecs::world& world) :
+        BaseModule(world),
         mVertexBuffer(GL_ARRAY_BUFFER),
         mIndexBuffer(GL_ELEMENT_ARRAY_BUFFER),
         mIndexCount(0)
-    {
-        MCC_ASSERT(
-            world.has<RendererModule>(), "EntityRendererModule require RendererModule, you must import it before."
-        );
-        MCC_LOG_DEBUG("Import EntityRendererModule...");
-        world.module<EntityRendererModule>();
+    {}
 
+    void EntityRendererModule::RegisterComponent(flecs::world& /* world */)
+    {}
+
+    void EntityRendererModule::RegisterSystem(flecs::world& world)
+    {
         world.system("SetupEntityMesh").kind(flecs::OnStart).run([this](auto&&... args) {
             SetupEntityMeshSystem(args...);
         });
 
         world.system<const Transform>("RenderUserEntity")
-            .kind(flecs::PreStore)
+            .kind<Phase::OnDraw>()
             .with<NetworkEntityTag>()
             .run([this](auto&&... args) { RenderUserEntitySystem(args...); });
     }
+
+    void EntityRendererModule::RegisterHandler(flecs::world& /* world */)
+    {}
 }

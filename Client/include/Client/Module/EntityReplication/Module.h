@@ -5,6 +5,9 @@
 #ifndef MCC_CLIENT_MODULE_ENTITY_REPLICATION_MODULE_H
 #define MCC_CLIENT_MODULE_ENTITY_REPLICATION_MODULE_H
 
+#include "Common/Module/Base/Module.h"
+#include "Common/Module/Entity/Module.h"
+
 #include <flecs.h>
 
 namespace Mcc
@@ -14,10 +17,14 @@ namespace Mcc
     struct OnEntitiesDestroyed;
     struct OnEntitiesUpdated;
 
-    class EntityReplicationModule
+    class EntityReplicationModule final : public BaseModule<EntityReplicationModule, EntityModule>
     {
       public:
-        explicit EntityReplicationModule(const flecs::world& world);
+        explicit EntityReplicationModule(flecs::world& world);
+
+        void RegisterComponent(flecs::world& world) override;
+        void RegisterSystem(flecs::world& world) override;
+        void RegisterHandler(flecs::world& world) override;
 
       private:
         static void OnEntitiesCreatedHandler(const flecs::world& world, const OnEntitiesCreated& event);

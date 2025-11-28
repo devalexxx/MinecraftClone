@@ -4,16 +4,12 @@
 
 #ifndef MCC_CLIENT_MODULE_SERVER_SESSION_COMPONENT_H
 #define MCC_CLIENT_MODULE_SERVER_SESSION_COMPONENT_H
+#include "Common/State.h"
 
 namespace Mcc
 {
 
-    enum class ServerConnectionState
-    {
-        Pending,
-        Connected,
-        Error
-    };
+    REGISTER_STATE(StateTargetScene, ServerConnectionState, Pending, Connected, Error)
 
 }
 

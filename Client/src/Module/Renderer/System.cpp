@@ -5,9 +5,12 @@
 #include "Client/Module/Renderer/System.h"
 
 #include "Client/Graphics/Common.h"
+#include "Client/Module/Renderer/Module.h"
 #include "Client/WorldContext.h"
 
 #include <glad/glad.h>
+
+#include <ranges>
 
 namespace Mcc
 {
@@ -26,7 +29,7 @@ namespace Mcc
         Window::PollEvents();
     }
 
-    void CleanupFrameSystem(flecs::iter& it)
+    void ClearFrameSystem(flecs::iter& it)
     {
         while (it.next()) {}
         glCheck(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));

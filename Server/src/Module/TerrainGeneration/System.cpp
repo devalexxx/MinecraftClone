@@ -12,9 +12,18 @@ namespace Mcc
 
     void HandleGenerationEndingSystem(const flecs::entity entity, PendingChunk& pending, ChunkHolder& holder)
     {
-        if (pending.pendingChunk.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+        if (pending.pendingChunk.GetState() == Hx::TaskState::Cancelled)
         {
-            holder.chunk = std::make_shared<Chunk>(pending.pendingChunk.get());
+            // TODO: add a state maybe
+            entity.remove<PendingChunk>();
+            return;
+        }
+
+        if (pending.pendingChunk.GetState() == Hx::TaskState::Done)
+        {
+            const auto result = pending.pendingChunk.GetResult();
+            MCC_ASSERT(result, "Chunk data has already been retrieve");
+            holder.chunk = std::make_shared<Chunk>(result->get());
             entity.remove<PendingChunk>();
             entity.remove<GenerationProgressTag>();
             entity.add<GenerationDoneTag>();
@@ -28,7 +37,7 @@ namespace Mcc
             const auto ctx   = ServerWorldContext::Get(world);
             for (const auto session: pending.sessions)
             {
-                ctx->threadPool.ExecuteTask(TerrainReplicationModule::ReplicateChunk, session, world, entity.id());
+                ctx->scheduler.Insert(TerrainReplicationModule::ReplicateChunk, session, world, entity.id()).Enqueue();
             }
         });
 

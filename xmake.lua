@@ -10,13 +10,26 @@ option("shared", { description = "", default = false })
 
 add_repositories("devalexxx-repo https://github.com/devalexxx/xmake-repo.git")
 
+local function merge(t1, t2)
+    local result = {}
+    for k,v in pairs(t1) do result[k] = v end
+    for k,v in pairs(t2) do result[k] = v end
+    return result
+end
+
 local usage_all = { ["MCCClient"] = true, ["MCCCommon"] = true, ["MCCServer"] = true }
-local packages = { 
+local packages = {
+    {
+        name  = "fmt",
+        extra = " >= 11",
+        usage = usage_all,
+        rconf = {}
+    },
     { 
         name  = "hexis", 
         extra = "",
         usage = usage_all,
-        rconf = {}
+        rconf = { math = true }
     }, 
     { 
         name  = "flecs", 
@@ -35,13 +48,13 @@ local packages = {
         extra = "",
         usage = { ["MCCClient"] = true },
         rconf = {}
-    }, 
-    { 
-        name  = "fmt",
-        extra = " >= 11",
-        usage = usage_all,
-        rconf = {}
-    }, 
+    },
+    {
+        name  = "imgui",
+        extra = "",
+        usage = { ["MCCClient"] = true },
+        rconf = { glfw = true, opengl3 = true }
+    },
     { 
         name = "glm",
         extra = "",
@@ -73,12 +86,12 @@ local packages = {
         rconf = {}
     } 
 }
-for _, package in pairs(packages) do
+for _, package in ipairs(packages) do
     add_requires(
         package.name .. package.extra, 
         { 
             debug   = is_mode("debug"),
-            configs = { shared = has_config("shared"), table.unpack(package.rconf) }
+            configs = merge({ shared = has_config("shared") }, package.rconf)
         }
     )
 end
@@ -132,7 +145,7 @@ target("MCCClient")
     -- Use to don't care about glfw and glad include order
     add_defines("GLFW_INCLUDE_NONE")
 
-    add_includedirs("Client/include/")
+    add_includedirs("Client/include/",  { public = true })
     add_headerfiles("Client/include/(**/*.h)", "Client/include/(**/*.inl)")
 
     add_files("Client/**/*.cpp")

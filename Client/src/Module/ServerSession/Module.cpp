@@ -5,28 +5,36 @@
 #include "Client/Module/ServerSession/Module.h"
 
 #include "Client/Module/ServerSession/Component.h"
+#include "Client/Scene/Scene.h"
 #include "Client/WorldContext.h"
 
+#include "Common/SceneImporter.h"
 #include "Common/Utils/Logging.h"
 
 namespace Mcc
 {
 
-    ServerSessionModule::ServerSessionModule(flecs::world& world)
+    ServerSessionModule::ServerSessionModule(flecs::world& world) : BaseModule(world)
     {
-        MCC_LOG_DEBUG("Import ServerSessionModule...");
-        world.module<ServerSessionModule>();
+        ServerConnectionState::Register(world);
+    }
 
-        world.component<ServerConnectionState>();
+    void ServerSessionModule::RegisterComponent(flecs::world& /* world */)
+    {}
 
-        world.set<ServerConnectionState>(ServerConnectionState::Pending);
+    void ServerSessionModule::RegisterSystem(flecs::world& /* world */)
+    {}
 
+    void ServerSessionModule::RegisterHandler(flecs::world& world)
+    {
         const auto* ctx = ClientWorldContext::Get(world);
 
         ctx->networkManager.Subscribe<OnWaitingInfo>([&](const auto& packet) { OnWaitingInfoHandler(world, packet); });
+
         ctx->networkManager.Subscribe<OnConnectionAccepted>([&](const auto& packet) {
             OnConnectionAcceptedHandler(world, packet);
         });
+
         ctx->networkManager.Subscribe<OnConnectionRefused>([&](const auto& packet) {
             OnConnectionRefusedHandler(world, packet);
         });
@@ -34,11 +42,19 @@ namespace Mcc
         ctx->networkManager.Subscribe<DisconnectEvent>([&](const auto& event) {
             OnDisconnectEventHandler(world, event);
         });
+
+        world.system()
+            .kind<Phase::OnLoad>()
+            .run([](flecs::iter& it) {
+                while (it.next()) {};
+                ServerConnectionState::Pending::Enter(it.world());
+            })
+            .add<GameScene>();
     }
 
     void ServerSessionModule::OnWaitingInfoHandler(const flecs::world& world, const OnWaitingInfo&)
     {
-        auto* ctx = ClientWorldContext::Get(world);
+        const auto* ctx = ClientWorldContext::Get(world);
 
         ctx->networkManager.Send<OnClientInfo>(
             { static_cast<ClientInfo>(ctx->settings) }, ENET_PACKET_FLAG_RELIABLE, 0
@@ -51,13 +67,14 @@ namespace Mcc
         ctx->playerInfo = packet.playerInfo;
         ctx->serverInfo = packet.serverInfo;
 
-        world.set<ServerConnectionState>(ServerConnectionState::Connected);
+        ServerConnectionState::Connected::Enter(world);
     }
 
     void ServerSessionModule::OnConnectionRefusedHandler(const flecs::world& world, const OnConnectionRefused& packet)
     {
         MCC_LOG_ERROR("Connection refused with: {}", packet.reason);
-        world.set<ServerConnectionState>(ServerConnectionState::Error);
+
+        ServerConnectionState::Error::Enter(world);
     }
 
     void ServerSessionModule::OnDisconnectEventHandler(const flecs::world& world, const DisconnectEvent&)

@@ -6,15 +6,20 @@
 #define MCC_COMMON_MODULE_TERRAIN_MODULE_H
 
 #include "Common/Export.h"
+#include "Common/Module/Base/Module.h"
 
 #include <flecs.h>
 
 namespace Mcc
 {
 
-    struct MCC_LIB_API TerrainModule
+    struct MCC_LIB_API TerrainModule final : BaseModule<TerrainModule>
     {
-        explicit TerrainModule(const flecs::world& world);
+        explicit TerrainModule(flecs::world& world);
+
+        void RegisterComponent(flecs::world& world) override;
+        void RegisterSystem(flecs::world& world) override;
+        void RegisterHandler(flecs::world& world) override;
     };
 
 }

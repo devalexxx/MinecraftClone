@@ -10,8 +10,10 @@
 #include "Client/Module/EntityReplication/Module.h"
 #include "Client/Module/Player/Component.h"
 #include "Client/Module/Player/System.h"
+#include "Client/Scene/Scene.h"
 #include "Client/WorldContext.h"
 
+#include "Common/Phase.h"
 #include "Common/Utils/Assert.h"
 #include "Common/Utils/Logging.h"
 
@@ -20,28 +22,53 @@
 namespace Mcc
 {
 
-    PlayerModule::PlayerModule(flecs::world& world)
+    PlayerModule::PlayerModule(flecs::world& world) :
+        BaseModule(world),
+        mKeyEventHandlerID(0),
+        mCursorPosEventHandlerID(0)
     {
-        MCC_ASSERT(
-            world.has<EntityReplicationModule>(),
-            "PlayerModule require EntityReplicationModule, you must import it before."
-        );
-        MCC_ASSERT(world.has<CameraModule>(), "PlayerModule require CameraModule, you must import it before.");
-        MCC_LOG_DEBUG("Import PlayerInputModule...");
-        world.module<PlayerModule>();
-
-        world.component<PlayerEntityTag>();
-        world.component<CurrentPlayerInput>();
-
         world.prefab<PlayerEntityPrefab>()
             .is_a<UserEntityPrefab>()
             .add<PlayerEntityTag>()
             .add<InterpolationExcludedTag>()
             .set_auto_override<CurrentPlayerInput>({});
+    }
 
-        world.system<CurrentPlayerInput, UserInputQueue>().with<PlayerEntityTag>().each(ApplyAndSendPlayerInput);
+    void PlayerModule::RegisterComponent(flecs::world& world)
+    {
+        world.component<PlayerEntityTag>();
+        world.component<CurrentPlayerInput>();
+    }
 
+    void PlayerModule::RegisterSystem(flecs::world& world)
+    {
+        world.system<CurrentPlayerInput, UserInputQueue>()
+            .kind<Phase::OnUpdate>()
+            .with<PlayerEntityTag>()
+            .each(ApplyAndSendPlayerInput)
+            .add<GameScene>();
+    }
+
+    void PlayerModule::RegisterHandler(flecs::world& world)
+    {
         const auto* ctx = ClientWorldContext::Get(world);
+
+        GameState::InGame::OnEnter(world).with<ActiveScene, GameScene>().each(
+            [&world, this, ctx](const flecs::iter&, size_t, GameState) {
+                mKeyEventHandlerID =
+                    ctx->window.Subscribe<KeyEvent>([&world](const auto& event) { OnKeyEventHandler(world, event); });
+                mCursorPosEventHandlerID = ctx->window.Subscribe<CursorPosEvent>([&world](const auto& event) {
+                    OnCursorPosEventHandler(world, event);
+                });
+            }
+        );
+
+        GameState::InGame::OnExit(world).with<ActiveScene, GameScene>().each(
+            [this, ctx](const flecs::iter&, size_t, GameState) {
+                ctx->window.Withdraw(mKeyEventHandlerID);
+                ctx->window.Withdraw(mCursorPosEventHandlerID);
+            }
+        );
 
         ctx->networkManager.Subscribe<OnEntitiesCreated>([&world](const auto& event) {
             OnEntitiesCreatedHandler(world, event);
@@ -49,9 +76,6 @@ namespace Mcc
         ctx->networkManager.Subscribe<OnEntitiesUpdated>([&world](const auto& event) {
             OnEntitiesUpdatedHandler(world, event);
         });
-
-        ctx->window.Subscribe<KeyEvent>([&world](const auto& event) { OnKeyEventHandler(world, event); });
-        ctx->window.Subscribe<CursorPosEvent>([&world](const auto& event) { OnCursorPosEventHandler(world, event); });
     }
 
     void PlayerModule::OnEntitiesCreatedHandler(const flecs::world& world, const OnEntitiesCreated& event)
@@ -81,7 +105,8 @@ namespace Mcc
             })
                 .set<CameraFollowSettings>({ { 0, 2, 0 } })
                 .add<CameraFollowRelation>(entity)
-                .add<ActiveCameraTag>();
+                .add<ActiveCameraTag>()
+                .child_of<SceneRoot>();
         }
     }
 
@@ -127,7 +152,7 @@ namespace Mcc
                 auto& [qData2] = entity.get_mut<SnapshotQueue>();
                 while (!qData2.empty()) { qData2.pop_back(); }
 
-                // Set last received transform and reapply all inputs unprocessed by the server
+                // Set the last received transform and reapply all inputs unprocessed by the server
                 auto tr = state->transform;
                 for (auto& input: qData1)
                 {
@@ -173,8 +198,6 @@ namespace Mcc
                 case GLFW_KEY_LEFT_SHIFT:
                     input.movement.down = event.action == GLFW_PRESS;
                     break;
-                case GLFW_KEY_ESCAPE:
-                    event.window.SetShouldClose();
                 default:
                     break;
             }

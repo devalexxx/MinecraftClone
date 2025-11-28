@@ -45,7 +45,7 @@ namespace Mcc
         const auto* ctx = ServerWorldContext::Get(world);
 
         auto handle      = GenerateNetworkHandle();
-        event.peer->data = new UserSession { { handle }, {}, event.peer, {}, {} };
+        event.peer->data = new UserSession { { handle }, {}, event.peer, {}, {}, {} };
 
         char hostname[100];
         enet_address_get_host_ip(&event.peer->address, hostname, 100);

@@ -9,7 +9,7 @@
 #include "Common/Network/NetworkManager.h"
 #include "Common/Network/Packet.h"
 
-#include "Hexis/Core/ThreadPool.h"
+#include "Hexis/Core/TaskScheduler.h"
 
 #include <unordered_map>
 
@@ -50,9 +50,9 @@ namespace Mcc
     {
         static WorldContext* Get(const flecs::world& world);
 
-        NManager&       networkManager;
-        NetworkMapping  networkMapping;
-        Hx::ThreadPool& threadPool;
+        NManager&          networkManager;
+        NetworkMapping     networkMapping;
+        Hx::TaskScheduler& scheduler;
 
         std::unordered_map<glm::ivec3, flecs::entity_t, IVec3Hasher> chunkMap;
     };

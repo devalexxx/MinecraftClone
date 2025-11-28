@@ -65,9 +65,9 @@ namespace Mcc
         const auto entity =
             world.entity().is_a<ChunkPrefab>().set<ChunkPosition>({ position }).add<GenerationProgressTag>();
 
-        auto future = ctx->threadPool.ExecuteTask([=, this] { return mGenerator.Generate(position); });
+        auto task = ctx->scheduler.Insert([=, this] { return mGenerator.Generate(position); }).AsUnique().Enqueue();
 
-        entity.set<PendingChunk>({ std::move(future) });
+        entity.emplace<PendingChunk>(std::move(task));
         ctx->chunkMap[position] = entity.id();
 
         return entity;

@@ -7,12 +7,13 @@
 #include "Client/Module/Camera/Module.h"
 #include "Client/Module/EntityRenderer/Module.h"
 #include "Client/Module/EntityReplication/Module.h"
+#include "Client/Module/ImGui/Module.h"
 #include "Client/Module/Player/Module.h"
 #include "Client/Module/Renderer/Module.h"
-#include "Client/Module/ServerSession/Component.h"
 #include "Client/Module/ServerSession/Module.h"
 #include "Client/Module/TerrainRenderer/Module.h"
 #include "Client/Module/TerrainReplication/Module.h"
+#include "Client/Scene/Scene.h"
 #include "Client/WorldContext.h"
 
 #include "Common/Module/Entity/Module.h"
@@ -52,18 +53,12 @@ namespace Mcc
             return error;
         }
 
-        MCC_LOG_INFO("Waiting for connection...");
-        if (const int error = mNetworkManager.Connect())
-        {
-            MCC_LOG_ERROR("Failed to connect to server");
-            return error;
-        }
-
 
         MCC_LOG_DEBUG("Setup modules...");
+        mWorld.add<ClientTag>();
         mWorld.set_ctx(
             new ClientWorldContext {
-                { .networkManager = mNetworkManager, .networkMapping = {}, .threadPool = mThreadPool, .chunkMap = {} },
+                { .networkManager = mNetworkManager, .networkMapping = {}, .scheduler = mScheduler, .chunkMap = {} },
                 {},
                 {},
                 mSettings,
@@ -71,6 +66,7 @@ namespace Mcc
         },
             [](void* ptr) { delete static_cast<ClientWorldContext*>(ptr); }
         );
+        mWorld.import <CSceneImporter>();
         mWorld.import <NetworkModule>();
         mWorld.import <ServerSessionModule>();
         mWorld.import <EntityModule>();
@@ -81,34 +77,8 @@ namespace Mcc
         mWorld.import <TerrainReplicationModule>();
         mWorld.import <RendererModule>();
         mWorld.import <EntityRendererModule>();
-
-        MCC_LOG_DEBUG("Waiting for server information...");
-        while (mWorld.get<ServerConnectionState>() == ServerConnectionState::Pending) { mNetworkManager.Poll(); }
-
-        if (mWorld.get<ServerConnectionState>() == ServerConnectionState::Error)
-        {
-            MCC_LOG_ERROR("Failed to retrieve server information");
-            return EXIT_FAILURE;
-        }
-
         mWorld.import <TerrainRendererModule>();
-
-        mWorld.add<ClientTag>();
-
-        mWorld.system().run([](const flecs::iter& it) {
-            static float elapsed = 0;
-            static float frames  = 0;
-
-            elapsed += it.delta_time();
-            frames  += 1;
-
-            if (elapsed >= 1)
-            {
-                MCC_LOG_DEBUG("fps: {}", frames);
-                frames  = 0;
-                elapsed = 0;
-            }
-        });
+        mWorld.import <ImGuiModule>();
 
         MCC_LOG_INFO("Application started");
 
@@ -119,11 +89,6 @@ namespace Mcc
         }
 
         MCC_LOG_INFO("Shutdown...");
-
-        if (const int error = mNetworkManager.Disconnect())
-            return error;
-
-        MCC_LOG_INFO("Disconnected from server");
 
         return EXIT_SUCCESS;
     }

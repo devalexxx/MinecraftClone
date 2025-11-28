@@ -5,14 +5,21 @@
 #ifndef MCC_CLIENT_MODULE_CAMERA_MODULE_H
 #define MCC_CLIENT_MODULE_CAMERA_MODULE_H
 
+#include "Common/Module/Base/Module.h"
+#include "Common/Module/Entity/Module.h"
+
 #include <flecs.h>
 
 namespace Mcc
 {
 
-    struct CameraModule
+    struct CameraModule final : BaseModule<CameraModule, EntityModule>
     {
-        explicit CameraModule(const flecs::world& world);
+        explicit CameraModule(flecs::world& world);
+
+        void RegisterComponent(flecs::world& world) override;
+        void RegisterSystem(flecs::world& world) override;
+        void RegisterHandler(flecs::world& world) override;
     };
 
 }

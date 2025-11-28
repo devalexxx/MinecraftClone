@@ -87,7 +87,7 @@ namespace Mcc
 
         mWorld.set_ctx(
             new ServerWorldContext {
-                { .networkManager = mNetworkManager, .networkMapping = {}, .threadPool = mThreadPool, .chunkMap = {} },
+                { .networkManager = mNetworkManager, .networkMapping = {}, .scheduler = mScheduler, .chunkMap = {} },
                 mSettings,
         },
             [](void* ptr) { delete static_cast<ServerWorldContext*>(ptr); }

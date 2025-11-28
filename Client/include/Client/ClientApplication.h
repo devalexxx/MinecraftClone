@@ -11,7 +11,7 @@
 
 #include "Common/Application.h"
 
-#include "Hexis/Core/ThreadPool.h"
+#include <Hexis/Core/TaskScheduler.h>
 
 #define SENSITIVITY_DEFAULT 0.001
 #define FOV_DEFAULT 90
@@ -33,7 +33,7 @@ namespace Mcc
         ClientSettings       mSettings;
         ClientNetworkManager mNetworkManager;
         Window               mWindow;
-        Hx::ThreadPool       mThreadPool;
+        Hx::TaskScheduler    mScheduler;
     };
 
 }

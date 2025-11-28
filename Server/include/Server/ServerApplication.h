@@ -10,7 +10,7 @@
 
 #include "Common/Application.h"
 
-#include "Hexis/Core/ThreadPool.h"
+#include "Hexis/Core/TaskScheduler.h"
 
 #define TICK_RATE_DEFAULT 20
 #define TICK_RATE_MAX 60
@@ -36,7 +36,7 @@ namespace Mcc
       private:
         ServerSettings       mSettings;
         ServerNetworkManager mNetworkManager;
-        Hx::ThreadPool       mThreadPool;
+        Hx::TaskScheduler    mScheduler;
     };
 
 }

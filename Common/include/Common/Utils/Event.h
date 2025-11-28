@@ -15,7 +15,8 @@ namespace Mcc
     using EventTypeID = unsigned short;
 
     template<typename Tag>
-    struct BaseEvent {};
+    struct BaseEvent
+    {};
 
     template<typename Tag, typename T>
     struct Event : BaseEvent<Tag>

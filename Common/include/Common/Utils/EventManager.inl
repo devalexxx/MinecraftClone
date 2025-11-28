@@ -7,6 +7,8 @@
 
 #include <fmt/base.h>
 
+#include "Logging.h"
+
 namespace Mcc
 {
 
@@ -15,55 +17,62 @@ namespace Mcc
     void EventManager<Tag>::Dispatch(T event)
     {
         Event<Tag, T> wrapper { {}, std::move(event) };
+        auto          type = decltype(wrapper)::GetType();
 
-        auto type = decltype(wrapper)::GetType();
-        MCC_ASSERT(type <= mEventHandlers.size(), "Trying to dispatch an unregistered event");
-
-        if (mEventHandlers.size() > type)
-        {
-            for (auto& handler: mEventHandlers[type])
-            {
-                if (handler)
-                {
-                    handler(wrapper);
-                }
-            }
-        }
-        else
+        if (type >= mEventHandlers.size())
         {
             mEventHandlers.push_back({});
+            return;
+        }
+
+        for (auto& handler: mEventHandlers[type])
+        {
+            if (handler)
+            {
+                handler(wrapper);
+            }
         }
     }
 
     template<typename Tag>
     template<typename T>
-    auto EventManager<Tag>::Subscribe(EventHandler<T> handler) -> HandlerId
+    EventHandlerID EventManager<Tag>::Subscribe(EventHandler<T> handler)
     {
         auto typeId = Event<Tag, T>::GetType();
-        MCC_ASSERT(typeId <= mEventHandlers.size(), "Trying to subscribe to an unregistered event");
 
         if (mEventHandlers.size() <= typeId)
         {
             mEventHandlers.push_back({});
         }
-        mEventHandlers[typeId].push_back(HandlerFunctor<T> { std::move(handler) });
 
-        return (typeId << 16) + (mEventHandlers[typeId].size() - 1);
+        Hx::u64 handlerId = 0;
+        for (Hx::u64 i = 0; i < mEventHandlers[typeId].size(); ++i)
+        {
+            if (!mEventHandlers[typeId][i])
+            {
+                mEventHandlers[typeId][i] = HandlerFunctor<T> { std::move(handler) };
+                handlerId                 = i + 1;
+            }
+        }
+        if (handlerId == 0)
+        {
+            mEventHandlers[typeId].push_back(HandlerFunctor<T> { std::move(handler) });
+            handlerId = mEventHandlers[typeId].size();
+        }
+
+        return BuildHandlerInfo(typeId, handlerId);
     }
 
     template<typename Tag>
-    void EventManager<Tag>::Withdraw(const HandlerId id)
+    void EventManager<Tag>::Withdraw(const EventHandlerID id)
     {
-        auto typeId    = id >> 16 & 0xf;
-        auto handlerId = id & 0x0f;
+        MCC_ASSERT(id != 0, "Trying to withdraw an invalid event handler");
 
-        if (typeId < mEventHandlers.size())
-        {
-            if (handlerId < mEventHandlers[typeId].size())
-            {
-                mEventHandlers[typeId][handlerId] = {};
-            }
-        }
+        auto [typeId, handlerId] = ExtractHandlerInfo(id);
+        MCC_ASSERT(mEventHandlers.size() > typeId, "Trying to withdraw an invalid event handler");
+        MCC_ASSERT(mEventHandlers[typeId].size() > handlerId, "Trying to withdraw an invalid event handler");
+
+        mEventHandlers[typeId][handlerId] = {};
     }
 
     template<typename Tag>
@@ -71,6 +80,25 @@ namespace Mcc
     void EventManager<Tag>::HandlerFunctor<T>::operator()(const BaseEvent<Tag>& event)
     {
         handler(static_cast<const Event<Tag, T>&>(event).event);
+    }
+
+    template<typename Tag>
+    std::pair<std::uint32_t, std::uint32_t> EventManager<Tag>::ExtractHandlerInfo(const EventHandlerID id)
+    {
+        auto typeId    = (id >> 32) & 0x00000000ffffffff;
+        auto handlerId = (id & 0x00000000ffffffff) - 1;
+
+        return { typeId, handlerId };
+    }
+
+    template<typename Tag>
+    EventHandlerID EventManager<Tag>::BuildHandlerInfo(const uint32_t typeId, const uint32_t handlerId)
+    {
+        MCC_ASSERT(!(typeId & 0xffffffff00000000), "Type id is too big.");
+        MCC_ASSERT(!(handlerId & 0xffffffff00000000), "Handler id is too big.");
+
+        const uint64_t wrap = typeId;
+        return (wrap << 32) + handlerId;
     }
 
 }

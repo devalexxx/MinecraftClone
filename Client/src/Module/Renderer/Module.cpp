@@ -9,24 +9,31 @@
 #include "Client/WorldContext.h"
 
 #include "Common/Module/Entity/Component.h"
+#include "Common/Phase.h"
 #include "Common/Utils/Logging.h"
 
 namespace Mcc
 {
 
-    RendererModule::RendererModule(flecs::world& world)
+    RendererModule::RendererModule(flecs::world& world) : BaseModule(world)
+    {}
+
+    void RendererModule::RegisterComponent(flecs::world& /* world */)
+    {}
+
+    void RendererModule::RegisterSystem(flecs::world& world)
     {
-        MCC_LOG_DEBUG("Import RendererModule...");
-        world.module<RendererModule>();
+        world.system("SetupRenderer").kind<Phase::OnLoad>().run(SetupRendererSystem);
 
-        world.system("SetupRenderer").kind(flecs::OnStart).run(SetupRendererSystem);
+        world.system("PollWindowEvent").kind<Phase::OnSetup>().run(PollWindowEventSystem);
 
-        world.system("PollWindowEvent").kind(flecs::OnLoad).run(PollWindowEventSystem);
+        world.system("ClearFrame").kind<Phase::OnClear>().run(ClearFrameSystem);
 
-        world.system("CleanupFrame").kind(flecs::PreUpdate).run(CleanupFrameSystem);
-
-        world.system("RenderFrame").kind(flecs::OnStore).run(RenderFrameSystem);
+        world.system("RenderFrame").kind<Phase::OnRender>().run(RenderFrameSystem);
     }
+
+    void RendererModule::RegisterHandler(flecs::world& /* world */)
+    {}
 
     std::tuple<glm::vec3, glm::mat4, glm::mat4> RendererModule::GetView(const flecs::world& world)
     {
